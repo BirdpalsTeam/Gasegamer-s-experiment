@@ -15,48 +15,41 @@ const gameState ={
 	players: {}
 }
 
-
 //Websockets communication
 io.on('connection', (socket) => {
+	var PlayerInterval;
+
 	console.log('A user connected: ' + socket.id);
 
 	socket.on('disconnect', function(){
 		console.log('A user disconnected: ' + socket.id);
 		delete gameState.players[socket.id];
-
 	})
-var intervalo;
-	socket.on('newPlayer', () =>{
-		gameState.players[socket.id] =
+
+	gameState.players[socket.id] =							//Spawn the player
 		{
 			id: socket.id,
-			x:250,
-			y:250,
-			width:50,
-			height:50,
+			x:409,
+			y:380,
+			width:62,
+			height:72,
 			isMoving: false,
-			playerMove: function (move, player){ intervalo = setInterval(move,1000 / 60, player)}
+			playerMove: function (move, player){ PlayerInterval = setInterval(move,1000 / 60, player)}	//Creates the player move function inside each player
 		}
-	})
-	
+
 	socket.on('playerMovement', (playerMovement) =>{
 
-		const player = gameState.players[socket.id]; //Sets what player wants to move
-		
-		player.move = function (player){
+		const player = gameState.players[socket.id]; //Set what player wants to move
 
 			if(player.isMoving == false){
 				player.playerMove(move, player);
 				
 			}else{
-				clearInterval(intervalo);
+				clearInterval(PlayerInterval);
 				player.playerMove(move, player);
 			}
-			
-
-		}// End of the function
 	
-		function move(player){
+		function move(player){								//Function responsible to move the player
 			player.isMoving = true;
 				let dx = playerMovement.mouseX - player.x;    //Get the difference x from the player position and the click position
 				let dy = playerMovement.mouseY - player.y;
@@ -73,18 +66,17 @@ var intervalo;
 				player.y += velY;
 				
 				if(lenght){
-				dx /= lenght;
+				dx /= lenght;								//Normalize the dx and dy value
 				dy/= lenght;
 				}
 			
-				if(lenght >= 0.1 && lenght <= 2){
-					clearInterval(intervalo);
+				if(lenght >= 0.1 && lenght <= 2){			//Detects if the player reached the click position
+					clearInterval(PlayerInterval);
 					player.isMoving = false;
 				}
 				
 		}	//Function end
 	
-		player.move(player);
 
     })//Player Movement end
 	
@@ -94,7 +86,7 @@ setInterval(()=>{
 	io.sockets.emit('state',gameState);				//Emit the gameState to all players online.
 }, 1000/60);
 
-//Starts the server on port 3000
+//Starts the server on port 25565
 http.listen(process.env.PORT || 25565, () => {
-	console.log('listening on *:3000');
+	console.log('listening on *:25565');
   });
