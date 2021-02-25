@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
 					clearInterval(PlayerInterval);
 					player.isMoving = false;
 				}
-				
+				socket.emit('moving');
 		}	//Function end
 	
 
