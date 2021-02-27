@@ -29,18 +29,23 @@ io.on('connection', (socket) => {
 	gameState.players[socket.id] =							//Spawn the player
 		{
 			id: socket.id,
-			x:409,
+			x:410,
 			y:380,
 			width:62,
 			height:72,
 			isMoving: false,
+			mouseX: 416,
+			mouseY: 323,
+			lastX: 410,
+			lastY: 180,
 			playerMove: function (move, player){ PlayerInterval = setInterval(move,1000 / 60, player)}	//Creates the player move function inside each player
 		}
 
 	socket.on('playerMovement', (playerMovement) =>{
 
 		const player = gameState.players[socket.id]; //Set what player wants to move
-
+		player.lastX = player.x;
+		player.lastY = player.y;
 			if(player.isMoving == false){
 				player.playerMove(move, player);
 				
@@ -53,7 +58,7 @@ io.on('connection', (socket) => {
 			player.isMoving = true;
 				let dx = playerMovement.mouseX - player.x;    //Get the difference x from the player position and the click position
 				let dy = playerMovement.mouseY - player.y;
-		
+
 				let angle = Math.atan2(dy, dx);                //Calculates the angle from the difference between the player and the click
 		
 				var lenght= Math.sqrt(dx*dx + dy * dy);        //Calculates the distance bewtween the player and the click
@@ -69,13 +74,17 @@ io.on('connection', (socket) => {
 				dx /= lenght;								//Normalize the dx and dy value
 				dy/= lenght;
 				}
-			
+				
 				if(lenght >= 0.1 && lenght <= 2){			//Detects if the player reached the click position
 					clearInterval(PlayerInterval);
 					player.isMoving = false;
 				}
-				socket.emit('moving');
+				player.mouseX = playerMovement.mouseX;
+				player.mouseY = playerMovement.mouseY;
+				
 		}	//Function end
+	
+		
 	
 
     })//Player Movement end
@@ -87,6 +96,6 @@ setInterval(()=>{
 }, 1000/60);
 
 //Starts the server on port 25565
-http.listen(process.env.PORT || 25565, () => {
+http.listen(process.env.PORT || 3000, () => {
 	console.log('listening on *:25565');
   });
