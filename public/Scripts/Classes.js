@@ -1,5 +1,6 @@
 class GameObject{
-	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, id, mouseX, mouseY, lastX, lastY){
+	constructor(id,img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, mouseX, mouseY, lastX, lastY, message){
+		this.id = id;
 		this.img = img;
 		this.sourceX = sourceX;
 		this.sourceY = sourceY;
@@ -11,11 +12,11 @@ class GameObject{
 		this.height = height;
 		this.originX = originX;
 		this.originY = originY;
-		this.id = id;
 		this.mouseX = mouseX;
 		this.mouseY = mouseY;
 		this.lastX = lastX;
 		this.lastY = lastY;
+		this.message = message;
 	}
 		drawPlayer(){
 		if(click == true && this.id == socket.id){
@@ -23,7 +24,7 @@ class GameObject{
 		}else if (this.id != socket.id){
 			this.moveAnim();
 		}
-	
+		this.onMessage();
 			ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x - this.originX, this.y - this.originY, this.width, this.height);
 		}
 		drawRoom(){
@@ -53,7 +54,17 @@ class GameObject{
 			}
 		
 		}
-	
-	
-	
+		drawBubble(){
+		ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x, this.y, this.width, this.height);
+		
+		ctx.font = "15px sans-serif";
+		}
+		onMessage(){
+		if (this.message != " " && this.message.length > 0 || this.message != "" && this.message.length > 0) {
+			let bubbleGameobject = new GameObject(0,bubble_image,0,0,262,94,this.x - 66,this.y - this.height - 35,131,47,0,0,0,0,0,0,this.message);
+			bubbleGameobject.drawBubble();
+			ctx.fillText(this.message,this.x - ctx.measureText(this.message).width / 2, this.y - 85);
+			
+		}
+		}
 }

@@ -17,7 +17,7 @@ const gameState ={
 
 //Websockets communication
 io.on('connection', (socket) => {
-	var PlayerInterval;
+	var PlayerInterval,waitToDisappear;
 
 	console.log('A user connected: ' + socket.id);
 
@@ -38,7 +38,9 @@ io.on('connection', (socket) => {
 			mouseY: 323,
 			lastX: 410,
 			lastY: 180,
-			playerMove: function (move, player){ PlayerInterval = setInterval(move,1000 / 60, player)}	//Creates the player move function inside each player
+			playerMove: function (move, player){ PlayerInterval = setInterval(move,1000 / 60, player)},	//Creates the player move function inside each player
+			message: "",
+			bubbleAppear: function(){ waitToDisappear = setTimeout(() => {gameState.players[socket.id].message = ""; clearTimeout(waitToDisappear)}, 10000);}
 		}
 
 	socket.on('playerMovement', (playerMovement) =>{
@@ -83,19 +85,21 @@ io.on('connection', (socket) => {
 				player.mouseY = playerMovement.mouseY;
 				
 		}	//Function end
-	
-		
-	
 
     })//Player Movement end
 	
+	socket.on('message',(message)=>{
+		gameState.players[socket.id].message = message;
+		clearTimeout(waitToDisappear);
+		gameState.players[socket.id].bubbleAppear();
+	})
 }) // io connection end
 	
 setInterval(()=>{
 	io.sockets.emit('state',gameState);				//Emit the gameState to all players online.
 }, 1000/60);
 
-//Starts the server on port 25565
-http.listen(process.env.PORT || 3000, () => {
-	console.log('listening on *:25565');
+//Starts the server on port 3000
+http.listen(process.env.PORT || 25565, () => {
+	console.log('listening on *:3000');
   });
