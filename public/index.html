@@ -4,24 +4,63 @@
 <link rel="stylesheet" href="style.css" />
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet"/>
  <link rel="shortcut icon" type="image/png" href="Website Assets\Logo.png" />
- <meta name="viewport" content="width=device-width, user-scalable=no" />
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Birdpals</title>
     <style>
     </style>
 </head>
 <body>
-
-
-<canvas id="myCanvas" width="800" height="500" style="border: 5px solid #ffffff"></canvas>
 <center>
-<form id="form" action="">
-        <input id="input" type="text" maxlength="50" autocomplete="off" placeholder="Type a Message..."/>
-        <button>Send</button>
-</form> </center>
-<script src="/socket.io/socket.io.js"></script>
-<script src='Scripts/index.js'></script>
-<script src='Scripts/Classes.js'></script>
+<h1>Birdpals</h1>
+
+<p>Welcome to Birdpals!</p>
+<img src="Website Assets\menu_image.png" alt="Menu Image" width="500" height="375">
+<form id="eMail" onSubmit="logIn(); return false">
+        <input id="input-e" type="text" maxlength="50" autocomplete="off" placeholder="E-mail"/>
+</form> 
+<form id="password" onSubmit="logIn(); return false">
+        <input id="input-p" type="text" maxlength="50" autocomplete="off" placeholder="Password"/>
+</form> 
+<button onclick="logIn()" class="button">Sign In</button>
+<button onclick="createAccount()" class="button">Create Account</button>
+</center>
+<script src="https://download.playfab.com/PlayFabClientApi.js"></script>
+
+<script>
+
+function logIn() {
+	var eMail = document.getElementById('input-e');
+	var password = document.getElementById('input-p'); // Feel free to add a function that the password input.value appear as ***** to the player
+	var loginRequest = {
+			TitleId: '238E6',
+			Email: eMail.value,
+			Password: password.value
+		}
+		PlayFabClientSDK.LoginWithEmailAddress(			//Log in directly to Playfab
+			{
+			TitleId: "238E6",
+			Email: eMail.value,
+			Password: password.value
+			}, function (result, error) {
+				if(result != null){
+					ticket = result.data.SessionTicket;
+					playerId = result.data.PlayFabId;
+					sessionStorage.setItem('ticket',ticket);
+					sessionStorage.setItem('playerId',playerId);
+					window.location.href = "play.html";
+				}else if(error != null){
+				//You can get what was the error by the error var and show something to the client
+				//For example, if(error == "InvalidUsername"){ show to that client that the username is invalid}  To know what are the errors test with accounts that doesn't exist
+					console.log(error);
+				}
+		})
+	
+		
+}
+function createAccount(){
+	window.location.href = "createAccount.html";
+}
+</script>
+
 </body>
 </html>
