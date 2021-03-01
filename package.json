@@ -1,7 +1,7 @@
 {
-  "name": "mundo-das-galinhas",
+  "name": "birdpals",
   "version": "1.0.0",
-  "description": "Uma galinha, uma históra, Mundo das Galinhas",
+  "description": "Birdpals game!",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "socket.io": "^3.1.1"
+    "isprofanity": "^1.4.1",
+    "playfab-sdk": "^2.64.210208",
+    "socket.io": "^3.1.2"
   }
 }
