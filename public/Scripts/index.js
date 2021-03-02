@@ -7,16 +7,22 @@ var socket = io();
 ticket = sessionStorage.getItem('ticket');
 socket.emit('login',ticket);
 
+
 var birdImage = new Image();
 birdImage.src = 'Sprites/characters/bird_blue.png';
+
 var roomImage = new Image();
 roomImage.src = 'Sprites/rooms/town.png';
+
 var cakeImage = new Image();
 cakeImage.src = 'Sprites/rooms/town.png';
+
 var trees_image = new Image();
 trees_image.src = 'Sprites/rooms/town.png';
+
 var bubble_image = new Image();
 bubble_image.src = 'Sprites/hud/hud.png';
+
 
 form = document.getElementById("form");
 input = document.getElementById("input");
@@ -68,3 +74,12 @@ form.addEventListener('submit', function(e) {
 			input.value = '';
 		}
 });
+
+
+
+function main(){
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+	setTimeout(main(), 5);
+}

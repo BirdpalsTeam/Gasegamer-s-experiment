@@ -105,3 +105,72 @@ class GameObject{
 		  
 		}
 }
+
+class Object{
+	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY){
+		this.img = img;
+		this.sourceX = sourceX;
+		this.sourceY = sourceY;
+		this.sourceWidth = sourceWidth;
+		this.sourceHeight = sourceHeight;
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.originX = originX;
+		this.originY = originY;
+	}
+
+	draw(){
+		ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x - this.originX, this.y - this.originY, this.width, this.height);
+	}
+}
+
+class Player{
+	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY,speechBubbleImage, username){
+		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
+		this.speechBubbleImage = speechBubbleImage;
+		this.username = username;
+
+		this.message = "";
+	}
+
+	drawUsername(){
+		ctx.fillStyle = "black";
+		ctx.font = "15px sans-serif";
+		ctx.textAlign = 'center'
+		ctx.fillText(this.username,this.x,this.y + this.height / 2.5);
+	}
+
+	drawBubble(){
+		ctx.fillStyle = "black";
+		ctx.font = "13px sans-serif";
+		ctx.textAlign = 'center'
+		ctx.drawImage(this.speechBubbleImage,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x, this.y, this.width, this.height); 
+		ctx.fillText(this.message,this.x , this.y);
+	}
+
+	moveAnim(){
+		// get the difference vector between the player position and the mouse position
+		//Notice that lastX is the position of the player when he clicked somwhere on the screen
+		let dx = this.mouseX - this.lastX;
+		let dy = this.mouseY - this.lastY;
+		let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+		if(angle < 0) angle += 360;
+
+		if(angle> 70 && angle<= 110){	//look to the front
+			this.sourceX = 144;
+			this.sourceY = 0;
+		}else if (angle>110&& angle<=250){//look to the left
+			this.sourceX = 0;
+			this.sourceY = 172;
+		}else if(angle > 250 && angle <= 281 ){//look to the back
+			this.sourceX = 0;
+			this.sourceY = 0;
+		}
+		else if(angle > 281 && angle <= 360 || angle <= 70){//look to the right
+			this.sourceX = 144;
+			this.sourceY = 172;
+		}
+	}
+}
