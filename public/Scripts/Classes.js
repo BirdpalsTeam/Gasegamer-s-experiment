@@ -106,7 +106,7 @@ class GameObject{
 		}
 }
 
-class Object{
+class Sprite{
 	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY){
 		this.img = img;
 		this.sourceX = sourceX;
@@ -126,7 +126,7 @@ class Object{
 	}
 }
 
-class Player{
+class Player extends Sprite{
 	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY,speechBubbleImage, username){
 		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
 		this.speechBubbleImage = speechBubbleImage;
@@ -135,6 +135,14 @@ class Player{
 		this.message = "";
 	}
 
+	drawPlayer(){
+		this.drawUsername();
+		if(click == true && this.id == socket.id){
+			this.moveAnim();
+		}else if (this.id != socket.id){
+			this.moveAnim();
+		}
+	}
 	drawUsername(){
 		ctx.fillStyle = "black";
 		ctx.font = "15px sans-serif";
