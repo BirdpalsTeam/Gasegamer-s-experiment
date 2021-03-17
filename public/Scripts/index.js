@@ -26,7 +26,7 @@ bubble_image.src = 'Sprites/hud/hud.png';
 form = document.getElementById("form");
 input = document.getElementById("input");
 
-var mousePos, click, localPlayer,otherPlayers, messageText;
+var mousePos, click, localPlayer,otherPlayers, messageText, playersInGame;
 playerId = sessionStorage.getItem('playerId');
 
 socket.on('state', (gameState) => {									//Receive the gameState from the server
@@ -79,34 +79,18 @@ form.addEventListener('submit', function(e) {
 });
 
 
-let playersInGame = new Array();
+playersInGame = new Array();
 
-let room = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
-
-function main(){
-	setTimeout(main, 5);
-}
-
-function render(){
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-	room.draw();
-
-	playersInGame.forEach(currentPlayer => {
-		currentPlayer.drawPlayer();
-	});
-
-	setTimeout(render, 5);
-}
+var room = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
 
 
 function getPlayers(gameState){
 	players = Object.values(gameState.players); //Creates an array that contains all players
-	for(let i = 0; i < players; i++){
+	for(let i = 0; i < players.length; i++){
 		if(players[i].id != playerId){
 			for(let p = 0; p < playersInGame; p++){		//Note that I'm only setting the players to the GameObject class temporarily, they will be the Player class in future
 				if(players[i].id == playersInGame[p].id){
-					tempPlayer = new GameObject(element.id,birdImage,144,0,144,172,element.x,element.y,element.width,element.height,31,67, element.mouseX, element.mouseY, element.lastX, element.lastY, element.message, element.name);
+					tempPlayer = new GameObject(players[i].id,birdImage,144,0,144,172,players[i].x,players[i].y,element.width,players[i].height,31,67, element.mouseX, players[i].mouseY, element.lastX, players[i].lastY, element.message, players[i].name);
 					playersInGame[p] = players[i];
 				}
 				if(players[i] > playersInGame.length){
@@ -115,13 +99,21 @@ function getPlayers(gameState){
 			}
 		}
 		else{
-			localPlayer = new GameObject(element.id,birdImage,144,0,144,172,element.x,element.y,element.width,element.height,31,67, element.mouseX, element.mouseY, element.lastX, element.lastY, element.message, element.name);
-			localPlayer.drawPlayer();
+			localPlayer = new GameObject(players[i].id,birdImage,144,0,144,172,players[i].x,players[i].y,players[i].width,players[i].height,31,67, players[i].mouseX, players[i].mouseY, players[i].lastX, players[i].lastY, players[i].message, players[i].name);
+			
 		}
 	}
 }
 
+function render(){
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+	room.draw();
+	if(localPlayer != undefined){
+		localPlayer.drawPlayer();
+	}
 
-main();
+	requestAnimationFrame(render);
+}
+
 render();
