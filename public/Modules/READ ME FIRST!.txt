@@ -1,0 +1,9 @@
+isProfanity.js is the originial script from the library "isProfanity" with some modifications made by Gabriel C.
+
+The script 'profanity.js' is the library isProfanity running on the client.
+
+In order to add words to exceptions.csv and profanity.csv, you need to have installed the npm package called "browserify'.
+
+If you want to add a dirty word add it to profanity.csv, DELETE profanity.js and then type the following 
+on command prompt: "browserify isProfanity.js -s module > profanity.js"
+
