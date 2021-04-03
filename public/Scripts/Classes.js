@@ -135,6 +135,21 @@ class Player extends Sprite{
 		let timeToPlayerReachDestination = Math.floor(dx/velX);
 
 		this.movePlayerInterval = setInterval(() => {
+			
+			let x, y;
+			for(y = 0; y < roomCollMapY; y++){
+				for(x = 0; x < roomCollMapX; x++){
+					if(roomCollMap[y*roomCollMapX+x] == 1) {
+						if(this.x + velX <= roomCollCellWidth * x + roomCollCellWidth && this.x + velX >= roomCollCellWidth * x){
+							if(this.y + velY <= roomCollCellHeight * y + roomCollCellHeight && this.y + velY >= roomCollCellHeight * y){
+								clearInterval(this.movePlayerInterval);
+								return;
+							}
+						}
+					}
+				}
+			}
+
 			this.x += velX;
 			this.y += velY;
 			timeToPlayerReachDestination--;

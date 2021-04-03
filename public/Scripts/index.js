@@ -30,6 +30,38 @@ var playersInGame = new Array();
 playersObject = new Array();
 
 var room = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
+var roomCollMapX = 8;
+var roomCollMapY = 16;
+var roomCollCellWidth = room.width / roomCollMapX;
+var roomCollCellHeight = room.height / roomCollMapY;
+var roomCollMap = [
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 0, 0, 0,
+	0, 1, 1, 0, 0, 1, 1, 0,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0
+];
+
+function drawCollisionMap(){
+	let x, y;
+	for(y = 0; y < roomCollMapY; y++){
+		for(x = 0; x < roomCollMapX; x++){
+			if(roomCollMap[y*roomCollMapX+x] == 1) { ctx.beginPath(); ctx.fillStyle = "red"; ctx.rect(roomCollCellWidth * x, roomCollCellHeight * y, room.width / roomCollMapX, room.height / roomCollMapY); ctx.fill(); }
+		}
+	}
+}
+
 
 socket.on('newPlayer', (players) => {									//Receive the gameState from the server
 	players.forEach(player => {
@@ -139,6 +171,7 @@ function render(){
 			}
 		})
 	}
+	//drawCollisionMap();
 
 	requestAnimationFrame(render);
 }
