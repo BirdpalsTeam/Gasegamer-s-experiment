@@ -13,12 +13,39 @@ PlayFab.settings.titleId = GAME_ID;
 PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
 
 //Send the public files to the domain
-app.use(express.static('public'))
+app.use(express.static('public'));
+
 app.get('/', function(req, res){
 	res.sendFile('play.html');
-  }); 
+}); 
+
+const RECAPTCHA_SECRET = "6LePMZsaAAAAAKKj7gHyWp8Qbppk5BJOcqvEYD9I";
 
 var players = new Array();
+
+var roomCollMapX = 8;
+var roomCollMapY = 17;
+var roomCollCellWidth = 800 / roomCollMapX;
+var roomCollCellHeight = 500 / roomCollMapY;
+var roomCollMap = [
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 1, 1, 0, 0, 0,
+	0, 1, 1, 0, 0, 1, 1, 0,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	0, 1, 0, 0, 0, 0, 1, 0,
+	0, 1, 0, 0, 0, 0, 1, 0,
+	0, 0, 1, 1, 1, 1, 0, 0
+];
 
 //Websockets communication
 io.on('connection', (socket) => {
@@ -40,9 +67,9 @@ io.on('connection', (socket) => {
 		isprofanity(create.username,function(t){
 			if(t == true){
 				console.log('Player name is a bad word');
+				socket.emit('dirtyWord');
 			}else{
 				if(create.username != "" && create.password != ""|| create.username != " " && create.password != " "){
-					var CustomTags = {verified:false};
 					var registerRequest={
 						TitleId: PlayFab.settings.titleId,
 						Email: create.eMail,
@@ -50,19 +77,31 @@ io.on('connection', (socket) => {
 						Password: create.password,
 						DisplayName: create.username,
 						CustomId: "Player",
-						CustomTags,
 						CreateAccount: true
 					}
 
 					PlayFabClient.RegisterPlayFabUser(registerRequest, registerCallback);
-
+					let addContactEmailRequest = {
+						EmailAddress: create.eMail
+					}
+					
 					function registerCallback(error, result) {
 						if (result !== null) {
 							console.log("Someone created an account!");
+							PlayFabClient.AddOrUpdateContactEmail(addContactEmailRequest, (error, result) => {
+								if(result !== null){
+									console.log('Contact email added!');
+									socket.emit('accountCreated!');
+								}else if (error !== null){
+									console.log('Something went wrong... ' + error);
+								}
+							})
+							
 						} else if (error !== null) {
 							console.log("Something went wrong with your API call.");
 							console.log("Here's some debug information:");
 							console.log(error);
+							socket.emit('error', error);
 						}
 					}
 				}
@@ -74,30 +113,82 @@ io.on('connection', (socket) => {
 	socket.on('login',(ticket)=>{
 		PlayFabServer.AuthenticateSessionTicket({SessionTicket: ticket},(error,result)=>{
 			if(result != null){
-				console.log(result.data.UserInfo);
-				let thisPlayer = {
-					id: result.data.UserInfo.PlayFabId,
-					username: result.data.UserInfo.TitleInfo.DisplayName,
-					socket: socket.id,
-					x:410,
-					y:380,
-					width:62,
-					height:72,
-					isMoving: false,
-					mouseX: 410,
-					mouseY: 390,
-					message: "",
-					playerMove: function (move, thisPlayer){ movePlayerInterval = setInterval(move, 1000 / 60, thisPlayer)}	//Creates the player move function inside each player
-				}//gamestate end
-				players.push(thisPlayer);
-				delete thisPlayer;
-				io.sockets.emit('newPlayer',players);
+				let resultFromAuthentication = result;
+
+				let PlayerProfileViewConstraints = {
+					ShowContactEmailAddresses: true
+				}
+				let playerProfileRequest = {
+					PlayFabId: result.data.UserInfo.PlayFabId,
+					ProfileConstraints: PlayerProfileViewConstraints
+				}
+
+				PlayFabServer.GetPlayerProfile(playerProfileRequest, (error,result)=>{
+					if(result !== null && result.data.PlayerProfile.ContactEmailAddresses[0] != undefined){
+							if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){
+								if(players.length > 0){
+									players.forEach(player =>{
+										if(player.id == resultFromAuthentication.data.UserInfo.PlayFabId || player.socket == socket.id){
+											socket.emit('alreadyLoggedIn');
+										}else{
+											createPlayer();
+										}
+									})
+									
+								}else{
+									createPlayer();
+								}
+						
+								function createPlayer(){
+									let thisPlayer = {
+										id: resultFromAuthentication.data.UserInfo.PlayFabId,
+										username: resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName,
+										socket: socket.id,
+										x:410,
+										y:380,
+										width:62,
+										height:72,
+										isMoving: false,
+										mouseX: 410,
+										mouseY: 390,
+										message: "",
+										playerMove: function (move, thisPlayer){ movePlayerInterval = setInterval(move, 1000 / 60, thisPlayer)}	//Creates the player move function inside each player
+									}
+									players.push(thisPlayer);
+									delete thisPlayer;
+									io.sockets.emit('newPlayer',players);
+								}
+
+						}else if (result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Unverified" || result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Pending"){
+							let SendEmailFromTemplateRequest ={
+								EmailTemplateId: '97A33843288F67E',
+								PlayFabId: result.data.PlayerProfile.PlayerId
+							}
+							
+							PlayFabServer.SendEmailFromTemplate(SendEmailFromTemplateRequest, (error, result) => {
+								if(result !== null){
+									console.log(result);
+								}else if(error !== null){
+									console.log(error);
+								}
+							})
+
+							socket.emit('verificationStatus');
+						}
+						
+					}
+					else if(error !== null){
+						console.log(error)
+					}
+				})
+
 				
 			}else if (error != null){
 				console.log(error);
+				socket.emit('loginError');
 			}
 		})
-		
+
 	})
 
 	socket.on('playerMovement', (playerMovement) =>{
@@ -105,12 +196,13 @@ io.on('connection', (socket) => {
 			if(player.socket == socket.id){
 				let movePlayerObject = {
 					socket: socket.id,
+					id: player.id,
 					mouseX: playerMovement.mouseX, 
 					mouseY: playerMovement.mouseY
 				}
 				
 				socket.broadcast.emit('playerIsMoving', movePlayerObject);
-
+			
 				if(player.isMoving == false){
 					player.playerMove(movePlayerFunction, player);
 				}else{
@@ -120,8 +212,8 @@ io.on('connection', (socket) => {
 				}
 
 			}
-		})
-		
+		});
+	
 		function movePlayerFunction(thisPlayer){
 			thisPlayer.isMoving = true;
 			thisPlayer.mouseX = playerMovement.mouseX;
@@ -137,7 +229,20 @@ io.on('connection', (socket) => {
 			velY = Math.sin(angle) * speed;
 		
 			let timeToPlayerReachDestination = Math.floor(dx/velX); //it doesn't matter if you use dy and velY or dx and velX
-
+			let x,y;
+			for(y = 0; y < roomCollMapY; y++){
+				for(x = 0; x < roomCollMapX; x++){
+					if(roomCollMap[y*roomCollMapX+x] == 1) {
+						if(thisPlayer.x + velX <= roomCollCellWidth * x + roomCollCellWidth && thisPlayer.x + velX >= roomCollCellWidth * x){
+							if(thisPlayer.y + velY <= roomCollCellHeight * y + roomCollCellHeight && thisPlayer.y + velY >= roomCollCellHeight * y){
+								thisPlayer.isMoving = false;
+								clearInterval(movePlayerInterval);
+								return;
+							}
+						}
+					}
+				}
+			}
 			thisPlayer.x += velX;                            //Moves the player
 			thisPlayer.y += velY;
 
@@ -182,4 +287,4 @@ io.on('connection', (socket) => {
 //Starts the server on port 3000
 http.listen(process.env.PORT || 3000, () => {
 	console.log('listening on *:3000');
-  });
+});
