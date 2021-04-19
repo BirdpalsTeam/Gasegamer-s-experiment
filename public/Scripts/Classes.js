@@ -43,16 +43,19 @@ class Player extends Sprite{
 		ctx.fillStyle = "black";
 		ctx.font = "13px sans-serif";
 		ctx.textAlign = 'center';
-
+		
 		if(this.message.length > 0 && this.message.length <18){
 			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 35, 131, 47); 
-			ctx.fillText(this.message,this.x , this.y - 85);
-			ctx.textAlign = "center";
-		}else{
-			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 80, 131, 47 *2); 
-			wrapText(ctx,this.message,this.x,this.y - 130, 110, 12);	
+			ctx.fillText(this.message.toLowerCase(),this.x , this.y - 85);
+		}else if(this.message.length >= 18 && this.message.length < 30){
+			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 65, 131, 57); 
+			wrapText(ctx,this.message.toLowerCase(),this.x,this.y - 120, 110, 12);
 		}
-
+		else if(this.message.length >=30){
+			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 80, 131, 77); 
+			wrapText(ctx,this.message.toLowerCase(),this.x,this.y - 130, 110, 12);	
+		}
+	
 		function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
 			var words = text.split(' ');
 			var line = '';
@@ -93,8 +96,8 @@ class Player extends Sprite{
 		if(angleToLook < 0) angleToLook += 360;
 
 		if(angleToLook> 70 && angleToLook<= 110){	//look to the front
-			this.sourceX = 144;
-			this.sourceY = 0;
+			this.sourceX = 0;
+			this.sourceY = 180;
 		}else if (angleToLook>110&& angleToLook<=250){//look to the left
 			this.sourceX = 0;
 			this.sourceY = 172;
@@ -110,21 +113,23 @@ class Player extends Sprite{
 	move(){
 		// get the difference vector between the player position and the mouse position
 		//Notice that lastX is the position of the player when he clicked somwhere on the screen
-		if(this.isMoving == false){
-			this.movePlayer();
-		}else{
-			this.isMoving = false;
-			clearInterval(this.movePlayerInterval);
-			this.movePlayer();
-		}
-		this.whereToLook();
+
+			if(this.isMoving == false){
+				this.movePlayer();
+			}else{
+				this.isMoving = false;
+				clearInterval(this.movePlayerInterval);
+				this.movePlayer();
+			}
+			this.whereToLook();
+			
 	}
 
 	movePlayer(){
 		this.isMoving = true;
 		let dx = this.mouseX - this.x;
 		let dy = this.mouseY - this.y;
-
+		
 		let angleToMove = Math.atan2(dy,dx);
 
 		let speed = 4;
@@ -135,13 +140,13 @@ class Player extends Sprite{
 		let timeToPlayerReachDestination = Math.floor(dx/velX);
 
 		this.movePlayerInterval = setInterval(() => {
-			
-			let x, y;
+			let x,y;
 			for(y = 0; y < roomCollMapY; y++){
 				for(x = 0; x < roomCollMapX; x++){
 					if(roomCollMap[y*roomCollMapX+x] == 1) {
 						if(this.x + velX <= roomCollCellWidth * x + roomCollCellWidth && this.x + velX >= roomCollCellWidth * x){
 							if(this.y + velY <= roomCollCellHeight * y + roomCollCellHeight && this.y + velY >= roomCollCellHeight * y){
+								this.isMoving = false;
 								clearInterval(this.movePlayerInterval);
 								return;
 							}
@@ -153,12 +158,14 @@ class Player extends Sprite{
 			this.x += velX;
 			this.y += velY;
 			timeToPlayerReachDestination--;
-			if(timeToPlayerReachDestination == 0){
+
+			if(timeToPlayerReachDestination == 0 || timeToPlayerReachDestination < 0){
 				this.isMoving = false;
 				clearInterval(this.movePlayerInterval);
 			}
 			
 		}, 1000 / 60);
+	
 	}
 	
 }

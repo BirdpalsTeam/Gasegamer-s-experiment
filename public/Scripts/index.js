@@ -3,6 +3,15 @@ var ctx = canvas.getContext('2d');
 var playerId, ticket;
 var socket = io();
 ticket = sessionStorage.getItem('ticket');
+
+socket.on('verificationStatus', () => {
+	alert('You are not verified! Please check your e-mail to verify your account.');
+	window.location.href = "index.html";
+})
+socket.on('alreadyLoggedIn', () => {
+	alert('You are already logged in! Please enter with another account.');
+	window.location.href = "index.html";
+})
 socket.emit('login',ticket);
 
 var birdImage = new Image();
@@ -11,8 +20,8 @@ birdImage.src = 'Sprites/characters/bird_blue.png';
 var roomImage = new Image();
 roomImage.src = 'Sprites/rooms/town.png';
 
-var cakeImage = new Image();
-cakeImage.src = 'Sprites/rooms/town.png';
+var cake_image = new Image();
+cake_image.src = 'Sprites/rooms/town.png';
 
 var trees_image = new Image();
 trees_image.src = 'Sprites/rooms/town.png';
@@ -23,15 +32,18 @@ bubble_image.src = 'Sprites/hud/hud.png';
 form = document.getElementById("form");
 input = document.getElementById("input");
 
-var mousePos, click, localPlayer, playersObject;
+var mousePos, click, localPlayer;
+
 playerId = sessionStorage.getItem('playerId');
 
 var playersInGame = new Array();
-playersObject = new Array();
+var playersObject = new Array();
 
 var room = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
+var trees = new Sprite(trees_image, 892, 0, 763, 438, 0, 0, 800, 500, 0, 0);
+
 var roomCollMapX = 8;
-var roomCollMapY = 16;
+var roomCollMapY = 17;
 var roomCollCellWidth = room.width / roomCollMapX;
 var roomCollCellHeight = room.height / roomCollMapY;
 var roomCollMap = [
@@ -46,14 +58,15 @@ var roomCollMap = [
 	0, 0, 0, 1, 1, 0, 0, 0,
 	0, 1, 1, 0, 0, 1, 1, 0,
 	1, 0, 0, 0, 0, 0, 0, 1,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
+	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 0, 0, 0, 0, 1,
+	0, 1, 0, 0, 0, 0, 1, 0,
+	0, 1, 0, 0, 0, 0, 1, 0,
+	0, 0, 1, 1, 1, 1, 0, 0
 ];
 
-function drawCollisionMap(){
+function drawCollisionMap(){	//Just a debug function
 	let x, y;
 	for(y = 0; y < roomCollMapY; y++){
 		for(x = 0; x < roomCollMapX; x++){
@@ -62,11 +75,10 @@ function drawCollisionMap(){
 	}
 }
 
-
-socket.on('newPlayer', (players) => {									//Receive the gameState from the server
+socket.on('newPlayer', (players) => {									
 	players.forEach(player => {
 		if(player.id == playerId && localPlayer == undefined){
-			localPlayer = new Player(birdImage, 144, 0, 144, 172, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.socket,player.username, player.isMoving, player.mouseX, player.mouseY);
+			localPlayer = new Player(birdImage, 144, 0, 144, 170, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.socket,player.username, player.isMoving, player.mouseX, player.mouseY);
 		} 
 		else if(player.id != playerId && !checkIfPlayerIsInGame(player)){	
 				playersInGame.push(player); 
@@ -87,13 +99,13 @@ socket.on('byePlayer', (playerThatLeft) =>{
 });
 
 socket.on('playerIsMoving', (player) =>{
-	for(i = 0; i < playersObject.length; i++){
-		if(playersObject[i].socket == player.socket){
-			playersObject[i].mouseX = player.mouseX;
-			playersObject[i].mouseY = player.mouseY;
-			playersObject[i].move();
+		for(i = 0; i < playersObject.length; i++){
+			if(playersObject[i].socket == player.socket){
+				playersObject[i].mouseX = player.mouseX;
+				playersObject[i].mouseY = player.mouseY;
+				playersObject[i].move();
+			}
 		}
-	}
 })
 
 socket.on('playerSaid', (player) => {
@@ -160,6 +172,7 @@ function render(){
 		if(localPlayer.message != undefined){
 			localPlayer.drawBubble();
 		}
+		
 	}
 	if(playersObject.length > 0){
 		playersObject.forEach((player) => {
@@ -171,8 +184,8 @@ function render(){
 			}
 		})
 	}
-	//drawCollisionMap();
 
+	trees.draw();
 	requestAnimationFrame(render);
 }
 function checkIfPlayerIsInGame(player){
@@ -182,4 +195,5 @@ function checkIfPlayerIsInGame(player){
 		}
 	}
 }
+
 render();

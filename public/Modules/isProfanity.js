@@ -65,6 +65,7 @@ function wagnerFischer(str1,str2){
  */
 
 function isProfanity(string,callback,customProfanity,customExceptions,sensitivity){
+	sensitivity = 0.4;
     var minSure = sensitivity && sensitivity >= 0 && sensitivity <= 1 ? 1-sensitivity : 0.32;
     minSure = minSure < 0.32 ? customExceptions ? minSure : 0.32 : minSure;
     customExceptions = customExceptions ? customExceptions : './data/exceptions.csv';
