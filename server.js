@@ -5,6 +5,7 @@ const { setInterval } = require('timers');
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 var isprofanity = require('isprofanity');
+var server_utils = require('./server-utils');
 var PlayFab = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFab");
 var PlayFabClient = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFabClient");
 const { PlayFabServer } = require('playfab-sdk');
@@ -22,6 +23,7 @@ app.get('/', function(req, res){
 const RECAPTCHA_SECRET = "6LePMZsaAAAAAKKj7gHyWp8Qbppk5BJOcqvEYD9I";
 
 var players = new Array();
+var playerInGame;
 
 var roomCollMapX = 8;
 var roomCollMapY = 17;
@@ -54,13 +56,16 @@ io.on('connection', (socket) => {
 
 	socket.on('disconnect', function(){
 		console.log('A user disconnected: ' + socket.id);
-		players.forEach(player => {
-			if(player.socket == socket.id){
-				socket.broadcast.emit('byePlayer', player);
-				players.splice(players.indexOf(player),1);
-			}
-			
-		});
+		if(players.length > 0){
+			players.forEach(player => {
+				if(player.socket === socket.id){
+					socket.broadcast.emit('byePlayer', player);
+					players.splice(players.indexOf(player),1);
+				}
+				
+			});
+		}
+		
 		
 	})
 	socket.on('createAccount', (create)=>{
@@ -126,16 +131,17 @@ io.on('connection', (socket) => {
 				PlayFabServer.GetPlayerProfile(playerProfileRequest, (error,result)=>{
 					if(result !== null && result.data.PlayerProfile.ContactEmailAddresses[0] != undefined){
 							if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){
-								if(players.length > 0){
-									players.forEach(player =>{
-										if(player.id == resultFromAuthentication.data.UserInfo.PlayFabId || player.socket == socket.id){
+								if(players.length > 0){	//Check if there is at least one player online
+									let logged;
+									players.forEach(player =>{	//Check if the player is already logged in
+										if(player.id == resultFromAuthentication.data.UserInfo.PlayFabId){
 											socket.emit('alreadyLoggedIn');
-										}else{
-											createPlayer();
+											logged = true;
 										}
 									})
+									logged == true ? logged = false : createPlayer();	//If the player is not logged in create player
 									
-								}else{
+								}else{	//If not create this first player
 									createPlayer();
 								}
 						
@@ -143,7 +149,6 @@ io.on('connection', (socket) => {
 									let thisPlayer = {
 										id: resultFromAuthentication.data.UserInfo.PlayFabId,
 										username: resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName,
-										socket: socket.id,
 										x:410,
 										y:380,
 										width:62,
@@ -155,8 +160,12 @@ io.on('connection', (socket) => {
 										playerMove: function (move, thisPlayer){ movePlayerInterval = setInterval(move, 1000 / 60, thisPlayer)}	//Creates the player move function inside each player
 									}
 									players.push(thisPlayer);
-									delete thisPlayer;
 									io.sockets.emit('newPlayer',players);
+									let thisPlayerAgain = server_utils.getElementFromArray(thisPlayer, 'id', players);
+									if(thisPlayerAgain != undefined){
+										thisPlayerAgain.socket = socket.id;
+									} 
+									delete thisPlayer;
 								}
 
 						}else if (result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Unverified" || result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Pending"){
@@ -265,14 +274,14 @@ io.on('connection', (socket) => {
 								socket: socket.id,
 								message: "🤬"
 							}
-							console.log('palavrao '+ message)
+							console.log(player.username +' said the following bad word: '+ message);
 							socket.broadcast.emit('playerSaid', messageObject);
 						}else{
 							let messageObject = {
-								socket: socket.id,
+								id: player.id,
 								message: message
 							}
-							console.log(message)
+							console.log(player.username + ' said: ' + message);
 							socket.broadcast.emit('playerSaid', messageObject);
 						}	
 						
