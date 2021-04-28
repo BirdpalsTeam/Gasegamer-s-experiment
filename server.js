@@ -160,12 +160,12 @@ io.on('connection', (socket) => {
 										playerMove: function (move, thisPlayer){ movePlayerInterval = setInterval(move, 1000 / 60, thisPlayer)}	//Creates the player move function inside each player
 									}
 									players.push(thisPlayer);
-									io.sockets.emit('newPlayer',players);
+									socket.emit('readyToPlay?');	//Say to the client he/she can already start playing
+									socket.broadcast.emit('newPlayer', thisPlayer); //Emit this player to all clients logged in
 									let thisPlayerAgain = server_utils.getElementFromArray(thisPlayer, 'id', players);
 									if(thisPlayerAgain != undefined){
 										thisPlayerAgain.socket = socket.id;
 									} 
-									delete thisPlayer;
 								}
 
 						}else if (result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Unverified" || result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Pending"){
@@ -199,7 +199,9 @@ io.on('connection', (socket) => {
 		})
 
 	})
-
+	socket.on('Im Ready', () =>{
+		socket.emit('loggedIn', (players));
+	})
 	socket.on('playerMovement', (playerMovement) =>{
 		players.forEach(player =>{
 			if(player.socket == socket.id){

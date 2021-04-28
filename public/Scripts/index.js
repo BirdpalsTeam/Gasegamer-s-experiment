@@ -1,40 +1,11 @@
-var canvas = document.getElementById('myCanvas');
-var ctx = canvas.getContext('2d');
-var playerId, ticket;
-var socket = io();
-ticket = sessionStorage.getItem('ticket');
-
-socket.on('verificationStatus', () => {
-	alert('You are not verified! Please check your e-mail to verify your account.');
-	window.location.href = "index.html";
-})
-socket.on('alreadyLoggedIn', () => {
-	alert('You are already logged in! Please enter with another account.');
-	window.location.href = "index.html";
-})
-socket.emit('login',ticket);
-
-var birdImage = new Image();
-birdImage.src = 'Sprites/characters/bird_blue.png';
-
-var roomImage = new Image();
-roomImage.src = 'Sprites/rooms/town.png';
-
-var cake_image = new Image();
-cake_image.src = 'Sprites/rooms/town.png';
-
-var trees_image = new Image();
-trees_image.src = 'Sprites/rooms/town.png';
-
-var bubble_image = new Image();
-bubble_image.src = 'Sprites/hud/hud.png';
+socket.emit('Im Ready');
 
 form = document.getElementById("form");
 input = document.getElementById("input");
 
 var mousePos, click, localPlayer;
 
-playerId = sessionStorage.getItem('playerId');
+var playerId = sessionStorage.getItem('playerId');
 
 var id = 'id';
 
@@ -76,8 +47,7 @@ function drawCollisionMap(){	//Just a debug function
 		}
 	}
 }
-
-socket.on('newPlayer', (players) => {									
+socket.on('loggedIn', (players) =>{	//When you first log in
 	players.forEach(player => {
 		if(player.id == playerId && localPlayer == undefined){
 			localPlayer = new Player(birdImage, 144, 0, 144, 170, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
@@ -89,7 +59,13 @@ socket.on('newPlayer', (players) => {
 				delete tempPlayer;
 		}	
 	});
-
+})
+socket.on('newPlayer', (player) => {
+	console.log(player)
+	playersInGame.push(player); 
+	let tempPlayer = new Player(birdImage, 144, 0, 144, 172, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
+	playersObject.push(tempPlayer);
+	delete tempPlayer;
 });
 
 socket.on('byePlayer', (playerThatLeft) =>{
@@ -189,6 +165,5 @@ function render(){
 	trees.draw();
 	requestAnimationFrame(render);
 }
-
 
 render();
