@@ -1,16 +1,5 @@
-socket.emit('Im Ready');
-
 form = document.getElementById("form");
 input = document.getElementById("input");
-
-var mousePos, click, localPlayer;
-
-var playerId = sessionStorage.getItem('playerId');
-
-var id = 'id';
-
-var playersInGame = new Array();
-var playersObject = new Array();
 
 var room = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
 var trees = new Sprite(trees_image, 892, 0, 763, 438, 0, 0, 800, 500, 0, 0);
@@ -47,19 +36,7 @@ function drawCollisionMap(){	//Just a debug function
 		}
 	}
 }
-socket.on('loggedIn', (players) =>{	//When you first log in
-	players.forEach(player => {
-		if(player.id == playerId && localPlayer == undefined){
-			localPlayer = new Player(birdImage, 144, 0, 144, 170, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
-		} 
-		else if(player.id != playerId && !checkIfElementIsInArray(player, 'id',playersInGame)){	
-				playersInGame.push(player); 
-				let tempPlayer = new Player(birdImage, 144, 0, 144, 172, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
-				playersObject.push(tempPlayer);
-				delete tempPlayer;
-		}	
-	});
-})
+
 socket.on('newPlayer', (player) => {
 	console.log(player)
 	playersInGame.push(player); 
