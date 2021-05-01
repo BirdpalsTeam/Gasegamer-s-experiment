@@ -38,15 +38,15 @@ var roomCollMap = [
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 1, 1, 0, 0, 0,
-	0, 1, 1, 0, 0, 1, 1, 0,
+	0, 0, 1, 1, 1, 1, 0, 0,
+	1, 1, 1, 0, 0, 1, 1, 1,
 	1, 0, 0, 0, 0, 0, 0, 1,
 	1, 0, 0, 0, 0, 0, 0, 1,
 	1, 0, 0, 0, 0, 0, 0, 1,
 	1, 0, 0, 0, 0, 0, 0, 1,
+	1, 1, 0, 0, 0, 0, 1, 1,
 	0, 1, 0, 0, 0, 0, 1, 0,
-	0, 1, 0, 0, 0, 0, 1, 0,
-	0, 0, 1, 1, 1, 1, 0, 0
+	0, 1, 1, 1, 1, 1, 1, 0
 ];
 
 //Websockets communication
@@ -57,16 +57,11 @@ io.on('connection', (socket) => {
 	socket.on('disconnect', function(){
 		console.log('A user disconnected: ' + socket.id);
 		if(players.length > 0){
-			players.forEach(player => {
-				if(player.socket === socket.id){
-					socket.broadcast.emit('byePlayer', player);
-					players.splice(players.indexOf(player),1);
-				}
-				
-			});
+			let disconnectedPlayer = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+			if(disconnectedPlayer == false) return;
+			socket.broadcast.emit('byePlayer', disconnectedPlayer);
+			server_utils.removeElementFromArray(disconnectedPlayer, players);
 		}
-		
-		
 	})
 	socket.on('createAccount', (create)=>{
 		isprofanity(create.username,function(t){
@@ -133,12 +128,15 @@ io.on('connection', (socket) => {
 							if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){
 								if(players.length > 0){	//Check if there is at least one player online
 									let logged;
-									players.forEach(player =>{	//Check if the player is already logged in
-										if(player.id == resultFromAuthentication.data.UserInfo.PlayFabId){
-											socket.emit('alreadyLoggedIn');
-											logged = true;
-										}
-									})
+									let playerAlreadyLogged = server_utils.getElementFromArrayByValue(resultFromAuthentication.data.UserInfo.PlayFabId , 'playerId', io.sockets.sockets);
+									//Check if the player is already logged in
+									if(playerAlreadyLogged.playerId == resultFromAuthentication.data.UserInfo.PlayFabId){
+										socket.emit('alreadyLoggedIn');
+										playerAlreadyLogged.emit('loggedOut');
+										playerAlreadyLogged.disconnect(true);
+										logged = true;
+									}
+
 									logged == true ? logged = false : createPlayer();	//If the player is not logged in create player
 									
 								}else{	//If not create this first player
@@ -160,12 +158,9 @@ io.on('connection', (socket) => {
 										playerMove: function (move, thisPlayer){ movePlayerInterval = setInterval(move, 1000 / 60, thisPlayer)}	//Creates the player move function inside each player
 									}
 									players.push(thisPlayer);
+									socket.playerId = resultFromAuthentication.data.UserInfo.PlayFabId;
 									socket.emit('readyToPlay?');	//Say to the client he/she can already start playing
 									socket.broadcast.emit('newPlayer', thisPlayer); //Emit this player to all clients logged in
-									let thisPlayerAgain = server_utils.getElementFromArray(thisPlayer, 'id', players);
-									if(thisPlayerAgain != undefined){
-										thisPlayerAgain.socket = socket.id;
-									} 
 								}
 
 						}else if (result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Unverified" || result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Pending"){
@@ -203,28 +198,24 @@ io.on('connection', (socket) => {
 		socket.emit('loggedIn', (players));
 	})
 	socket.on('playerMovement', (playerMovement) =>{
-		players.forEach(player =>{
-			if(player.socket == socket.id){
-				let movePlayerObject = {
-					socket: socket.id,
-					id: player.id,
-					mouseX: playerMovement.mouseX, 
-					mouseY: playerMovement.mouseY
-				}
-				
-				socket.broadcast.emit('playerIsMoving', movePlayerObject);
-			
-				if(player.isMoving == false){
-					player.playerMove(movePlayerFunction, player);
-				}else{
-					clearInterval(movePlayerInterval);
-					player.isMoving = false;
-					player.playerMove(movePlayerFunction, player);
-				}
-
-			}
-		});
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		let movePlayerObject = {
+			socket: socket.id,
+			id: player.id,
+			mouseX: playerMovement.mouseX, 
+			mouseY: playerMovement.mouseY
+		}
+		
+		socket.broadcast.emit('playerIsMoving', movePlayerObject);
 	
+		if(player.isMoving == false){
+			player.playerMove(movePlayerFunction, player);
+		}else{
+			clearInterval(movePlayerInterval);
+			player.isMoving = false;
+			player.playerMove(movePlayerFunction, player);
+		}
+
 		function movePlayerFunction(thisPlayer){
 			thisPlayer.isMoving = true;
 			thisPlayer.mouseX = playerMovement.mouseX;
@@ -267,32 +258,29 @@ io.on('connection', (socket) => {
     })//Player Movement end
 	
 	socket.on('message',(message)=>{
-		players.forEach(player => {
-			if(player.socket == socket.id){
-				if(message != undefined || message != ""){
-					isprofanity(message,function(t){
-						if(t == true){
-							let messageObject = {
-								socket: socket.id,
-								message: "🤬"
-							}
-							console.log(player.username +' said the following bad word: '+ message);
-							socket.broadcast.emit('playerSaid', messageObject);
-						}else{
-							let messageObject = {
-								id: player.id,
-								message: message
-							}
-							console.log(player.username + ' said: ' + message);
-							socket.broadcast.emit('playerSaid', messageObject);
-						}	
-						
-					},'data/profanity.csv','data/exceptions.csv',0.4);
-				}
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		if(message != undefined || message != ""){
+			isprofanity(message, function(t){
+				if(t == true){
+					let messageObject = {
+						socket: socket.id,
+						message: "🤬"
+					}
+					console.log(player.username +' said the following bad word: '+ message);
+					socket.broadcast.emit('playerSaid', messageObject);
+				}else{
+					let messageObject = {
+						id: player.id,
+						message: message
+					}
+					console.log(player.username + ' said: ' + message);
+					socket.broadcast.emit('playerSaid', messageObject);
+				}	
+				
+			},'data/profanity.csv','data/exceptions.csv',0.4);
+		}
+	})
 
-			}//element end
-		});//foreach end
-	})//message end
 }) // io connection end
 
 //Starts the server on port 3000

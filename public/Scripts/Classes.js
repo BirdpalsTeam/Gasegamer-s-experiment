@@ -23,7 +23,6 @@ class Player extends Sprite{
 		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
 		this.speechBubbleImage = speechBubbleImage;
 		this.id = id;
-		this.socket = socket;
 		this.username = username;
 		this.isMoving = isMoving;
 		this.mouseX = mouseX;
@@ -43,7 +42,7 @@ class Player extends Sprite{
 		ctx.fillStyle = "black";
 		ctx.font = "13px sans-serif";
 		ctx.textAlign = 'center';
-		
+		console.log(isCaptalized(this.message, 70))
 		if(isCaptalized(this.message, 70) == false){
 			if(this.message.length > 0 && this.message.length <18){
 				ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 35, 131, 47); 

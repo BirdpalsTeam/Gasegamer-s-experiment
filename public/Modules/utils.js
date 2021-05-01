@@ -17,20 +17,20 @@ function hasWhiteSpaces(string){
 }
 
 function isCaptalized(string, PERCENTAGE){
-	if(typeof string !== 'string') return '';
 
 	if(hasWhiteSpaces(string)){					//String has white spaces
 		string = string.replace(/\s/g, "")		//Remove white spaces
 	}
 
 	let numberOfCaptalizedLetters = 0;
-
+	var specialCharacter = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(string);
+	var emoji = /\p{Extended_Pictographic}/u.test(string);
 	for(i = 0; i < string.length; i++){
-		if(string[i] === string[i].toUpperCase()){
+		if(string[i] === string[i].toUpperCase() && specialCharacter == false && emoji == false){ 	//Notice that false here means that it IS an emoji or special character
 			numberOfCaptalizedLetters += 1;
 		}
 	}
-	
+
 	return numberOfCaptalizedLetters >= (string.length/100)* PERCENTAGE ? true : false;
 }
 

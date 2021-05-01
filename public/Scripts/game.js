@@ -38,6 +38,9 @@ var id = 'id';
 var playersInGame = new Array();
 var playersObject = new Array();
 
+if(playerId == null){
+	window.location.href = 'index.html';
+}
 var socket = io();
 
 
@@ -47,9 +50,13 @@ socket.on('verificationStatus', () => {
 });
 
 socket.on('alreadyLoggedIn', () => {
-	alert('You are already logged in! Please enter with another account.');
+	alert('You are already logged in! Please enter with another account or try to login again.');
 	window.location.href = "index.html";
 });
+
+socket.on('loggedOut', () =>{
+	window.location.href = "index.html";
+})
 
 socket.emit('login',ticket);
 
@@ -121,4 +128,5 @@ socket.on('playerSaid', (player) => {
 		playerO.hideBubble();
 	}
 });
+
 assetLoadingLoop(); //First initalization
