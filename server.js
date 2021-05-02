@@ -1,16 +1,23 @@
+//Server
 var express = require('express');
 var app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+//isProfanity and etc
 const fs = require('fs');
 var isprofanity = require('isprofanity');
 var server_utils = require('./serverData/server-utils');
+//Playfab
 var PlayFab = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFab");
 var PlayFabClient = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFabClient");
 const { PlayFabServer, PlayFabAdmin } = require('playfab-sdk');
 var GAME_ID = '238E6';
 PlayFab.settings.titleId = GAME_ID;
 PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
+//Discord Bot
+const Discord = require('discord.js');
+const client = new Discord.Client();
+
 
 //Send the public files to the domain
 app.use(express.static('public'));
@@ -291,6 +298,33 @@ io.on('connection', (socket) => {
 		}
 	})
 
+	socket.on('/report', (message) =>{
+		if(socket.playerId == undefined) return;
+		let reporter = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		message = message.split(" ");
+		let playerName = message[1];
+		if(playerName == undefined || message[2] == undefined) return;
+		PlayFabAdmin.GetUserAccountInfo({Username: playerName}, (error, result) =>{
+			if(result !== null){
+				let reportMessage = message.slice(2, message.length);
+				reportMessage = reportMessage.toString().split(',').join(' ');
+				let channel = client.channels.cache.get('838549917281943562');
+				PlayFabServer.ReportPlayer({ReporterId: reporter.id, ReporteeId: result.data.UserInfo.PlayFabId, Comment: message[2, message.length]}, (error, result) =>{
+					if(result !== null){
+						console.log(result); //result.data.Updated
+						channel.send(reporter.username + ' reported ' + playerName +'. Reason: ' + reportMessage);
+					}else if(error !== null){
+						console.log(error);	//error.errorMessage
+					}
+				})
+				
+			}else if(error != null){
+				console.log(error);
+			}
+		})
+		
+	})
+
 	socket.on('/ban', (message) =>{
 		if(socket.playerId == undefined) return;
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
@@ -365,8 +399,8 @@ io.on('connection', (socket) => {
 					console.log(error);
 				}
 			})
-			
 		}
+		
 	})
 
 	socket.on('/remove', (message) =>{
@@ -387,3 +421,5 @@ io.on('connection', (socket) => {
 http.listen(process.env.PORT || 3000, () => {
 	console.log('listening on *:3000');
 });
+//Starts discord bot
+client.login('ODM4NTQ3NTYxNTgwMzMxMDcw.YI8sRg.15hZCkAeqKpFqjMF2jds5Et7o9U');

@@ -1,3 +1,5 @@
+const { PlayFabAdmin } = require("playfab-sdk");
+
 functions = {
 	getElementFromArray:	function getElementFromArray(element, customIdentifier, array){
 		let tempElement;
