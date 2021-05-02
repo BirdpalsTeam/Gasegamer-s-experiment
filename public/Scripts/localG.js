@@ -60,22 +60,8 @@ canvas.addEventListener('click', function(evt) {
 
 form.addEventListener('submit', function(e) {
 	e.preventDefault();
-		if (input.value) {
-			module.dirtyWordsChecker(input.value, function(t){
-				if(t == true){
-					localPlayer.message = "🤬";
-				}else{
-					localPlayer.message = input.value;
-				}
-			},'./data/profanity.csv','./data/exceptions.csv')
-			
-			if(localPlayer.messageTimeout != undefined){
-				clearTimeout(localPlayer.messageTimeout);
-				localPlayer.hideBubble();
-			}else{
-				localPlayer.hideBubble();
-			}
-			socket.emit('message', input.value);
+		if (input.value) {	
+			setLocalMessage(input.value);
 			input.value = '';
 		}
 });

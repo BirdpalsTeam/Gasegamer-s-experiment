@@ -38,16 +38,25 @@ var id = 'id';
 var playersInGame = new Array();
 var playersObject = new Array();
 
-if(playerId == null){
+if(ticket == null){
 	window.location.href = 'index.html';
 }
 var socket = io();
 
+socket.on('disconnect', () => {
+	alert('You lost connection.');
+	window.location.href = "index.html";
+});
 
 socket.on('verificationStatus', () => {
 	alert('You are not verified! Please check your e-mail to verify your account.');
-		window.location.href = "index.html";
+	window.location.href = "index.html";
 });
+
+socket.on('youAreBanned', () =>{
+	alert('Sorry, but you are banned.');
+	window.location.href = "index.html";
+})
 
 socket.on('alreadyLoggedIn', () => {
 	alert('You are already logged in! Please enter with another account or try to login again.');
@@ -80,11 +89,11 @@ function assetLoadingLoop(){
 socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 	players.forEach(player => {
 		if(player.id == playerId && localPlayer == undefined){
-			localPlayer = new Player(birdImage, 144, 0, 144, 170, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
+			localPlayer = new Player(birdImage, 144, 0, 144, 170, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev);
 		} 
 		else if(player.id != playerId && !checkIfElementIsInArray(player, 'id',playersInGame)){	
 				playersInGame.push(player); 
-				let tempPlayer = new Player(birdImage, 144, 0, 144, 172, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
+				let tempPlayer = new Player(birdImage, 144, 0, 144, 172, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev);
 				playersObject.push(tempPlayer);
 				delete tempPlayer;
 		}

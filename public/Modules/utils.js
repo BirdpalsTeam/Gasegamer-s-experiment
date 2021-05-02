@@ -12,6 +12,16 @@ function checkIfElementIsInArray(element, customIdentifier, array){
 	return getElementFromArray(element, customIdentifier, array) ? true : false;
 }
 
+function getElementFromArrayByValue(value, customIdentifier, array){
+	let tempElement;
+	array.forEach(arrayElement =>{
+		if(arrayElement[customIdentifier] == value){
+			tempElement = arrayElement;
+		}
+	});
+	return tempElement != undefined ? tempElement : false;
+}
+
 function hasWhiteSpaces(string){
 	return string !== string.replace(/\s/g,"") ? true : false;
 }
@@ -73,5 +83,46 @@ function drawWrapText(image, message, x, y, thisHeight, minusY, height, wrapY){
 		wrapText(ctx,message,x,y - wrapY, 110, 12);
 	}else{
 		wrapText(ctx,splitLongText(message),x,y - wrapY, 110, 12);
+	}
+}
+
+var devCommands = [{command:'/ban', message:'Banning...'}, {command:'/unban', message: 'Unbanning...'}, {command: '/remove', message: 'Removing Player...'}];
+
+function command(command, message){
+	let isDevCommand = getElementFromArrayByValue(command, 'command', devCommands);
+	if(localPlayer.isDev == true && isDevCommand != false){
+		setLocalMessage(isDevCommand.message, true);	//Make the bird say words like Banning...
+	}else{
+		switch(command){
+			case '/room':
+				console.warn('This doesn t exist yet');
+			break;
+		}
+	}
+	socket.emit(command, message);	//Send command to the server
+}
+
+function setLocalMessage(thisMessage, isDevCommand){
+	let checkCommand = thisMessage.split(" ");
+	if(checkCommand[0].includes("/") == true){	//Check if it's a command
+		command(checkCommand[0], thisMessage);
+	}else{
+		module.dirtyWordsChecker(thisMessage, function(t){	//check if it's a dirty word
+			if(t == true){
+				localPlayer.message = "🤬";
+			}else if(t == false){
+				localPlayer.message = thisMessage;
+			}
+		},'./data/profanity.csv','./data/exceptions.csv');
+
+		if(localPlayer.messageTimeout != undefined){
+			clearTimeout(localPlayer.messageTimeout);
+			localPlayer.hideBubble();
+		}else if(localPlayer.messageTimeout == undefined){
+			localPlayer.hideBubble();
+		}
+		if(isDevCommand == false || isDevCommand == undefined){	//Prevents from the moderators or devs saying, for example, Banning... for everyone
+			socket.emit('message', thisMessage);
+		}
 	}
 }

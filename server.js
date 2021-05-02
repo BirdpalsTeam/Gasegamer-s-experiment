@@ -1,14 +1,13 @@
 var express = require('express');
 var app = express();
-var path = require('path');
-const { setInterval } = require('timers');
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const fs = require('fs');
 var isprofanity = require('isprofanity');
-var server_utils = require('./server-utils');
+var server_utils = require('./serverData/server-utils');
 var PlayFab = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFab");
 var PlayFabClient = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFabClient");
-const { PlayFabServer } = require('playfab-sdk');
+const { PlayFabServer, PlayFabAdmin } = require('playfab-sdk');
 var GAME_ID = '238E6';
 PlayFab.settings.titleId = GAME_ID;
 PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
@@ -23,7 +22,8 @@ app.get('/', function(req, res){
 const RECAPTCHA_SECRET = "6LePMZsaAAAAAKKj7gHyWp8Qbppk5BJOcqvEYD9I";
 
 var players = new Array();
-var playerInGame;
+var devTeamJson = fs.readFileSync('./serverData/devTeam.json');
+var devTeam = JSON.parse(devTeamJson);
 
 var roomCollMapX = 8;
 var roomCollMapY = 17;
@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
 		PlayFabServer.AuthenticateSessionTicket({SessionTicket: ticket},(error,result)=>{
 			if(result != null){
 				let resultFromAuthentication = result;
-
+				let PlayFabId = resultFromAuthentication.data.UserInfo.PlayFabId;
 				let PlayerProfileViewConstraints = {
 					ShowContactEmailAddresses: true
 				}
@@ -122,15 +122,18 @@ io.on('connection', (socket) => {
 					PlayFabId: result.data.UserInfo.PlayFabId,
 					ProfileConstraints: PlayerProfileViewConstraints
 				}
-
+				if(resultFromAuthentication.data.UserInfo.TitleInfo.isBanned == true){
+					socket.emit('youAreBanned'); 
+					return;
+				}
 				PlayFabServer.GetPlayerProfile(playerProfileRequest, (error,result)=>{
 					if(result !== null && result.data.PlayerProfile.ContactEmailAddresses[0] != undefined){
 							if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){
 								if(players.length > 0){	//Check if there is at least one player online
 									let logged;
-									let playerAlreadyLogged = server_utils.getElementFromArrayByValue(resultFromAuthentication.data.UserInfo.PlayFabId , 'playerId', io.sockets.sockets);
+									let playerAlreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'playerId', io.sockets.sockets);
 									//Check if the player is already logged in
-									if(playerAlreadyLogged.playerId == resultFromAuthentication.data.UserInfo.PlayFabId){
+									if(playerAlreadyLogged.playerId == PlayFabId){
 										socket.emit('alreadyLoggedIn');
 										playerAlreadyLogged.emit('loggedOut');
 										playerAlreadyLogged.disconnect(true);
@@ -145,7 +148,7 @@ io.on('connection', (socket) => {
 						
 								function createPlayer(){
 									let thisPlayer = {
-										id: resultFromAuthentication.data.UserInfo.PlayFabId,
+										id: PlayFabId,
 										username: resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName,
 										x:410,
 										y:380,
@@ -155,8 +158,12 @@ io.on('connection', (socket) => {
 										mouseX: 410,
 										mouseY: 390,
 										message: "",
+										isDev: false,
 										playerMove: function (move, thisPlayer){ movePlayerInterval = setInterval(move, 1000 / 60, thisPlayer)}	//Creates the player move function inside each player
 									}
+									if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
+										thisPlayer.isDev = true;
+									};
 									players.push(thisPlayer);
 									socket.playerId = resultFromAuthentication.data.UserInfo.PlayFabId;
 									socket.emit('readyToPlay?');	//Say to the client he/she can already start playing
@@ -195,9 +202,11 @@ io.on('connection', (socket) => {
 
 	})
 	socket.on('Im Ready', () =>{
+		if(socket.playerId == undefined) return;
 		socket.emit('loggedIn', (players));
 	})
 	socket.on('playerMovement', (playerMovement) =>{
+		if(socket.playerId == undefined) return;
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
 		let movePlayerObject = {
 			socket: socket.id,
@@ -258,8 +267,9 @@ io.on('connection', (socket) => {
     })//Player Movement end
 	
 	socket.on('message',(message)=>{
+		if(socket.playerId == undefined) return;
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
-		if(message != undefined || message != ""){
+		if(message != undefined && message != "" && message.includes('/ban') == false && message.includes('/unban') == false){
 			isprofanity(message, function(t){
 				if(t == true){
 					let messageObject = {
@@ -281,6 +291,85 @@ io.on('connection', (socket) => {
 		}
 	})
 
+	socket.on('/ban', (message) =>{
+		if(socket.playerId == undefined) return;
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		if(player.isDev == true){	//Template of the message should be /ban timeOfBan banPlayerName reason
+			message = message.split(" ");
+			let timeOfBan = message[1];
+			let banPlayerName = message[2];
+			let reason = message.slice(3,message.length);
+			reason = reason.toString().split(',').join(' '); //Returns the reason with spaces
+			
+			if(isNaN(timeOfBan) == true || banPlayerName == undefined || reason == undefined) return; //Check if the message is in correct form
+			
+			let playerInPlayfab = server_utils.getElementFromArrayByValue(banPlayerName, 'username', players);
+			if(playerInPlayfab.isDev == true) return;
+			let banRequest;
+			if(timeOfBan === '9999'){
+				banRequest = {
+					Bans: [{PlayFabId: playerInPlayfab.id, Reason: reason}]
+				}
+			}else{
+				banRequest = {
+					Bans: [{DurationInHours: timeOfBan, PlayFabId: playerInPlayfab.id, Reason: reason}]
+				}
+			}
+			
+			PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
+				if(result !== null){
+					console.log(result);
+					let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(playerInPlayfab.id, 'playerId', io.sockets.sockets);
+					if(removeBannedPlayerSocket == false) return;
+					removeBannedPlayerSocket.disconnect(true);
+				}else if(error !== null){
+					console.log(error)
+				}
+			})
+		}
+	});
+
+	socket.on('/unban', (message) =>{
+		if(socket.playerId == undefined) return;
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		if(player.isDev == true){	//Template of the message should be /unban banPlayerName
+			message = message.split(" ");
+			let banPlayerName = message[1];
+			if(banPlayerName == undefined) return; //Check if the message is in the correct form.
+			let resultFromGetAccount;
+			PlayFabAdmin.GetUserAccountInfo({Username: banPlayerName}, (error, result) =>{	//Get user PlayFabId by username
+				if(result !== null){
+					resultFromGetAccount = result;
+					let unBanRequest = {
+						PlayFabId: resultFromGetAccount.data.UserInfo.PlayFabId
+					}
+					PlayFabServer.RevokeAllBansForUser(unBanRequest, (error, result) =>{	//Revoke All Bans from user
+						if(result !== null){
+							console.log(result);
+						}else if(error !== null){
+							console.log(error);
+						}
+					});
+				}else if(error !== null){
+					console.log(error);
+				}
+			})
+			
+		}
+	})
+
+	socket.on('/remove', (message) =>{
+		if(socket.playerId == undefined) return;
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		if(player.isDev == true){
+			message = message.split(" ");
+			let removePlayerObject = server_utils.getElementFromArrayByValue(message[1], 'username', players);
+			if(removePlayerObject == false) return;
+			let removePlayerSocket = server_utils.getElementFromArrayByValue(removePlayerObject.id, 'playerId', io.sockets.sockets);
+			if(removePlayerSocket == false) return;
+			removePlayerSocket.disconnect(true);
+		}
+	})
 }) // io connection end
 
 //Starts the server on port 3000
