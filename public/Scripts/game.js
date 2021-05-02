@@ -138,4 +138,11 @@ socket.on('playerSaid', (player) => {
 	}
 });
 
+socket.on('playerBanned!', () =>{
+	setLocalMessage('Successfully Banned :)', true);
+})
+
+socket.on('playerUnbanned!', () =>{
+	setLocalMessage('Successfully UnBanned :)', true);
+})
 assetLoadingLoop(); //First initalization

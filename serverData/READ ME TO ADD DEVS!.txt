@@ -1,0 +1,4 @@
+To add devs you need to be in your terminal so you can type
+node addDevs.js
+
+Then, you will be able to write the information you need.

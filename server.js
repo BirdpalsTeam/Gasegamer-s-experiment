@@ -303,27 +303,37 @@ io.on('connection', (socket) => {
 			
 			if(isNaN(timeOfBan) == true || banPlayerName == undefined || reason == undefined) return; //Check if the message is in correct form
 			
-			let playerInPlayfab = server_utils.getElementFromArrayByValue(banPlayerName, 'username', players);
-			if(playerInPlayfab.isDev == true) return;
 			let banRequest;
-			if(timeOfBan === '9999'){
-				banRequest = {
-					Bans: [{PlayFabId: playerInPlayfab.id, Reason: reason}]
-				}
-			}else{
-				banRequest = {
-					Bans: [{DurationInHours: timeOfBan, PlayFabId: playerInPlayfab.id, Reason: reason}]
-				}
-			}
 			
-			PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
+			PlayFabAdmin.GetUserAccountInfo({Username: banPlayerName}, (error, result) =>{
 				if(result !== null){
+					let playerInPlayfab = result.data.UserInfo.PlayFabId;
+					if(server_utils.getElementFromArrayByValue(playerInPlayfab, 'id', devTeam.devs) == false){
+
+						if(timeOfBan === '9999'){
+							banRequest = {
+								Bans: [{PlayFabId: playerInPlayfab, Reason: reason}]
+							}
+						}else{
+							banRequest = {
+								Bans: [{DurationInHours: timeOfBan, PlayFabId: playerInPlayfab, Reason: reason}]
+							}
+						}
+						PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
+							if(result !== null){
+								console.log(result);
+								let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(playerInPlayfab, 'playerId', io.sockets.sockets);
+								socket.emit('playerBanned!');
+								if(removeBannedPlayerSocket == false) return;
+								removeBannedPlayerSocket.disconnect(true);
+							}else if(error !== null){
+								console.log(error)
+							}
+						})
+					}
 					console.log(result);
-					let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(playerInPlayfab.id, 'playerId', io.sockets.sockets);
-					if(removeBannedPlayerSocket == false) return;
-					removeBannedPlayerSocket.disconnect(true);
 				}else if(error !== null){
-					console.log(error)
+					console.log(error);
 				}
 			})
 		}
@@ -346,6 +356,7 @@ io.on('connection', (socket) => {
 					PlayFabServer.RevokeAllBansForUser(unBanRequest, (error, result) =>{	//Revoke All Bans from user
 						if(result !== null){
 							console.log(result);
+							socket.emit('playerUnbanned!');
 						}else if(error !== null){
 							console.log(error);
 						}
