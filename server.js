@@ -7,6 +7,8 @@ const io = require('socket.io')(http);
 const fs = require('fs');
 var isprofanity = require('isprofanity');
 var server_utils = require('./serverData/server-utils');
+
+const AFKTime = 300000; //5 minutes
 //Playfab
 var PlayFab = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFab");
 var PlayFabClient = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFabClient");
@@ -211,9 +213,13 @@ io.on('connection', (socket) => {
 	socket.on('Im Ready', () =>{
 		if(socket.playerId == undefined) return;
 		socket.emit('loggedIn', (players));
+		socket.isAFK = setTimeout(()=>{
+			socket.disconnect(true);
+		}, 60000)
 	})
 	socket.on('playerMovement', (playerMovement) =>{
 		if(socket.playerId == undefined) return;
+		server_utils.resetTimer(socket, AFKTime);
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
 		let movePlayerObject = {
 			socket: socket.id,
@@ -275,7 +281,10 @@ io.on('connection', (socket) => {
 	
 	socket.on('message',(message)=>{
 		if(socket.playerId == undefined) return;
+		server_utils.resetTimer(socket, AFKTime);
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		let channel = client.channels.cache.get('838558782548082720');
+		let dateUTC = new Date(Date.now()).toUTCString();
 		if(message != undefined && message != "" && message.includes('/ban') == false && message.includes('/unban') == false){
 			isprofanity(message, function(t){
 				if(t == true){
@@ -284,13 +293,15 @@ io.on('connection', (socket) => {
 						message: "🤬"
 					}
 					console.log(player.username +' said the following bad word: '+ message);
+					channel.send(dateUTC + '\n' + player.username + ' said the following bad word: `' + message + '`' + '\n' + '᲼᲼᲼᲼᲼');
 					socket.broadcast.emit('playerSaid', messageObject);
 				}else{
 					let messageObject = {
 						id: player.id,
 						message: message
 					}
-					console.log(player.username + ' said: ' + message);
+					channel.send(dateUTC +'\n' + player.username + ' said: ' + message + '\n' + '᲼᲼᲼᲼᲼');
+					console.log(dateUTC +'\n' + player.username + ' said: ' + message + '\n');
 					socket.broadcast.emit('playerSaid', messageObject);
 				}	
 				
@@ -300,6 +311,7 @@ io.on('connection', (socket) => {
 
 	socket.on('/report', (message) =>{
 		if(socket.playerId == undefined) return;
+		server_utils.resetTimer(socket, AFKTime);
 		let reporter = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
 		message = message.split(" ");
 		let playerName = message[1];
@@ -311,8 +323,9 @@ io.on('connection', (socket) => {
 				let channel = client.channels.cache.get('838549917281943562');
 				PlayFabServer.ReportPlayer({ReporterId: reporter.id, ReporteeId: result.data.UserInfo.PlayFabId, Comment: message[2, message.length]}, (error, result) =>{
 					if(result !== null){
+						let dateUTC = new Date(Date.now()).toUTCString();
 						console.log(result); //result.data.Updated
-						channel.send(reporter.username + ' reported ' + playerName +'. Reason: ' + reportMessage);
+						channel.send(dateUTC +'\n' + reporter.username + ' reported ' + playerName +'. Reason: ' + reportMessage + '\n' + '᲼᲼᲼᲼᲼');
 					}else if(error !== null){
 						console.log(error);	//error.errorMessage
 					}
@@ -327,6 +340,7 @@ io.on('connection', (socket) => {
 
 	socket.on('/ban', (message) =>{
 		if(socket.playerId == undefined) return;
+		server_utils.resetTimer(socket, AFKTime);
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
 		if(player.isDev == true){	//Template of the message should be /ban timeOfBan banPlayerName reason
 			message = message.split(" ");
@@ -375,6 +389,7 @@ io.on('connection', (socket) => {
 
 	socket.on('/unban', (message) =>{
 		if(socket.playerId == undefined) return;
+		server_utils.resetTimer(socket, AFKTime);
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
 		if(player.isDev == true){	//Template of the message should be /unban banPlayerName
 			message = message.split(" ");
@@ -405,6 +420,7 @@ io.on('connection', (socket) => {
 
 	socket.on('/remove', (message) =>{
 		if(socket.playerId == undefined) return;
+		server_utils.resetTimer(socket, AFKTime);
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
 		if(player.isDev == true){
 			message = message.split(" ");

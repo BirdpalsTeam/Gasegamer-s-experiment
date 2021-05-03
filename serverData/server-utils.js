@@ -24,6 +24,12 @@ functions = {
 	},
 	removeElementFromArray: function removeElementFromArray(element, array){
 		array.splice(array.indexOf(element), 1);
+	},
+	resetTimer: function resetTimer(timer, time){
+		clearTimeout(timer.isAFK);
+		timer.isAFK = setTimeout(()=>{
+			timer.disconnect(true);
+		}, time);
 	}
 }
 

@@ -12,16 +12,27 @@ var loadSprite = function(imageName){
 	return image;
 }
 
+var JSONSrc = 'JSONS/';
 var spritesSrc = 'Sprites/';
 var charactersSrc = spritesSrc + 'characters/';
 var roomsSrc = spritesSrc + 'rooms/';
 var hudSrc = spritesSrc + 'hud/';
 
-var birdImage = loadSprite(charactersSrc + 'bird_blue.png');
-var roomImage = loadSprite(roomsSrc + 'town.png');
-var cake_image = roomImage;
-var trees_image = roomImage;
-var bubble_image = loadSprite(hudSrc + 'hud.png');
+var rooms;
+var birdImage;
+var roomImage;
+var cake_image;
+var trees_image;
+var bubble_image;
+
+$.getJSON(JSONSrc +'roomsJSON.json', (data) =>{
+	rooms = data;
+	birdImage = loadSprite(charactersSrc + 'bird_blue.png');
+	roomImage = loadSprite(roomsSrc + rooms.town.image);
+	cake_image = roomImage;
+	trees_image = roomImage;
+	bubble_image = loadSprite(hudSrc + 'hud.png');
+})
 
 // Create a script tag
 var script = document.createElement('script');
