@@ -1,4 +1,8 @@
-const { PlayFabAdmin } = require("playfab-sdk");
+
+const { PlayFab, PlayFabAdmin } = require('playfab-sdk');
+var GAME_ID = '238E6';
+PlayFab.settings.titleId = GAME_ID;
+PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
 
 functions = {
 	getElementFromArray:	function getElementFromArray(element, customIdentifier, array){
@@ -30,7 +34,16 @@ functions = {
 		timer.isAFK = setTimeout(()=>{
 			timer.disconnect(true);
 		}, time);
+	},
+	getPlayfabUserByUsername: function getPlayfabUserByUsername(username){
+		PlayFabAdmin.GetUserAccountInfo({Username: username}, (error, result) =>{
+			if(result !== null){
+				return result;
+			}else if(error !== null){
+				console.log(error);
+			}
+		})
 	}
 }
-
+console.log(functions.getPlayfabUserByUsername('Gasegamer'))
 module.exports = functions;

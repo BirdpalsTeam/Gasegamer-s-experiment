@@ -7,7 +7,6 @@ const io = require('socket.io')(http);
 const fs = require('fs');
 var isprofanity = require('isprofanity');
 var server_utils = require('./serverData/server-utils');
-
 const AFKTime = 300000; //5 minutes
 //Playfab
 var PlayFab = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFab");
@@ -19,7 +18,9 @@ PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9C
 //Discord Bot
 const Discord = require('discord.js');
 const client = new Discord.Client();
-
+function embedText(who, message){
+	return new Discord.MessageEmbed().addField(who, message);
+}
 
 //Send the public files to the domain
 app.use(express.static('public'));
@@ -292,16 +293,19 @@ io.on('connection', (socket) => {
 						socket: socket.id,
 						message: "🤬"
 					}
+
 					console.log(player.username +' said the following bad word: '+ message);
-					channel.send(dateUTC + '\n' + player.username + ' said the following bad word: `' + message + '`' + '\n' + '᲼᲼᲼᲼᲼');
+					let embed = embedText(dateUTC + '\n' +player.username + ' said the following bad word:', message);
+					channel.send(embed.setColor("FF0000"))
 					socket.broadcast.emit('playerSaid', messageObject);
 				}else{
 					let messageObject = {
 						id: player.id,
 						message: message
 					}
-					channel.send(dateUTC +'\n' + player.username + ' said: ' + message + '\n' + '᲼᲼᲼᲼᲼');
+					let embed = embedText(dateUTC + '\n' +player.username + ' said:', message);
 					console.log(dateUTC +'\n' + player.username + ' said: ' + message + '\n');
+					channel.send(embed.setColor("1ABBF5"))
 					socket.broadcast.emit('playerSaid', messageObject);
 				}	
 				
@@ -325,7 +329,8 @@ io.on('connection', (socket) => {
 					if(result !== null){
 						let dateUTC = new Date(Date.now()).toUTCString();
 						console.log(result); //result.data.Updated
-						channel.send(dateUTC +'\n' + reporter.username + ' reported ' + playerName +'. Reason: ' + reportMessage + '\n' + '᲼᲼᲼᲼᲼');
+						let embed = embedText(dateUTC + '\n' + reporter.username + ' reported ' + playerName, reportMessage);
+						channel.send(embed.setColor('FFFB00'));
 					}else if(error !== null){
 						console.log(error);	//error.errorMessage
 					}

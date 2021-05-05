@@ -5,9 +5,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet"/>
  <link rel="shortcut icon" type="image/png" href="Website Assets\Logo.png" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birdpals</title>
-    <style>
-    </style>
+<title>Birdpals</title>
 </head>
 <body>
 <center>
@@ -27,6 +25,11 @@
 <form id="confirmpassword" onSubmit="logIn(); return false"> 
         <input id="input-cp" type="password" maxlength="50" autocomplete="off" placeholder="Confirm Password"/> 
 </form>
+<br>
+<div class= "infocard">
+	<label class="infotext">By creating an account you agree with our <a href="./Terms and Conditions.html">Terms & Conditions</a></label>
+</div>
+<br>
 <button onclick="logIn()" class="button">Create Account</button>
 </center>
 <script src="/socket.io/socket.io.js"></script>
