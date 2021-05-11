@@ -2,7 +2,7 @@ form = document.getElementById("form");
 input = document.getElementById("input");
 
 var room = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
-var trees = new Sprite(trees_image, 892, 0, 763, 438, 0, 0, 800, 500, 0, 0);
+var details = new Sprite(detailsImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
 
 var roomCollMapX = 8;
 var roomCollMapY = 17;
@@ -88,7 +88,7 @@ function render(){
 		})
 	}
 
-	trees.draw();
+	details.draw();
 	requestAnimationFrame(render);
 }
 

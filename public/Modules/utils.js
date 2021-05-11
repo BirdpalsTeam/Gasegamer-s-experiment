@@ -1,3 +1,10 @@
+async function customGetJSON(json){
+	return await new Promise((resolve) => {
+		$.getJSON(json, (data) =>{
+			resolve(data);
+		});
+	})
+}
 function getElementFromArray(element, customIdentifier, array){
 	let tempElement;
 	array.forEach(arrayElement =>{

@@ -35,35 +35,19 @@ var players = new Array();
 var devTeamJson = fs.readFileSync('./serverData/devTeam.json');
 var devTeam = JSON.parse(devTeamJson);
 
-var roomCollMapX = 8;
-var roomCollMapY = 17;
+var roomsJson = fs.readFileSync('./serverData/roomsJSON.json');
+var rooms = JSON.parse(roomsJson);
+var roomCollMapX = rooms.town.roomCollMapX;
+var roomCollMapY = rooms.town.roomCollMapY;
 var roomCollCellWidth = 800 / roomCollMapX;
 var roomCollCellHeight = 500 / roomCollMapY;
-var roomCollMap = [
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 1, 1, 1, 1, 0, 0,
-	1, 1, 1, 0, 0, 1, 1, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 1, 0, 0, 0, 0, 1, 1,
-	0, 1, 0, 0, 0, 0, 1, 0,
-	0, 1, 1, 1, 1, 1, 1, 0
-];
+var roomCollMap = rooms.town.roomCollMap;
 
 //Websockets communication
 io.on('connection', (socket) => {
 
 	console.log('A user connected: ' + socket.id);
-
+	
 	socket.on('disconnect', function(){
 		console.log('A user disconnected: ' + socket.id);
 		if(players.length > 0){
@@ -163,7 +147,7 @@ io.on('connection', (socket) => {
 										x:410,
 										y:380,
 										width:62,
-										height:72,
+										height:82,
 										isMoving: false,
 										mouseX: 410,
 										mouseY: 390,
@@ -176,8 +160,10 @@ io.on('connection', (socket) => {
 									};
 									players.push(thisPlayer);
 									socket.playerId = resultFromAuthentication.data.UserInfo.PlayFabId;
+									socket.join('town');
 									socket.emit('readyToPlay?');	//Say to the client he/she can already start playing
 									socket.broadcast.emit('newPlayer', thisPlayer); //Emit this player to all clients logged in
+									console.log(io.sockets.adapter.rooms)
 								}
 
 						}else if (result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Unverified" || result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Pending"){
@@ -286,7 +272,7 @@ io.on('connection', (socket) => {
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
 		let channel = client.channels.cache.get('838558782548082720');
 		let dateUTC = new Date(Date.now()).toUTCString();
-		if(message != undefined && message != "" && message.includes('/ban') == false && message.includes('/unban') == false){
+		if(message != undefined && server_utils.separateString(message)[0].includes("/") == false){
 			isprofanity(message, function(t){
 				if(t == true){
 					let messageObject = {
@@ -316,30 +302,27 @@ io.on('connection', (socket) => {
 	socket.on('/report', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
-		let reporter = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
-		message = message.split(" ");
+		let reporter = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players); //The user who is reporting
+
+		message = server_utils.separateString(message);
 		let playerName = message[1];
 		if(playerName == undefined || message[2] == undefined) return;
-		PlayFabAdmin.GetUserAccountInfo({Username: playerName}, (error, result) =>{
-			if(result !== null){
-				let reportMessage = message.slice(2, message.length);
-				reportMessage = reportMessage.toString().split(',').join(' ');
-				let channel = client.channels.cache.get('838549917281943562');
-				PlayFabServer.ReportPlayer({ReporterId: reporter.id, ReporteeId: result.data.UserInfo.PlayFabId, Comment: message[2, message.length]}, (error, result) =>{
-					if(result !== null){
-						let dateUTC = new Date(Date.now()).toUTCString();
-						console.log(result); //result.data.Updated
-						let embed = embedText(dateUTC + '\n' + reporter.username + ' reported ' + playerName, reportMessage);
-						channel.send(embed.setColor('FFFB00'));
-					}else if(error !== null){
-						console.log(error);	//error.errorMessage
-					}
-				})
-				
-			}else if(error != null){
-				console.log(error);
-			}
-		})
+
+		server_utils.getPlayfabUserByUsername(playerName).then(response =>{
+			let reportMessage = message.slice(2, message.length);
+			reportMessage = reportMessage.toString().split(',').join(' ');
+			let channel = client.channels.cache.get('838549917281943562'); //Connect to report channel on discord
+			PlayFabServer.ReportPlayer({ReporterId: reporter.id, ReporteeId: response.data.UserInfo.PlayFabId, Comment: reportMessage}, (error, result) =>{
+				if(result !== null){
+					let dateUTC = new Date(Date.now()).toUTCString();
+					console.log(result); //result.data.Updated
+					let embed = embedText(dateUTC + '\n' + reporter.username + ' reported ' + playerName, reportMessage);
+					channel.send(embed.setColor('FFFB00'));
+				}else if(error !== null){
+					console.log(error);	//error.errorMessage
+				}
+			});
+		}).catch(console.log);
 		
 	})
 
@@ -347,8 +330,9 @@ io.on('connection', (socket) => {
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+
 		if(player.isDev == true){	//Template of the message should be /ban timeOfBan banPlayerName reason
-			message = message.split(" ");
+			message = server_utils.separateString(message);
 			let timeOfBan = message[1];
 			let banPlayerName = message[2];
 			let reason = message.slice(3,message.length);
@@ -357,78 +341,67 @@ io.on('connection', (socket) => {
 			if(isNaN(timeOfBan) == true || banPlayerName == undefined || reason == undefined) return; //Check if the message is in correct form
 			
 			let banRequest;
-			
-			PlayFabAdmin.GetUserAccountInfo({Username: banPlayerName}, (error, result) =>{
-				if(result !== null){
-					let playerInPlayfab = result.data.UserInfo.PlayFabId;
-					if(server_utils.getElementFromArrayByValue(playerInPlayfab, 'id', devTeam.devs) == false){
 
-						if(timeOfBan === '9999'){
-							banRequest = {
-								Bans: [{PlayFabId: playerInPlayfab, Reason: reason}]
-							}
-						}else{
-							banRequest = {
-								Bans: [{DurationInHours: timeOfBan, PlayFabId: playerInPlayfab, Reason: reason}]
-							}
+			server_utils.getPlayfabUserByUsername(banPlayerName).then(response => { 
+				let banPlayerId = response.data.UserInfo.PlayFabId;
+				if(server_utils.getElementFromArrayByValue(banPlayerId, 'id', devTeam.devs) == false){ //Find if the mod is not trying to ban a dev
+					if(timeOfBan === '9999'){	//Perma ban
+						banRequest = {
+							Bans: [{PlayFabId: banPlayerId, Reason: reason}]
 						}
-						PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
-							if(result !== null){
-								console.log(result);
-								let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(playerInPlayfab, 'playerId', io.sockets.sockets);
-								socket.emit('playerBanned!');
-								if(removeBannedPlayerSocket == false) return;
-								removeBannedPlayerSocket.disconnect(true);
-							}else if(error !== null){
-								console.log(error)
-							}
-						})
+					}else{
+						banRequest = {
+							Bans: [{DurationInHours: timeOfBan, PlayFabId: banPlayerId, Reason: reason}]
+						}
 					}
-					console.log(result);
-				}else if(error !== null){
-					console.log(error);
+				
+					PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
+						if(result !== null){
+							console.log(result);
+							let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(playerInPlayfab, 'playerId', io.sockets.sockets);
+							socket.emit('playerBanned!');
+							if(removeBannedPlayerSocket == false) return; //Check if the player is online
+							removeBannedPlayerSocket.disconnect(true);
+						}else if(error !== null){
+							console.log(error)
+						}
+					})
 				}
-			})
-		}
+			}).catch(console.log); //Log error
+
+		}// IsDev final
 	});
 
 	socket.on('/unban', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+
 		if(player.isDev == true){	//Template of the message should be /unban banPlayerName
-			message = message.split(" ");
+			message = server_utils.separateString(message);
 			let banPlayerName = message[1];
 			if(banPlayerName == undefined) return; //Check if the message is in the correct form.
-			let resultFromGetAccount;
-			PlayFabAdmin.GetUserAccountInfo({Username: banPlayerName}, (error, result) =>{	//Get user PlayFabId by username
-				if(result !== null){
-					resultFromGetAccount = result;
-					let unBanRequest = {
-						PlayFabId: resultFromGetAccount.data.UserInfo.PlayFabId
+			
+			server_utils.getPlayfabUserByUsername(banPlayerName).then(response =>{
+				PlayFabServer.RevokeAllBansForUser({PlayFabId: response.data.UserInfo.PlayFabId}, (error, result) =>{	//Revoke All Bans from user
+					if(result !== null){
+						console.log(result);
+						socket.emit('playerUnbanned!');
+					}else if(error !== null){
+						console.log(error);
 					}
-					PlayFabServer.RevokeAllBansForUser(unBanRequest, (error, result) =>{	//Revoke All Bans from user
-						if(result !== null){
-							console.log(result);
-							socket.emit('playerUnbanned!');
-						}else if(error !== null){
-							console.log(error);
-						}
-					});
-				}else if(error !== null){
-					console.log(error);
-				}
-			})
+				});
+			}).catch(console.log);
 		}
-		
 	})
 
 	socket.on('/remove', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+
 		if(player.isDev == true){
-			message = message.split(" ");
+			message = server_utils.separateString(message);
 			let removePlayerObject = server_utils.getElementFromArrayByValue(message[1], 'username', players);
 			if(removePlayerObject == false) return;
 			let removePlayerSocket = server_utils.getElementFromArrayByValue(removePlayerObject.id, 'playerId', io.sockets.sockets);
@@ -438,9 +411,9 @@ io.on('connection', (socket) => {
 	})
 }) // io connection end
 
-//Starts the server on port 3000
+//Start the server on port 3000
 http.listen(process.env.PORT || 3000, () => {
 	console.log('listening on *:3000');
 });
-//Starts discord bot
+//Start the discord bot
 client.login('ODM4NTQ3NTYxNTgwMzMxMDcw.YI8sRg.15hZCkAeqKpFqjMF2jds5Et7o9U');

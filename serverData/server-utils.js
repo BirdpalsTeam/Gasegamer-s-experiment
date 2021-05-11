@@ -1,9 +1,10 @@
-
 const { PlayFab, PlayFabAdmin } = require('playfab-sdk');
 var GAME_ID = '238E6';
 PlayFab.settings.titleId = GAME_ID;
 PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
-
+var url = require('url')
+var https = require('https');
+const { response } = require('express');
 functions = {
 	getElementFromArray:	function getElementFromArray(element, customIdentifier, array){
 		let tempElement;
@@ -35,15 +36,23 @@ functions = {
 			timer.disconnect(true);
 		}, time);
 	},
-	getPlayfabUserByUsername: function getPlayfabUserByUsername(username){
-		PlayFabAdmin.GetUserAccountInfo({Username: username}, (error, result) =>{
-			if(result !== null){
-				return result;
-			}else if(error !== null){
-				console.log(error);
-			}
-		})
+	getPlayfabUserByUsername: async function getPlayfabUserByUsername(username){
+		return await new Promise((resolve, reject) =>{
+				PlayFabAdmin.GetUserAccountInfo({Username: username}, (error, result) =>{
+					if(result !== null){
+						resolve(result);
+					}else if(error !== null){
+						reject(error);
+					}
+				})
+			})
+		
+	},
+	separateString: function separateStrings(string){
+		if(string == undefined) return;
+		let separated = string.split(" ");
+		return separated;
 	}
 }
-console.log(functions.getPlayfabUserByUsername('Gasegamer'))
+
 module.exports = functions;

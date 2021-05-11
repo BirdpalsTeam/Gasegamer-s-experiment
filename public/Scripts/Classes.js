@@ -45,13 +45,13 @@ class Player extends Sprite{
 		ctx.textAlign = 'center';
 		if(isCaptalized(this.message, 70) == false){
 			if(this.message.length > 0 && this.message.length <18){
-				ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 35, 131, 47); 
+				ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 25, 131, 47); 
 				ctx.fillText(this.message,this.x , this.y - 85);
 			}else if(this.message.length >= 18 && this.message.length < 30){
-				drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 65, 57, 120);
+				drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 35, 57, 100);
 			}
 			else if(this.message.length >= 30 && this.message.length <= 52){
-				drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 80, 77, 130);
+				drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 50, 77, 110);
 			}
 		}
 	}
@@ -69,22 +69,27 @@ class Player extends Sprite{
 		let dy = this.mouseY - this.y;
 
 		let angleToLook = Math.atan2(dy, dx) * 180 / Math.PI;
-
+		
 		if(angleToLook < 0) angleToLook += 360;
 
 		if(angleToLook > 70 && angleToLook<= 110){	//look to the front
-			this.sourceX = 144;
-			this.sourceY = 0;
-		}else if (angleToLook>110&& angleToLook<=250){//look to the left
-			this.sourceX = 0;
-			this.sourceY = 172;
-		}else if(angleToLook > 250 && angleToLook <= 281 ){//look to the back
-			this.sourceX = 0;
-			this.sourceY = 0;
-		}
-		else if(angleToLook > 281 && angleToLook <= 360 || angleToLook <= 70){//look to the right
-			this.sourceX = 144;
-			this.sourceY = 172;
+			this.sourceX = 37;
+			this.sourceY = 175;
+		}else if (angleToLook > 110 && angleToLook <= 220){//look to the left
+			this.sourceX = 253;
+			this.sourceY = 175;
+		}else if(angleToLook > 220 && angleToLook <= 260){ //look to the upper left
+			this.sourceX = 147;
+			this.sourceY = 175;
+		}else if(angleToLook > 260 && angleToLook <= 281 ){//look to the back
+			this.sourceX = 37;
+			this.sourceY = 25;
+		}else if(angleToLook > 281 && angleToLook <= 330){//look to the upper right
+			this.sourceX = 147;
+			this.sourceY = 25;
+		}else if(angleToLook > 330 && angleToLook <= 360 || angleToLook <= 70){//look to the right
+			this.sourceX = 253;
+			this.sourceY = 25;
 		}
 	}
 	move(){

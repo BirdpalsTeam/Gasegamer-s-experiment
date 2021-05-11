@@ -21,17 +21,16 @@ var hudSrc = spritesSrc + 'hud/';
 var rooms;
 var birdImage;
 var roomImage;
-var cake_image;
-var trees_image;
+var detailsImage;
 var bubble_image;
 
-$.getJSON(JSONSrc +'roomsJSON.json', (data) =>{
-	rooms = data;
-	birdImage = loadSprite(charactersSrc + 'bird_blue.png');
+bubble_image = loadSprite(hudSrc + 'hud.png');
+birdImage = loadSprite(charactersSrc + 'bird_blue.png');
+detailsImage = loadSprite(roomsSrc + 'details.png');
+customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
+	rooms = response;
 	roomImage = loadSprite(roomsSrc + rooms.town.image);
-	cake_image = roomImage;
-	trees_image = roomImage;
-	bubble_image = loadSprite(hudSrc + 'hud.png');
+	assetLoadingLoop(); //Will only start when it get's the rooms image
 })
 
 // Create a script tag
@@ -100,13 +99,13 @@ function assetLoadingLoop(){
 socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 	players.forEach(player => {
 		if(player.id == playerId && localPlayer == undefined){
-			localPlayer = new Player(birdImage, 144, 0, 144, 170, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev);
+			localPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev);
 		} 
 		else if(player.id != playerId && !checkIfElementIsInArray(player, 'id',playersInGame)){	
-				playersInGame.push(player); 
-				let tempPlayer = new Player(birdImage, 144, 0, 144, 172, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev);
-				playersObject.push(tempPlayer);
-				delete tempPlayer;
+			playersInGame.push(player); 
+			let tempPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev);
+			playersObject.push(tempPlayer);
+			delete tempPlayer;
 		}
 	});
 	let ref = document.getElementById('Classes');
@@ -115,7 +114,7 @@ socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 
 socket.on('newPlayer', (player) => {
 	playersInGame.push(player); 
-	let tempPlayer = new Player(birdImage, 144, 0, 144, 172, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
+	let tempPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
 	playersObject.push(tempPlayer);
 	delete tempPlayer;
 });
@@ -156,4 +155,3 @@ socket.on('playerBanned!', () =>{
 socket.on('playerUnbanned!', () =>{
 	setLocalMessage('Successfully UnBanned :)', true);
 })
-assetLoadingLoop(); //First initalization
