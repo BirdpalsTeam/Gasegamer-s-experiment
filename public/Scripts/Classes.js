@@ -24,7 +24,7 @@ class Sprite{
 }
 
 class Player extends Sprite{
-	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, speechBubbleImage, id, username, isMoving, mouseX, mouseY, isDev){
+	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, speechBubbleImage, id, username, isMoving, mouseX, mouseY, isDev, items=[]){
 		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
 		this.speechBubbleImage = speechBubbleImage;
 		this.id = id;
@@ -35,6 +35,9 @@ class Player extends Sprite{
 		this.movePlayerInterval;
 		this.messageTimeout;
 		this.isDev = isDev;
+
+		//items
+		this.items = items;
 	}
 
 	customDraw(){
@@ -55,6 +58,11 @@ class Player extends Sprite{
 				}
 			}
 		}
+
+		//draw items
+		this.items.forEach((item) => {
+			item.draw();
+		});
 	}
 
 	drawUsername(){
@@ -79,26 +87,39 @@ class Player extends Sprite{
 
 		let angleToLook = Math.atan2(dy, dx) * 180 / Math.PI;
 		
+		let newSX;
+		let newSY;
+
 		if(angleToLook < 0) angleToLook += 360;
 
 		if(angleToLook > 70 && angleToLook<= 110){	//look to the front
-			this.sourceX = 37;
-			this.sourceY = 175;
+			newSX = 37;
+			newSY = 175;
 		}else if (angleToLook > 110 && angleToLook <= 220){//look to the left
-			this.sourceX = 253;
-			this.sourceY = 175;
+			newSX = 253;
+			newSY = 175;
 		}else if(angleToLook > 220 && angleToLook <= 260){ //look to the upper left
-			this.sourceX = 147;
-			this.sourceY = 175;
+			newSX = 147;
+			newSY = 175;
 		}else if(angleToLook > 260 && angleToLook <= 281 ){//look to the back
-			this.sourceX = 37;
-			this.sourceY = 25;
+			newSX = 37;
+			newSY = 25;
 		}else if(angleToLook > 281 && angleToLook <= 330){//look to the upper right
-			this.sourceX = 147;
-			this.sourceY = 25;
+			newSX = 147;
+			newSY = 25;
 		}else if(angleToLook > 330 && angleToLook <= 360 || angleToLook <= 70){//look to the right
-			this.sourceX = 253;
-			this.sourceY = 25;
+			newSX = 253;
+			newSY = 25;
+		}
+
+		this.sourceX = newSX;
+		this.sourceY = newSY;
+
+		if(this.items.length > 0){
+			this.items.forEach((item) => {
+				item.sourceX = newSX;
+				item.sourceY = newSY;
+			});
 		}
 	}
 	move(){
@@ -159,4 +180,12 @@ class Player extends Sprite{
 	
 	}
 	
+}
+
+class Item extends Sprite{
+	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, layer){
+		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
+
+		this.layer = layer;
+	}
 }
