@@ -69,26 +69,32 @@ form.addEventListener('submit', function(e) {
 function render(){
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 	room.draw();
-	if(localPlayer != undefined){
-		localPlayer.draw();
-		localPlayer.drawUsername();
-		if(localPlayer.message != undefined){
-			localPlayer.drawBubble();
+	
+	
+
+	let allObjects = [];
+	allObjects = playersObject.concat(details);
+	allObjects.push(localPlayer);
+
+	allObjects.sort(function(a, b){return b.y-a.y});
+
+	allObjects.forEach((object) => {
+		if(object != undefined){
+			object.draw();
 		}
-		
-	}
+	});
+
 	if(playersObject.length > 0){
 		playersObject.forEach((player) => {
-			player.draw();
-			player.drawUsername();
 			player.whereToLook();
-			if(player.message != undefined){
-				player.drawBubble();
-			}
-		})
+			player.drawUsername();
+		});
 	}
 
-	details.draw();
+	if(localPlayer != undefined){
+		localPlayer.drawUsername();
+	}
+
 	requestAnimationFrame(render);
 }
 

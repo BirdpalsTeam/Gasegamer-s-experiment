@@ -15,6 +15,11 @@ class Sprite{
 
 	draw(){
 		ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x - this.originX, this.y - this.originY, this.width, this.height);
+		this.customDraw();
+	}
+
+	customDraw(){
+
 	}
 }
 
@@ -32,28 +37,32 @@ class Player extends Sprite{
 		this.isDev = isDev;
 	}
 
+	customDraw(){
+		//draw bubble
+		if(this.message != undefined){
+			ctx.fillStyle = "black";
+			ctx.font = "13px sans-serif";
+			ctx.textAlign = 'center';
+			if(isCaptalized(this.message, 70) == false){
+				if(this.message.length > 0 && this.message.length <18){
+					ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 25, 131, 47); 
+					ctx.fillText(this.message,this.x , this.y - 85);
+				}else if(this.message.length >= 18 && this.message.length < 30){
+					drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 35, 57, 100);
+				}
+				else if(this.message.length >= 30 && this.message.length <= 52){
+					drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 50, 77, 110);
+				}
+			}
+		}
+	}
+
 	drawUsername(){
+		//drawUsername
 		ctx.fillStyle = "black";
 		ctx.font = "15px sans-serif";
 		ctx.textAlign = 'center'
 		ctx.fillText(this.username,this.x,this.y + this.height / 2.5);
-	}
-
-	drawBubble(){
-		ctx.fillStyle = "black";
-		ctx.font = "13px sans-serif";
-		ctx.textAlign = 'center';
-		if(isCaptalized(this.message, 70) == false){
-			if(this.message.length > 0 && this.message.length <18){
-				ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 25, 131, 47); 
-				ctx.fillText(this.message,this.x , this.y - 85);
-			}else if(this.message.length >= 18 && this.message.length < 30){
-				drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 35, 57, 100);
-			}
-			else if(this.message.length >= 30 && this.message.length <= 52){
-				drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 50, 77, 110);
-			}
-		}
 	}
 
 	hideBubble(){
