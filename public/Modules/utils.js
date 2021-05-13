@@ -100,11 +100,7 @@ function command(command, message){
 	if(localPlayer.isDev == true && isDevCommand != false){
 		setLocalMessage(isDevCommand.message, true);	//Make the bird say words like Banning...
 	}else{
-		switch(command){
-			case '/room':
-				console.warn('This doesn t exist yet');
-			break;
-		}
+		
 	}
 	socket.emit(command, message);	//Send command to the server
 }
@@ -114,14 +110,7 @@ function setLocalMessage(thisMessage, isDevCommand){
 	if(checkCommand[0].includes("/") == true){	//Check if it's a command
 		command(checkCommand[0], thisMessage);
 	}else{
-		module.dirtyWordsChecker(thisMessage, function(t){	//check if it's a dirty word
-			if(t == true){
-				localPlayer.message = "🤬";
-			}else if(t == false){
-				localPlayer.message = thisMessage;
-			}
-		},'./data/profanity.csv','./data/exceptions.csv');
-
+		localPlayer.message = thisMessage;
 		if(localPlayer.messageTimeout != undefined){
 			clearTimeout(localPlayer.messageTimeout);
 			localPlayer.hideBubble();

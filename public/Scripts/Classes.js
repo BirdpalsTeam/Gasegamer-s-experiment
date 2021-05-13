@@ -24,7 +24,7 @@ class Sprite{
 }
 
 class Player extends Sprite{
-	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, speechBubbleImage, id, username, isMoving, mouseX, mouseY, isDev, items=[]){
+	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, speechBubbleImage, id, username, isMoving, mouseX, mouseY, isDev, items=[], itemsImgs=[]){
 		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
 		this.speechBubbleImage = speechBubbleImage;
 		this.id = id;
@@ -38,6 +38,7 @@ class Player extends Sprite{
 
 		//items
 		this.items = items;
+		this.itemsImgs = itemsImgs;
 	}
 
 	customDraw(){
@@ -60,8 +61,8 @@ class Player extends Sprite{
 		}
 
 		//draw items
-		this.items.forEach((item) => {
-			item.draw();
+		this.itemsImgs.forEach((item) => {
+				item.draw();
 		});
 	}
 
@@ -115,8 +116,8 @@ class Player extends Sprite{
 		this.sourceX = newSX;
 		this.sourceY = newSY;
 
-		if(this.items.length > 0){
-			this.items.forEach((item) => {
+		if(this.itemsImgs.length > 0){
+			this.itemsImgs.forEach((item) => {
 				item.sourceX = newSX;
 				item.sourceY = newSY;
 			});
@@ -170,7 +171,7 @@ class Player extends Sprite{
 			this.x += velX;
 			this.y += velY;
 			timeToPlayerReachDestination--;
-			this.items.forEach((item) => {
+			this.itemsImgs.forEach((item) => {
 				item.x = this.x;
 				item.y = this.y;
 			});
@@ -186,9 +187,18 @@ class Player extends Sprite{
 
 	addItem(itemtype, itemname){
 		let tempItemImg = new Image();
-		tempItemImg.src = "Sprites/items/" + itemtype + "/" + itemname + ".png";
-
-		this.items.push(new Item(tempItemImg, this.sourceX, this.sourceY, this.sourceWidth, this.sourceHeight, this.x, this.y, this.width, this.height, this.originX, this.originY, 1, itemtype));
+		switch (itemtype) {
+			case "color":
+				tempItemImg.src = charactersSrc + itemname + ".png";
+				this.img = tempItemImg;
+				break;
+		
+			default:
+				tempItemImg.src = "Sprites/items/" + itemtype + "/" + itemname + ".png";
+				this.itemsImgs.push(new Item(tempItemImg, this.sourceX, this.sourceY, this.sourceWidth, this.sourceHeight, this.x, this.y, this.width, this.height, this.originX, this.originY, 1, itemtype));
+			break;
+		}
+		
 	}
 	
 }
@@ -196,7 +206,6 @@ class Player extends Sprite{
 class Item extends Sprite{
 	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, layer, type){
 		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
-
 		this.layer = layer;
 		this.type = type;
 	}

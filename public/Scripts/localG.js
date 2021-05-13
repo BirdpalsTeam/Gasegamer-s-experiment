@@ -1,32 +1,8 @@
 form = document.getElementById("form");
 input = document.getElementById("input");
 
-var room = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
+var roomSprite = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
 var details = new Sprite(detailsImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
-
-var roomCollMapX = 8;
-var roomCollMapY = 17;
-var roomCollCellWidth = room.width / roomCollMapX;
-var roomCollCellHeight = room.height / roomCollMapY;
-var roomCollMap = [
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 1, 1, 1, 1, 0, 0,
-	1, 1, 1, 0, 0, 1, 1, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 0, 0, 0, 0, 1,
-	1, 1, 0, 0, 0, 0, 1, 1,
-	0, 1, 0, 0, 0, 0, 1, 0,
-	0, 1, 1, 1, 1, 1, 1, 0
-];
 
 function drawCollisionMap(){	//Just a debug function
 	let x, y;
@@ -68,10 +44,8 @@ form.addEventListener('submit', function(e) {
 
 function render(){
 	ctx.clearRect(0,0,canvas.width,canvas.height);
-	room.draw();
+	roomSprite.draw();
 	
-	
-
 	let allObjects = [];
 	allObjects = playersObject.concat(details);
 	allObjects.push(localPlayer);
@@ -97,7 +71,8 @@ function render(){
 
 	requestAnimationFrame(render);
 }
+localPlayer.items.forEach(item => {
+	localPlayer.addItem(item.ItemClass, item.ItemId);
+});
 
 render();
-
-localPlayer.addItem("face", "eyepatch");

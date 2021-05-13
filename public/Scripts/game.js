@@ -23,15 +23,27 @@ var birdImage;
 var roomImage;
 var detailsImage;
 var bubble_image;
+var currentRoom;
 
 bubble_image = loadSprite(hudSrc + 'hud.png');
 birdImage = loadSprite(charactersSrc + 'bird_blue.png');
-detailsImage = loadSprite(roomsSrc + 'details.png');
+detailsImage = loadSprite(roomsSrc + 'town_details.png');
 customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	rooms = response;
+	currentRoom = rooms.town.name;
 	roomImage = loadSprite(roomsSrc + rooms.town.image);
 	assetLoadingLoop(); //Will only start when it get's the rooms image
 })
+
+//Room stuff
+var roomCollMapX, roomCollMapY, roomCollCellWidth,roomCollCellHeight, roomCollMap;
+function roomCollision(){
+	roomCollMapX = rooms[currentRoom].roomCollMapX;
+	roomCollMapY = rooms[currentRoom].roomCollMapY;
+	roomCollCellWidth = roomSprite.width / roomCollMapX;
+	roomCollCellHeight = roomSprite.height / roomCollMapY;
+	roomCollMap = rooms[currentRoom].roomCollMap;
+}
 
 // Create a script tag
 var script = document.createElement('script');
@@ -99,11 +111,14 @@ function assetLoadingLoop(){
 socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 	players.forEach(player => {
 		if(player.id == playerId && localPlayer == undefined){
-			localPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev);
+			localPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev, player.items);
 		} 
 		else if(player.id != playerId && !checkIfElementIsInArray(player, 'id',playersInGame)){	
 			playersInGame.push(player); 
-			let tempPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev);
+			let tempPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev, player.items);
+			tempPlayer.items.forEach(item=>{
+				tempPlayer.addItem(item.ItemClass, item.ItemId);
+			})
 			playersObject.push(tempPlayer);
 			delete tempPlayer;
 		}
@@ -114,7 +129,10 @@ socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 
 socket.on('newPlayer', (player) => {
 	playersInGame.push(player); 
-	let tempPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY);
+	let tempPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev, player.items);
+	tempPlayer.items.forEach(item =>{
+		tempPlayer.addItem(item.ItemClass, item.ItemId);
+	})
 	playersObject.push(tempPlayer);
 	delete tempPlayer;
 });
@@ -147,7 +165,22 @@ socket.on('playerSaid', (player) => {
 		playerO.hideBubble();
 	}
 });
-
+socket.on('badWord', (message) =>{
+	setLocalMessage(message, true);
+})
+socket.on('joinRoom', (joinRoom) =>{
+	clearInterval(localPlayer.movePlayerInterval)
+	roomSprite.img = loadSprite(roomsSrc+ rooms[joinRoom.name].image);
+	details.img = loadSprite(roomsSrc + rooms[joinRoom.name].details.image);
+	currentRoom = joinRoom.name;
+	localPlayer.x = joinRoom.posX;
+	localPlayer.y = joinRoom.posY;
+	localPlayer.itemsImgs.forEach(item => {
+		item.x = joinRoom.posX;
+		item.y = joinRoom.posY;
+	});
+	roomCollision();
+})
 socket.on('playerBanned!', () =>{
 	setLocalMessage('Successfully Banned :)', true);
 })
