@@ -31,17 +31,81 @@ app.get('/', function(req, res){
 
 const RECAPTCHA_SECRET = "6LePMZsaAAAAAKKj7gHyWp8Qbppk5BJOcqvEYD9I";
 
-var players = new Array();
-var devTeamJson = fs.readFileSync('./serverData/devTeam.json');
-var devTeam = JSON.parse(devTeamJson);
-
 var roomsJson = fs.readFileSync('./serverData/roomsJSON.json');
 var rooms = JSON.parse(roomsJson);
-var roomCollMapX = rooms.town.roomCollMapX;
+/*var roomCollMapX = rooms.town.roomCollMapX;
 var roomCollMapY = rooms.town.roomCollMapY;
 var roomCollCellWidth = 800 / roomCollMapX;
 var roomCollCellHeight = 500 / roomCollMapY;
-var roomCollMap = rooms.town.roomCollMap;
+var roomCollMap = rooms.town.roomCollMap;*/
+var players = new Array();
+class Player{
+	constructor(id, username, x, y, width, height, isMoving, mouseX, mouseY, message, isDev, items=[]){
+		this.id = id;
+		this.username = username;
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.isMoving = isMoving;
+		this.mouseX = mouseX;
+		this.mouseY = mouseY;
+		this.message = message;
+		this.movePlayerInterval;
+		this.isDev = isDev;
+		this.items = items;
+	}
+	move(room){
+		this.isMoving = true;
+		let dx = this.mouseX - this.x;
+		let dy = this.mouseY - this.y;
+		
+		let angleToMove = Math.atan2(dy,dx);
+
+		let speed = 4;
+
+		let velX = Math.cos(angleToMove) * speed;
+		let velY = Math.sin(angleToMove) * speed;
+		let timeToPlayerReachDestination = Math.floor(dx/velX);
+
+		let roomCollMap = room.roomCollMap;
+		let roomCollMapX = room.roomCollMapX;
+		let roomCollMapY = room.roomCollMapY;
+		let roomCollCellWidth = 800 / roomCollMapX;
+		let roomCollCellHeight = 500 / roomCollMapY;
+
+		this.movePlayerInterval = setInterval(() => {
+			let x,y;
+			
+			for(y = 0; y < roomCollMapY; y++){
+				for(x = 0; x < roomCollMapX; x++){
+					if(roomCollMap[y*roomCollMapX+x] == 1) {
+						if(this.x + velX <= roomCollCellWidth * x + roomCollCellWidth && this.x + velX >= roomCollCellWidth * x){
+							if(this.y + velY <= roomCollCellHeight * y + roomCollCellHeight && this.y + velY >= roomCollCellHeight * y){
+								this.isMoving = false;
+								clearInterval(this.movePlayerInterval);
+								return;
+							}
+						}
+					}
+				}
+			}
+
+			this.x += velX;
+			this.y += velY;
+
+			timeToPlayerReachDestination--;
+			if(timeToPlayerReachDestination <= 0){
+				this.isMoving = false;
+				clearInterval(this.movePlayerInterval);
+			}
+		}, 1000 / 60);	
+	}
+}
+var devTeamJson = fs.readFileSync('./serverData/devTeam.json');
+var devTeam = JSON.parse(devTeamJson);
+
+
 
 //Websockets communication
 io.on('connection', (socket) => {
@@ -52,9 +116,11 @@ io.on('connection', (socket) => {
 		console.log('A user disconnected: ' + socket.id);
 		if(players.length > 0){
 			let disconnectedPlayer = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
-			if(disconnectedPlayer == false) return;
-			socket.broadcast.emit('byePlayer', disconnectedPlayer);
+			let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+			if(disconnectedPlayer == false || thisPlayerRoom.players == false) return;
+			socket.broadcast.to(socket.gameRoom).emit('byePlayer', disconnectedPlayer);
 			server_utils.removeElementFromArray(disconnectedPlayer, players);
+			server_utils.removeElementFromArray(disconnectedPlayer, thisPlayerRoom.players);
 		}
 	})
 	socket.on('createAccount', (create)=>{
@@ -116,54 +182,54 @@ io.on('connection', (socket) => {
 					PlayFabId: result.data.UserInfo.PlayFabId,
 					ProfileConstraints: PlayerProfileViewConstraints
 				}
-				if(resultFromAuthentication.data.UserInfo.TitleInfo.isBanned == true){
+				if(resultFromAuthentication.data.UserInfo.TitleInfo.isBanned == true){ //Check if the player is banned
 					socket.emit('youAreBanned'); 
 					return;
 				}
-				PlayFabServer.GetPlayerProfile(playerProfileRequest, (error,result)=>{
+				PlayFabServer.GetPlayerProfile(playerProfileRequest, (error,result)=>{ //Get player profile
 					if(result !== null && result.data.PlayerProfile.ContactEmailAddresses[0] != undefined){
-							if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){
-								if(players.length > 0){	//Check if there is at least one player online
-									let logged;
-									let playerAlreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'playerId', io.sockets.sockets);
-									//Check if the player is already logged in
-									if(playerAlreadyLogged.playerId == PlayFabId){
-										socket.emit('alreadyLoggedIn');
-										playerAlreadyLogged.emit('loggedOut');
-										playerAlreadyLogged.disconnect(true);
-										logged = true;
+							if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){ //Player is verified
+								PlayFabAdmin.GetUserInventory({PlayFabId: PlayFabId}, (error, result) =>{ //Get player inventory
+									if(result !== null){
+										let alreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'id', players);
+										if(alreadyLogged != false) return
+										if(players.length > 0){	//Check if there is at least one player online
+											let logged;
+											let playerAlreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'playerId', io.sockets.sockets);
+											//Check if the player is already logged in
+											if(playerAlreadyLogged.playerId == PlayFabId){
+												socket.emit('alreadyLoggedIn');
+												playerAlreadyLogged.emit('loggedOut');
+												playerAlreadyLogged.disconnect(true);
+												logged = true;
+											}
+		
+											logged == true ? logged = false : createPlayer(result.data.Inventory);	//If the player is not logged in create player
+											
+										}else{	//If not create this first player
+											createPlayer(result.data.Inventory);
+										}
+									}else if(error !== null){
+										console.log("Inventory error: "+ error);
 									}
-
-									logged == true ? logged = false : createPlayer();	//If the player is not logged in create player
 									
-								}else{	//If not create this first player
-									createPlayer();
-								}
+								})
+								
 						
-								function createPlayer(){
-									let thisPlayer = {
-										id: PlayFabId,
-										username: resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName,
-										x:410,
-										y:380,
-										width:62,
-										height:82,
-										isMoving: false,
-										mouseX: 410,
-										mouseY: 390,
-										message: "",
-										isDev: false,
-										playerMove: function (move, thisPlayer){ movePlayerInterval = setInterval(move, 1000 / 60, thisPlayer)}	//Creates the player move function inside each player
-									}
+								function createPlayer(inventory){
+									let thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, 410, 380, 62, 82, false, 410, 380, "", false, inventory);
 									if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
 										thisPlayer.isDev = true;
 									};
+									if(socket.disconnected == true) return
 									players.push(thisPlayer);
 									socket.playerId = resultFromAuthentication.data.UserInfo.PlayFabId;
-									socket.join('town');
+									socket.join(rooms.town.name);
+									socket.gameRoom = rooms.town.name;
+									rooms.town.players.push(thisPlayer);
+									
 									socket.emit('readyToPlay?');	//Say to the client he/she can already start playing
-									socket.broadcast.emit('newPlayer', thisPlayer); //Emit this player to all clients logged in
-									console.log(io.sockets.adapter.rooms)
+									socket.broadcast.to(socket.gameRoom).emit('newPlayer', thisPlayer); //Emit this player to all clients logged in
 								}
 
 						}else if (result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Unverified" || result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Pending"){
@@ -199,82 +265,44 @@ io.on('connection', (socket) => {
 	})
 	socket.on('Im Ready', () =>{
 		if(socket.playerId == undefined) return;
-		socket.emit('loggedIn', (players));
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		socket.emit('loggedIn', (thisPlayerRoom.players));
 		socket.isAFK = setTimeout(()=>{
 			socket.disconnect(true);
-		}, 60000)
+		}, AFKTime)
 	})
 	socket.on('playerMovement', (playerMovement) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
-		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
 		let movePlayerObject = {
-			socket: socket.id,
 			id: player.id,
 			mouseX: playerMovement.mouseX, 
 			mouseY: playerMovement.mouseY
 		}
-		
-		socket.broadcast.emit('playerIsMoving', movePlayerObject);
-	
+		player.mouseX = playerMovement.mouseX;
+		player.mouseY = playerMovement.mouseY;
 		if(player.isMoving == false){
-			player.playerMove(movePlayerFunction, player);
+			player.move(thisPlayerRoom);
 		}else{
-			clearInterval(movePlayerInterval);
+			clearInterval(player.movePlayerInterval);
 			player.isMoving = false;
-			player.playerMove(movePlayerFunction, player);
+			player.move(thisPlayerRoom);
 		}
-
-		function movePlayerFunction(thisPlayer){
-			thisPlayer.isMoving = true;
-			thisPlayer.mouseX = playerMovement.mouseX;
-			thisPlayer.mouseY = playerMovement.mouseY;
-			let dx = playerMovement.mouseX - thisPlayer.x;    //Get the difference x from the player position and the click position
-			let dy = playerMovement.mouseY - thisPlayer.y;
-
-			let angle = Math.atan2(dy, dx);                //Calculates the angle from the difference between the player and the click
-			
-			let speed = 4;
-
-			velX = Math.cos(angle) * speed;                //Calculates the velocityX necessary to the player be at the same position as the click
-			velY = Math.sin(angle) * speed;
-		
-			let timeToPlayerReachDestination = Math.floor(dx/velX); //it doesn't matter if you use dy and velY or dx and velX
-			let x,y;
-			for(y = 0; y < roomCollMapY; y++){
-				for(x = 0; x < roomCollMapX; x++){
-					if(roomCollMap[y*roomCollMapX+x] == 1) {
-						if(thisPlayer.x + velX <= roomCollCellWidth * x + roomCollCellWidth && thisPlayer.x + velX >= roomCollCellWidth * x){
-							if(thisPlayer.y + velY <= roomCollCellHeight * y + roomCollCellHeight && thisPlayer.y + velY >= roomCollCellHeight * y){
-								thisPlayer.isMoving = false;
-								clearInterval(movePlayerInterval);
-								return;
-							}
-						}
-					}
-				}
-			}
-			thisPlayer.x += velX;                            //Moves the player
-			thisPlayer.y += velY;
-
-			timeToPlayerReachDestination--;
-
-			if(timeToPlayerReachDestination == 0){			//Detects if the player reached the click position
-				clearInterval(movePlayerInterval);
-			}
-		}
-		
+		socket.broadcast.to(socket.gameRoom).emit('playerIsMoving', movePlayerObject);
     })//Player Movement end
 	
 	socket.on('message',(message)=>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
-		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
 		let channel = client.channels.cache.get('838558782548082720');
 		let dateUTC = new Date(Date.now()).toUTCString();
 		if(message != undefined && server_utils.separateString(message)[0].includes("/") == false){
 			isprofanity(message, function(t){
-				if(t == true){
+				if(t == true || message.toLowerCase().includes('asshole') == true || message.toLowerCase().includes('ass hole') == true){
 					let messageObject = {
 						socket: socket.id,
 						message: "🤬"
@@ -282,8 +310,9 @@ io.on('connection', (socket) => {
 
 					console.log(player.username +' said the following bad word: '+ message);
 					let embed = embedText(dateUTC + '\n' +player.username + ' said the following bad word:', message);
-					channel.send(embed.setColor("FF0000"))
-					socket.broadcast.emit('playerSaid', messageObject);
+					channel.send(embed.setColor("FF0000"));
+					socket.emit('badWord', '🤬');
+					socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
 				}else{
 					let messageObject = {
 						id: player.id,
@@ -292,17 +321,48 @@ io.on('connection', (socket) => {
 					let embed = embedText(dateUTC + '\n' +player.username + ' said:', message);
 					console.log(dateUTC +'\n' + player.username + ' said: ' + message + '\n');
 					channel.send(embed.setColor("1ABBF5"))
-					socket.broadcast.emit('playerSaid', messageObject);
+					socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
 				}	
 				
 			},'data/profanity.csv','data/exceptions.csv',0.4);
 		}
 	})
 
+	socket.on('/room', (message) =>{
+		if(socket.playerId == undefined) return;
+		server_utils.resetTimer(socket, AFKTime);
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
+
+		message = server_utils.separateString(message);
+		let wantedRoom = server_utils.getElementFromArrayByValue(message[1], 'name', Object.values(rooms));
+		if(wantedRoom == false) return; //Check if the room the player wants to go exists
+		if(player.isMoving == true){
+			clearInterval(player.movePlayerInterval);
+			player.isMoving = false;
+		}
+		player.x = 410;
+		player.y = 380;
+		server_utils.removeElementFromArray(player, thisPlayerRoom.players); //Remove player from the room
+		socket.broadcast.to(socket.gameRoom).emit('byePlayer', player);//Say to everyone on the room that this player is gone
+		thisPlayerRoom.players.forEach(player => {
+			socket.emit('byePlayer', player); //Remove to the player everyone from the room he was
+		});
+		socket.leave(socket.gameRoom); //Leave room on server
+		socket.join(wantedRoom.name); //Join new room
+		socket.gameRoom = wantedRoom.name;
+		wantedRoom.players.push(player);
+		socket.emit('joinRoom',{name: wantedRoom.name, posX: player.x, posY: player.y});
+		socket.broadcast.to(socket.gameRoom).emit('newPlayer', (player)); //Say to everyone on the new room that the player is there
+		socket.emit('loggedIn', (wantedRoom.players)); //Say to the player who are in the new room
+		
+	})
+
 	socket.on('/report', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
-		let reporter = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players); //The user who is reporting
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		let reporter = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players); //The user who is reporting
 
 		message = server_utils.separateString(message);
 		let playerName = message[1];
@@ -325,11 +385,13 @@ io.on('connection', (socket) => {
 		}).catch(console.log);
 		
 	})
+	
 
 	socket.on('/ban', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
-		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
 
 		if(player.isDev == true){	//Template of the message should be /ban timeOfBan banPlayerName reason
 			message = server_utils.separateString(message);
@@ -375,7 +437,8 @@ io.on('connection', (socket) => {
 	socket.on('/unban', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
-		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
 
 		if(player.isDev == true){	//Template of the message should be /unban banPlayerName
 			message = server_utils.separateString(message);
@@ -398,11 +461,12 @@ io.on('connection', (socket) => {
 	socket.on('/remove', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
-		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', players);
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
 
 		if(player.isDev == true){
 			message = server_utils.separateString(message);
-			let removePlayerObject = server_utils.getElementFromArrayByValue(message[1], 'username', players);
+			let removePlayerObject = server_utils.getElementFromArrayByValue(message[1], 'username', thisPlayerRoom.players);
 			if(removePlayerObject == false) return;
 			let removePlayerSocket = server_utils.getElementFromArrayByValue(removePlayerObject.id, 'playerId', io.sockets.sockets);
 			if(removePlayerSocket == false) return;
