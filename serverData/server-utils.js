@@ -2,9 +2,7 @@ const { PlayFab, PlayFabAdmin } = require('playfab-sdk');
 var GAME_ID = '238E6';
 PlayFab.settings.titleId = GAME_ID;
 PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
-var url = require('url')
-var https = require('https');
-const { response } = require('express');
+
 functions = {
 	getElementFromArray:	function getElementFromArray(element, customIdentifier, array){
 		let tempElement;
