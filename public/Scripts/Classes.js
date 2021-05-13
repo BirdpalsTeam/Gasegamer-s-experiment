@@ -170,6 +170,10 @@ class Player extends Sprite{
 			this.x += velX;
 			this.y += velY;
 			timeToPlayerReachDestination--;
+			this.items.forEach((item) => {
+				item.x = this.x;
+				item.y = this.y;
+			});
 
 			if(timeToPlayerReachDestination == 0 || timeToPlayerReachDestination < 0){
 				this.isMoving = false;
@@ -179,13 +183,21 @@ class Player extends Sprite{
 		}, 1000 / 60);
 	
 	}
+
+	addItem(itemtype, itemname){
+		let tempItemImg = new Image();
+		tempItemImg.src = "Sprites/items/" + itemtype + "/" + itemname + ".png";
+
+		this.items.push(new Item(tempItemImg, this.sourceX, this.sourceY, this.sourceWidth, this.sourceHeight, this.x, this.y, this.width, this.height, this.originX, this.originY, 1, itemtype));
+	}
 	
 }
 
 class Item extends Sprite{
-	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, layer){
+	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, layer, type){
 		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
 
 		this.layer = layer;
+		this.type = type;
 	}
 }

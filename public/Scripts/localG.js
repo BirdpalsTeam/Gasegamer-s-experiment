@@ -99,3 +99,5 @@ function render(){
 }
 
 render();
+
+localPlayer.addItem("face", "eyepatch");
