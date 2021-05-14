@@ -1,6 +1,8 @@
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
 
+var currentState = new WorldState();
+
 var spritesStillLoading = 0;
 var loadSprite = function(imageName){
 	var image = new Image();

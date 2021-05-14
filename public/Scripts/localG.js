@@ -21,17 +21,7 @@ function getMousePos(cv, evt) {
 }};
 
 canvas.addEventListener('click', function(evt) {
-	mousePos = getMousePos(canvas, evt);
-	if(localPlayer != undefined){
-		localPlayer.mouseX = mousePos.x;
-		localPlayer.mouseY = mousePos.y;
-		localPlayer.move();
-	}
-	const playerMovement = {
-		mouseX: mousePos.x,
-		mouseY: mousePos.y
-	}
-	socket.emit('playerMovement', playerMovement);
+	currentState.onclick(evt);
 }, false);
 
 form.addEventListener('submit', function(e) {
@@ -43,36 +33,15 @@ form.addEventListener('submit', function(e) {
 });
 
 function render(){
-	ctx.clearRect(0,0,canvas.width,canvas.height);
-	roomSprite.draw();
-	
-	let allObjects = [];
-	allObjects = playersObject.concat(details);
-	allObjects.push(localPlayer);
-
-	allObjects.sort(function(a, b){return b.y-a.y});
-
-	allObjects.forEach((object) => {
-		if(object != undefined){
-			object.draw();
-		}
-	});
-
-	if(playersObject.length > 0){
-		playersObject.forEach((player) => {
-			player.whereToLook();
-			player.drawUsername();
-			player.drawBubble();
-		});
-	}
-
-	if(localPlayer != undefined){
-		localPlayer.drawUsername();
-		localPlayer.drawBubble();
-	}
-
+	currentState.render();
 	requestAnimationFrame(render);
 }
+
+function main(){
+	currentState.main();
+	requestAnimationFrame(main);
+}
+
 localPlayer.items.forEach(item => {
 	localPlayer.addItem(item.ItemClass, item.ItemId);
 });
