@@ -62,11 +62,13 @@ function render(){
 		playersObject.forEach((player) => {
 			player.whereToLook();
 			player.drawUsername();
+			player.drawBubble();
 		});
 	}
 
 	if(localPlayer != undefined){
 		localPlayer.drawUsername();
+		localPlayer.drawBubble();
 	}
 
 	requestAnimationFrame(render);

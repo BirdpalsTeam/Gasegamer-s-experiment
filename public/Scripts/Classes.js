@@ -42,6 +42,21 @@ class Player extends Sprite{
 	}
 
 	customDraw(){
+		//draw items
+		this.itemsImgs.forEach((item) => {
+				item.draw();
+		});
+	}
+
+	drawUsername(){
+		//drawUsername
+		ctx.fillStyle = "black";
+		ctx.font = "15px sans-serif";
+		ctx.textAlign = 'center'
+		ctx.fillText(this.username,this.x,this.y + this.height / 2.5);
+	}
+
+	drawBubble(){
 		//draw bubble
 		if(this.message != undefined){
 			ctx.fillStyle = "black";
@@ -59,19 +74,6 @@ class Player extends Sprite{
 				}
 			}
 		}
-
-		//draw items
-		this.itemsImgs.forEach((item) => {
-				item.draw();
-		});
-	}
-
-	drawUsername(){
-		//drawUsername
-		ctx.fillStyle = "black";
-		ctx.font = "15px sans-serif";
-		ctx.textAlign = 'center'
-		ctx.fillText(this.username,this.x,this.y + this.height / 2.5);
 	}
 
 	hideBubble(){
@@ -198,6 +200,8 @@ class Player extends Sprite{
 				this.itemsImgs.push(new Item(tempItemImg, this.sourceX, this.sourceY, this.sourceWidth, this.sourceHeight, this.x, this.y, this.width, this.height, this.originX, this.originY, 1, itemtype));
 			break;
 		}
+
+		this.items.sort(function(a, b){a.layer, b.layer});
 		
 	}
 	
