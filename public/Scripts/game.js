@@ -32,6 +32,7 @@ customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	rooms = response;
 	currentRoom = rooms.town.name;
 	roomImage = loadSprite(roomsSrc + rooms.town.image);
+	roomCollision();
 	assetLoadingLoop(); //Will only start when it get's the rooms image
 })
 
@@ -40,9 +41,10 @@ var roomCollMapX, roomCollMapY, roomCollCellWidth,roomCollCellHeight, roomCollMa
 function roomCollision(){
 	roomCollMapX = rooms[currentRoom].roomCollMapX;
 	roomCollMapY = rooms[currentRoom].roomCollMapY;
-	roomCollCellWidth = roomSprite.width / roomCollMapX;
-	roomCollCellHeight = roomSprite.height / roomCollMapY;
+	roomCollCellWidth = 800 / roomCollMapX;
+	roomCollCellHeight = 500 / roomCollMapY;
 	roomCollMap = rooms[currentRoom].roomCollMap;
+	console.log('f')
 }
 
 // Create a script tag

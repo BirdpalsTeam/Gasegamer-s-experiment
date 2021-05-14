@@ -28,7 +28,7 @@ app.use(express.static('public'));
 app.get('/', function(req, res){
 	res.sendFile('play.html');
 }); 
-
+PlayFabAdmin.UpdatePolicy
 const RECAPTCHA_SECRET = "6LePMZsaAAAAAKKj7gHyWp8Qbppk5BJOcqvEYD9I";
 
 var roomsJson = fs.readFileSync('./serverData/roomsJSON.json');
@@ -204,10 +204,10 @@ io.on('connection', (socket) => {
 												logged = true;
 											}
 		
-											logged == true ? logged = false : createPlayer(result.data.Inventory);	//If the player is not logged in create player
+											logged == true ? logged = false : createPlayer(PlayFabId, result.data.Inventory);	//If the player is not logged in create player
 											
 										}else{	//If not create this first player
-											createPlayer(result.data.Inventory);
+											createPlayer(PlayFabId,result.data.Inventory);
 										}
 									}else if(error !== null){
 										console.log("Inventory error: "+ error);
@@ -216,8 +216,8 @@ io.on('connection', (socket) => {
 								})
 								
 						
-								function createPlayer(inventory){
-									let thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, 410, 380, 62, 82, false, 410, 380, "", false, inventory);
+								function createPlayer(thisPlayer, inventory){
+									thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, 410, 380, 62, 82, false, 410, 380, "", false, inventory);
 									if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
 										thisPlayer.isDev = true;
 									};
@@ -227,7 +227,6 @@ io.on('connection', (socket) => {
 									socket.join(rooms.town.name);
 									socket.gameRoom = rooms.town.name;
 									rooms.town.players.push(thisPlayer);
-									
 									socket.emit('readyToPlay?');	//Say to the client he/she can already start playing
 									socket.broadcast.to(socket.gameRoom).emit('newPlayer', thisPlayer); //Emit this player to all clients logged in
 								}
@@ -266,7 +265,14 @@ io.on('connection', (socket) => {
 	socket.on('Im Ready', () =>{
 		if(socket.playerId == undefined) return;
 		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
-		socket.emit('loggedIn', (thisPlayerRoom.players));
+		let preventRecursion = thisPlayerRoom.players;
+		preventRecursion.forEach(player=>{
+			if(player.isMoving == true){
+				clearInterval(player.movePlayerInterval);
+				player.isMoving == false;
+			}
+		})
+		socket.emit('loggedIn', (preventRecursion)); //there is a problem here
 		socket.isAFK = setTimeout(()=>{
 			socket.disconnect(true);
 		}, AFKTime)
@@ -354,7 +360,14 @@ io.on('connection', (socket) => {
 		wantedRoom.players.push(player);
 		socket.emit('joinRoom',{name: wantedRoom.name, posX: player.x, posY: player.y});
 		socket.broadcast.to(socket.gameRoom).emit('newPlayer', (player)); //Say to everyone on the new room that the player is there
-		socket.emit('loggedIn', (wantedRoom.players)); //Say to the player who are in the new room
+		let preventRecursion = wantedRoom.players;
+		preventRecursion.forEach(player =>{
+			if(player.isMoving == true){
+				clearInterval(player.movePlayerInterval);
+				player.isMoving = false;
+			}
+		})
+		socket.emit('loggedIn', (preventRecursion)); //Say to the player who are in the new room
 		
 	})
 
