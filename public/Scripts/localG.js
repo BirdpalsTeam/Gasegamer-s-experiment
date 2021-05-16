@@ -45,5 +45,5 @@ function main(){
 localPlayer.items.forEach(item => {
 	localPlayer.addItem(item.ItemClass, item.ItemId);
 });
-
+document.getElementById('loading').remove();
 render();
