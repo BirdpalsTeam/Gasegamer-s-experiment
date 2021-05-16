@@ -1,14 +1,14 @@
 form = document.getElementById("form");
 input = document.getElementById("input");
 
-var roomSprite = new Sprite(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
+var roomSprite = new Room(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
 var details = new Sprite(detailsImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
 
 function drawCollisionMap(){	//Just a debug function
 	let x, y;
 	for(y = 0; y < roomCollMapY; y++){
 		for(x = 0; x < roomCollMapX; x++){
-			if(roomCollMap[y*roomCollMapX+x] == 1) { ctx.beginPath(); ctx.fillStyle = "red"; ctx.rect(roomCollCellWidth * x, roomCollCellHeight * y, room.width / roomCollMapX, room.height / roomCollMapY); ctx.fill(); }
+			if(roomCollMap[y*roomCollMapX+x] == 1) {ctx.beginPath(); ctx.fillStyle = "red"; ctx.rect(roomCollCellWidth * x, roomCollCellHeight * y,800 / roomCollMapX, 500 / roomCollMapY); ctx.fill(); }
 		}
 	}
 }

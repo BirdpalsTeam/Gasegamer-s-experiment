@@ -26,7 +26,7 @@ var roomImage;
 var detailsImage;
 var bubble_image;
 var currentRoom;
-
+var collisionArray = new Array(); 
 bubble_image = loadSprite(hudSrc + 'hud.png');
 birdImage = loadSprite(charactersSrc + 'bird_blue.png');
 detailsImage = loadSprite(roomsSrc + 'town_details.png');
@@ -37,7 +37,7 @@ customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	roomCollision();
 	assetLoadingLoop(); //Will only start when it get's the rooms image
 })
-
+var f = []
 //Room stuff
 var roomCollMapX, roomCollMapY, roomCollCellWidth,roomCollCellHeight, roomCollMap;
 function roomCollision(){
@@ -46,7 +46,15 @@ function roomCollision(){
 	roomCollCellWidth = 800 / roomCollMapX;
 	roomCollCellHeight = 500 / roomCollMapY;
 	roomCollMap = rooms[currentRoom].roomCollMap;
-	console.log('f')
+	/*for(y = 0; y < roomCollMapY; y++){
+		for(x = 0; x < roomCollMapX; x++){
+			if(roomCollMap[y*roomCollMapX+x] == 1){
+				f.push(roomCollCellWidth * x, roomCollCellHeight * y);
+			}
+			
+		}
+	}*/
+	collisionArray = rooms[currentRoom].collision;
 }
 
 // Create a script tag

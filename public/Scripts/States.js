@@ -24,7 +24,6 @@ class WorldState extends State{
     render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         roomSprite.draw();
-        
         let allObjects = [];
         allObjects = playersObject.concat(details);
         allObjects.push(localPlayer);

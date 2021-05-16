@@ -153,23 +153,24 @@ class Player extends Sprite{
 		let velY = Math.sin(angleToMove) * speed;
 
 		let timeToPlayerReachDestination = Math.floor(dx/velX);
-
+		let collided;
+		
 		this.movePlayerInterval = setInterval(() => {
-			let x,y;
-			for(y = 0; y < roomCollMapY; y++){
-				for(x = 0; x < roomCollMapX; x++){
-					if(roomCollMap[y*roomCollMapX+x] == 1) {
-						if(this.x + velX <= roomCollCellWidth * x + roomCollCellWidth && this.x + velX >= roomCollCellWidth * x){
-							if(this.y + velY <= roomCollCellHeight * y + roomCollCellHeight && this.y + velY >= roomCollCellHeight * y){
-								this.isMoving = false;
-								clearInterval(this.movePlayerInterval);
-								return;
-							}
-						}
+
+			for(let i = 0; i < collisionArray.length; i+=2){
+				if(timeToPlayerReachDestination <= 0) return collided = true;
+				
+				if(this.x + velX <= collisionArray[i] + roomCollCellWidth && this.x + velX >= collisionArray[i]){
+					if(this.y + velY <= collisionArray[i + 1] + roomCollCellHeight && this.y + velY >= collisionArray[i + 1]){
+						this.isMoving = false;
+						clearInterval(this.movePlayerInterval);
+						return collided = true;
 					}
 				}
 			}
-
+			if(collided == true){
+				return;
+			}
 			this.x += velX;
 			this.y += velY;
 			timeToPlayerReachDestination--;
@@ -178,7 +179,7 @@ class Player extends Sprite{
 				item.y = this.y;
 			});
 
-			if(timeToPlayerReachDestination == 0 || timeToPlayerReachDestination < 0){
+			if(timeToPlayerReachDestination <= 0){
 				this.isMoving = false;
 				clearInterval(this.movePlayerInterval);
 			}
@@ -208,6 +209,13 @@ class Player extends Sprite{
 }
 
 class Item extends Sprite{
+	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, layer, type){
+		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
+		this.layer = layer;
+		this.type = type;
+	}
+}
+class Room extends Sprite{
 	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, layer, type){
 		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
 		this.layer = layer;
