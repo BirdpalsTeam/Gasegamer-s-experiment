@@ -10,10 +10,16 @@ h1 {
 }
 
 canvas {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  border-radius: 4px;
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	border-radius: 4px;
+}
+
+.loading{
+	position: absolute;
+	height: 510px;
+	width: 810px;
 }
 
 input {

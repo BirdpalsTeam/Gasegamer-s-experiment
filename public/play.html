@@ -12,16 +12,23 @@
 <body>
 <audio src="Audio/Alpha_Party.mp3" type="audio/mpeg" autoplay loop>
 </audio>
-<canvas id="myCanvas" width="800" height="500" style="border: 5px solid #ffffff"></canvas>
 <center>
-<form id="form" action="">
-        <input id="input" type="text" maxlength="50" autocomplete="off" placeholder="Type a Message..."/>
-        <button>Send</button>
-</form> </center>
+	<div class="container">
+		<img id='loading' src="https://cdn.dribbble.com/users/755224/screenshots/2771297/morph_2.gif" class="loading">
+		<canvas id="myCanvas" width="800" height="500" style="border: 5px solid #ffffff"></canvas>
+	</div>
+</center>
+<center>
+	<form id="form" action="">
+		<input id="input" type="text" maxlength="50" autocomplete="off" placeholder="Type a Message..."/>
+		<button>Send</button>
+	</form> 
+</center>
 <script src="/socket.io/socket.io.js"></script>
 <script src='https://download.playfab.com/PlayFabClientApi.js'></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="Modules/utils.js"></script>
+<script src="Scripts/States.js"></script>
 <script src='Scripts/Classes.js' id="Classes"></script>
 <script src="Scripts/game.js"></script>
 

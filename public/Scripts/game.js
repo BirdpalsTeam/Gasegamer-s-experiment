@@ -129,6 +129,7 @@ socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 	});
 	let ref = document.getElementById('Classes');
 	ref.appendChild(script);		//Add index.js
+	document.getElementById('loading').remove();
 })
 
 socket.on('newPlayer', (player) => {
