@@ -152,6 +152,9 @@ class Player extends Sprite{
 		let velX = Math.cos(angleToMove) * speed;
 		let velY = Math.sin(angleToMove) * speed;
 
+		velX *= timeScale;
+		velY *= timeScale;
+
 		let timeToPlayerReachDestination = Math.floor(dx/velX);
 		let collided;
 		
