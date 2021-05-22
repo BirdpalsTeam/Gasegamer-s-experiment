@@ -65,6 +65,11 @@ class WorldState extends State{
     }
 }
 
+
+
+
+//Debug States
+
 class DebugWorldState extends WorldState{
     constructor(){
         super();
@@ -84,5 +89,38 @@ class DebugWorldState extends WorldState{
         socket.emit('playerMovement', playerMovement);
 
         debugParagraph.innerHTML = "mouse X: " + mousePos.x.toString() + " mouse Y: " + mousePos.y.toString();
+    }
+}
+
+class WorldEditorStateSpritesheet extends State{
+    constructor(){
+        super();
+
+        this.cutobjectsx = 0;
+        this.cutobjectsy = 0;
+        this.cutobjectswidth = 0;
+        this.cutobjectsheight = 0;
+        this.cutobjectoriginx = 0;
+        this.cutobjectoriginy = 0;
+
+        this.camX = 0;
+        this.camY = 0;
+
+        this.roomediting = "";
+        this.spritesheetediting = "";
+
+        this.roomediting = prompt("Enter Room You want to edit");
+        this.spritesheetediting = "Sprites/rooms/" + prompt("Enter Spritesheet to use");
+        this.roomImage = new Image();
+        this.roomImage.src = this.spritesheetediting;
+    }
+
+    render(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+    }
+
+    onclick(evt){
+        
     }
 }
