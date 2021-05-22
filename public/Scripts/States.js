@@ -64,3 +64,25 @@ class WorldState extends State{
         socket.emit('playerMovement', playerMovement);
     }
 }
+
+class DebugWorldState extends WorldState{
+    constructor(){
+        super();
+    }
+
+    onclick(evt){
+        mousePos = getMousePos(canvas, evt);
+        if(localPlayer != undefined){
+            localPlayer.mouseX = mousePos.x;
+            localPlayer.mouseY = mousePos.y;
+            localPlayer.move();
+        }
+        const playerMovement = {
+            mouseX: mousePos.x,
+            mouseY: mousePos.y
+        }
+        socket.emit('playerMovement', playerMovement);
+
+        debugParagraph.innerHTML = "mouse X: " + mousePos.x.toString() + " mouse Y: " + mousePos.y.toString();
+    }
+}

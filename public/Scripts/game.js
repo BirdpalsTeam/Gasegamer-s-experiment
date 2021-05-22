@@ -1,6 +1,8 @@
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
 
+var debugParagraph = document.getElementById('debugParagraph');
+
 var currentState = new WorldState();
 
 var spritesStillLoading = 0;
@@ -26,6 +28,7 @@ var roomImage;
 var detailsImage;
 var bubble_image;
 var currentRoom;
+var triggers;
 var collisionArray = new Array(); 
 bubble_image = loadSprite(hudSrc + 'hud.png');
 birdImage = loadSprite(charactersSrc + 'bird_blue.png');
@@ -46,6 +49,7 @@ function roomCollision(){
 	roomCollCellWidth = 800 / roomCollMapX;
 	roomCollCellHeight = 500 / roomCollMapY;
 	roomCollMap = rooms[currentRoom].roomCollMap;
+	triggers = rooms[currentRoom].triggers;
 	/*for(y = 0; y < roomCollMapY; y++){
 		for(x = 0; x < roomCollMapX; x++){
 			if(roomCollMap[y*roomCollMapX+x] == 1){
@@ -56,7 +60,14 @@ function roomCollision(){
 	}*/
 	collisionArray = rooms[currentRoom].collision;
 }
-
+//Trigger Stuff
+function activateTrigger(triggerArray){
+	switch(triggerArray[4]){
+		case "changeRoom":
+			setLocalMessage("/room " + triggerArray[5]);
+			break;
+	}
+}
 // Create a script tag
 var script = document.createElement('script');
 

@@ -159,7 +159,6 @@ class Player extends Sprite{
 		let collided;
 		
 		this.movePlayerInterval = setInterval(() => {
-
 			for(let i = 0; i < collisionArray.length; i+=2){
 				if(timeToPlayerReachDestination <= 0) return collided = true;
 				
@@ -167,6 +166,12 @@ class Player extends Sprite{
 					if(this.y + velY <= collisionArray[i + 1] + roomCollCellHeight && this.y + velY >= collisionArray[i + 1]){
 						this.isMoving = false;
 						clearInterval(this.movePlayerInterval);
+						triggers.forEach(function(tempTrigger){ //Goes through each trigger to see if the player is within it
+							if(localPlayer.y >= tempTrigger[1] && localPlayer.y <= tempTrigger[3] && localPlayer.x >= tempTrigger[0] && localPlayer.x <= tempTrigger[2]){
+								activateTrigger(tempTrigger);
+								//Apparently breaks aren't allowed here so I'll do that later
+							}
+						});
 						return collided = true;
 					}
 				}
