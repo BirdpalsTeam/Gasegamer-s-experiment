@@ -3,8 +3,8 @@ input = document.getElementById("input");
 
 let timeScale = 1;
 
-var roomSprite = new Room(roomImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
-var details = new Sprite(detailsImage, 0, 0, 892, 512, 0, 0, 800, 500, 0, 0);
+var roomSprite = new Room(roomImage, 0, 0, 892, 512, 0, 0, 1000, 600, 0, 0);
+var details = new Sprite(detailsImage, 0, 0, 892, 512, 0, 0, 1000, 600, 0, 0);
 
 function drawCollisionMap(){	//Just a debug function
 	let x, y;

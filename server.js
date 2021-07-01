@@ -21,7 +21,7 @@ const client = new Discord.Client();
 function embedText(who, message){
 	return new Discord.MessageEmbed().addField(who, message);
 }
-
+let prefix = '!';
 //Send the public files to the domain
 app.use(express.static('public'));
 
@@ -33,12 +33,9 @@ const RECAPTCHA_SECRET = "6LePMZsaAAAAAKKj7gHyWp8Qbppk5BJOcqvEYD9I";
 
 var roomsJson = fs.readFileSync('./serverData/roomsJSON.json');
 var rooms = JSON.parse(roomsJson);
-/*var roomCollMapX = rooms.town.roomCollMapX;
-var roomCollMapY = rooms.town.roomCollMapY;
-var roomCollCellWidth = 800 / roomCollMapX;
-var roomCollCellHeight = 500 / roomCollMapY;
-var roomCollMap = rooms.town.roomCollMap;*/
+
 var players = new Array();
+
 class Player{
 	constructor(id, username, x, y, width, height, isMoving, mouseX, mouseY, message, isDev, items=[]){
 		this.id = id;
@@ -68,24 +65,35 @@ class Player{
 		let velY = Math.sin(angleToMove) * speed;
 		let timeToPlayerReachDestination = Math.floor(dx/velX);
 
-		let roomCollMap = room.roomCollMap;
 		let roomCollMapX = room.roomCollMapX;
 		let roomCollMapY = room.roomCollMapY;
 		let roomCollCellWidth = 800 / roomCollMapX;
 		let roomCollCellHeight = 500 / roomCollMapY;
+		let collisionArray = room.collision;
+		let predictArray = room.noCollidersArea;
+		let collided, willCollide;
+		function predictCollision(x1, y1, x2, y2, x, y)
+		{
+			//x1 and y1 are bottom-left and x2 and y2 are top-right
+			if (x > x1 && x < x2 && y > y1 && y < y2){
+				willCollide = false;
+			}else{
+				willCollide = true;
+			}
+		}
+		predictCollision(predictArray[0],predictArray[1],predictArray[2],predictArray[3],this.mouseX,this.mouseY);
 
 		this.movePlayerInterval = setInterval(() => {
-			let x,y;
 			
-			for(y = 0; y < roomCollMapY; y++){
-				for(x = 0; x < roomCollMapX; x++){
-					if(roomCollMap[y*roomCollMapX+x] == 1) {
-						if(this.x + velX <= roomCollCellWidth * x + roomCollCellWidth && this.x + velX >= roomCollCellWidth * x){
-							if(this.y + velY <= roomCollCellHeight * y + roomCollCellHeight && this.y + velY >= roomCollCellHeight * y){
-								this.isMoving = false;
-								clearInterval(this.movePlayerInterval);
-								return;
-							}
+			if(willCollide == true){
+				for(let i = 0; i < collisionArray.length; i+=2){
+					if(timeToPlayerReachDestination <= 0) return collided = true;
+					
+					if(this.x + velX <= collisionArray[i] + roomCollCellWidth && this.x + velX >= collisionArray[i]){
+						if(this.y + velY <= collisionArray[i + 1] + roomCollCellHeight && this.y + velY >= collisionArray[i + 1]){
+							this.isMoving = false;
+							clearInterval(this.movePlayerInterval);
+							return collided = true;
 						}
 					}
 				}
@@ -102,10 +110,9 @@ class Player{
 		}, 1000 / 60);	
 	}
 }
+
 var devTeamJson = fs.readFileSync('./serverData/devTeam.json');
 var devTeam = JSON.parse(devTeamJson);
-
-
 
 //Websockets communication
 io.on('connection', (socket) => {
@@ -217,7 +224,7 @@ io.on('connection', (socket) => {
 								
 						
 								function createPlayer(thisPlayer, inventory){
-									thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, 410, 380, 62, 82, false, 410, 380, "", false, inventory);
+									thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, 500, 460, 62, 82, false, 500, 460, "", false, inventory);
 									if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
 										thisPlayer.isDev = true;
 									};
@@ -304,7 +311,7 @@ io.on('connection', (socket) => {
 		server_utils.resetTimer(socket, AFKTime);
 		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
-		let channel = client.channels.cache.get('838558782548082720');
+		let channel = client.channels.cache.get('845340183984341075');
 		let dateUTC = new Date(Date.now()).toUTCString();
 		if(message != undefined && server_utils.separateString(message)[0].includes("/") == false){
 			isprofanity(message, function(t){
@@ -316,7 +323,7 @@ io.on('connection', (socket) => {
 
 					console.log(player.username +' said the following bad word: '+ message);
 					let embed = embedText(dateUTC + '\n' +player.username + ' said the following bad word:', message);
-					channel.send(embed.setColor("FF0000"));
+					channel.send(embed.setColor("#FF0000"));
 					socket.emit('badWord', '🤬');
 					socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
 				}else{
@@ -339,7 +346,6 @@ io.on('connection', (socket) => {
 		server_utils.resetTimer(socket, AFKTime);
 		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
 		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
-
 		message = server_utils.separateString(message);
 		let wantedRoom = server_utils.getElementFromArrayByValue(message[1], 'name', Object.values(rooms));
 		if(wantedRoom == false) return; //Check if the room the player wants to go exists
@@ -351,9 +357,7 @@ io.on('connection', (socket) => {
 		player.y = 380;
 		server_utils.removeElementFromArray(player, thisPlayerRoom.players); //Remove player from the room
 		socket.broadcast.to(socket.gameRoom).emit('byePlayer', player);//Say to everyone on the room that this player is gone
-		thisPlayerRoom.players.forEach(player => {
-			socket.emit('byePlayer', player); //Remove to the player everyone from the room he was
-		});
+		socket.emit('leaveRoom');
 		socket.leave(socket.gameRoom); //Leave room on server
 		socket.join(wantedRoom.name); //Join new room
 		socket.gameRoom = wantedRoom.name;
@@ -368,7 +372,6 @@ io.on('connection', (socket) => {
 			}
 		})
 		socket.emit('loggedIn', (preventRecursion)); //Say to the player who are in the new room
-		
 	})
 
 	socket.on('/report', (message) =>{
@@ -384,7 +387,7 @@ io.on('connection', (socket) => {
 		server_utils.getPlayfabUserByUsername(playerName).then(response =>{
 			let reportMessage = message.slice(2, message.length);
 			reportMessage = reportMessage.toString().split(',').join(' ');
-			let channel = client.channels.cache.get('838549917281943562'); //Connect to report channel on discord
+			let channel = client.channels.cache.get('845340393461645352'); //Connect to report channel on discord
 			PlayFabServer.ReportPlayer({ReporterId: reporter.id, ReporteeId: response.data.UserInfo.PlayFabId, Comment: reportMessage}, (error, result) =>{
 				if(result !== null){
 					let dateUTC = new Date(Date.now()).toUTCString();
@@ -433,7 +436,7 @@ io.on('connection', (socket) => {
 					PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
 						if(result !== null){
 							console.log(result);
-							let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(playerInPlayfab, 'playerId', io.sockets.sockets);
+							let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(banPlayerId, 'playerId', io.sockets.sockets);
 							socket.emit('playerBanned!');
 							if(removeBannedPlayerSocket == false) return; //Check if the player is online
 							removeBannedPlayerSocket.disconnect(true);
@@ -492,5 +495,49 @@ io.on('connection', (socket) => {
 http.listen(process.env.PORT || 3000, () => {
 	console.log('listening on *:3000');
 });
+
 //Start the discord bot
 client.login('ODM4NTQ3NTYxNTgwMzMxMDcw.YI8sRg.15hZCkAeqKpFqjMF2jds5Et7o9U');
+
+//discord things
+client.on('message' ,(message) =>{
+	if (!message.content.startsWith(prefix) || message.author.bot) return;
+	if(message.member.roles.cache.has('760901805436960800') || message.member.roles.cache.has('845072414048387102')){
+		const args = message.content.slice(prefix.length).trim().split(/ +/);
+		const command = args.shift().toLowerCase();
+		let messageFromDiscord = server_utils.separateString(message.content);
+		let timeOfBan = messageFromDiscord[1];
+		let banPlayerName = messageFromDiscord[2];
+		let reason = messageFromDiscord.slice(3,messageFromDiscord.length);
+		reason = reason.toString().split(',').join(' '); //Returns the reason with spaces
+		if(isNaN(timeOfBan) == true || banPlayerName == undefined || reason == undefined) {return message.channel.send(embedText('Error:', 'Command contains invalid parameters.').setColor('#FFFB00'));} //Check if the message is in correct form
+		let banRequest;
+
+		if(command == 'ban' && banPlayerName != undefined){
+			server_utils.getPlayfabUserByUsername(banPlayerName).then(response =>{
+				let banMessage = response.data.UserInfo.TitleInfo.DisplayName + ' was banned.';
+				let banPlayerId = response.data.UserInfo.PlayFabId;
+					if(timeOfBan === '9999'){	//Perma ban
+						banRequest = {
+							Bans: [{PlayFabId: banPlayerId, Reason: reason}]
+						}
+					}else{
+						banRequest = {
+							Bans: [{DurationInHours: timeOfBan, PlayFabId: banPlayerId, Reason: reason}]
+						}
+					}
+					PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
+						if(result !== null){
+							message.channel.send(embedText('Banned:', banMessage).setColor('#FF0000'))
+						}else if(error !== null){
+							console.log(error)
+						}
+					})
+				}).catch(error =>{
+					message.channel.send(embedText('Error:', error.errorMessage).setColor('#FFFB00'))
+			});
+
+		}
+	}
+	
+})

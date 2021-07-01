@@ -29,6 +29,10 @@ function getElementFromArrayByValue(value, customIdentifier, array){
 	return tempElement != undefined ? tempElement : false;
 }
 
+function removeElementFromArray(element, array){
+	array.splice(array.indexOf(element), 1);
+}
+
 function hasWhiteSpaces(string){
 	return string !== string.replace(/\s/g,"") ? true : false;
 }

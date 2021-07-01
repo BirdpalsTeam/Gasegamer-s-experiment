@@ -22,14 +22,9 @@ var charactersSrc = spritesSrc + 'characters/';
 var roomsSrc = spritesSrc + 'rooms/';
 var hudSrc = spritesSrc + 'hud/';
 
-var rooms;
-var birdImage;
-var roomImage;
-var detailsImage;
-var bubble_image;
-var currentRoom;
-var triggers;
-var collisionArray = new Array(); 
+var rooms, currentRoom, triggers;
+var birdImage, roomImage, detailsImage, bubble_image;
+var collisionArray, predictArray = new Array();
 bubble_image = loadSprite(hudSrc + 'hud.png');
 birdImage = loadSprite(charactersSrc + 'bird_blue.png');
 detailsImage = loadSprite(roomsSrc + 'town_details.png');
@@ -40,24 +35,28 @@ customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	roomCollision();
 	assetLoadingLoop(); //Will only start when it get's the rooms image
 })
-var f = []
+var f = [] // debug array
 //Room stuff
 var roomCollMapX, roomCollMapY, roomCollCellWidth,roomCollCellHeight, roomCollMap;
 function roomCollision(){
+	f=[];
 	roomCollMapX = rooms[currentRoom].roomCollMapX;
 	roomCollMapY = rooms[currentRoom].roomCollMapY;
-	roomCollCellWidth = 800 / roomCollMapX;
-	roomCollCellHeight = 500 / roomCollMapY;
+	roomCollCellWidth = 1000 / roomCollMapX;
+	roomCollCellHeight = 600 / roomCollMapY;
 	roomCollMap = rooms[currentRoom].roomCollMap;
 	triggers = rooms[currentRoom].triggers;
+	predictArray = rooms[currentRoom].noCollidersArea;
 	/*for(y = 0; y < roomCollMapY; y++){
 		for(x = 0; x < roomCollMapX; x++){
 			if(roomCollMap[y*roomCollMapX+x] == 1){
 				f.push(roomCollCellWidth * x, roomCollCellHeight * y);
+				console.log(f)
 			}
 			
 		}
 	}*/
+	
 	collisionArray = rooms[currentRoom].collision;
 }
 //Trigger Stuff
@@ -196,6 +195,14 @@ socket.on('joinRoom', (joinRoom) =>{
 	roomSprite.img = loadSprite(roomsSrc+ rooms[joinRoom.name].image);
 	details.img = loadSprite(roomsSrc + rooms[joinRoom.name].details.image);
 	currentRoom = joinRoom.name;
+	switch(joinRoom.name){
+		case "town":
+			document.getElementById('background_music').src = 'Audio/Alpha_Party.mp3';
+			break;
+		case "cabin":
+			document.getElementById('background_music').src = 'Audio/Cabin.mp3';
+			break;
+	}
 	localPlayer.x = joinRoom.posX;
 	localPlayer.y = joinRoom.posY;
 	localPlayer.itemsImgs.forEach(item => {
@@ -203,6 +210,10 @@ socket.on('joinRoom', (joinRoom) =>{
 		item.y = joinRoom.posY;
 	});
 	roomCollision();
+})
+socket.on('leaveRoom', () => {
+	playersInGame = [];
+	playersObject = [];
 })
 socket.on('playerBanned!', () =>{
 	setLocalMessage('Successfully Banned :)', true);

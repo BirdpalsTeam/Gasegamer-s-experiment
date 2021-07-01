@@ -48,6 +48,7 @@ class WorldState extends State{
             localPlayer.drawUsername();
             localPlayer.drawBubble();
         }
+
     }
 
     onclick(evt){

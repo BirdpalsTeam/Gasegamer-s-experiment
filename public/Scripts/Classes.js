@@ -149,36 +149,43 @@ class Player extends Sprite{
 
 		let speed = 4;
 
-		let velX = Math.cos(angleToMove) * speed;
-		let velY = Math.sin(angleToMove) * speed;
-
-		velX *= timeScale;
-		velY *= timeScale;
+		let velX = Math.cos(angleToMove) * speed * timeScale;
+		let velY = Math.sin(angleToMove) * speed * timeScale;
 
 		let timeToPlayerReachDestination = Math.floor(dx/velX);
-		let collided;
-		
+		let collided, willCollide;
+		function predictCollision(x1, y1, x2, y2, x, y)
+		{
+			//x1 and y1 are bottom-left and x2 and y2 are top-right
+			if (x > x1 && x < x2 && y > y1 && y < y2){
+				willCollide = false;
+			}else{
+				willCollide = true;
+			}
+		}
+		predictCollision(predictArray[0],predictArray[1],predictArray[2],predictArray[3],this.mouseX,this.mouseY);
 		this.movePlayerInterval = setInterval(() => {
-			for(let i = 0; i < collisionArray.length; i+=2){
-				if(timeToPlayerReachDestination <= 0) return collided = true;
-				
-				if(this.x + velX <= collisionArray[i] + roomCollCellWidth && this.x + velX >= collisionArray[i]){
-					if(this.y + velY <= collisionArray[i + 1] + roomCollCellHeight && this.y + velY >= collisionArray[i + 1]){
-						this.isMoving = false;
-						clearInterval(this.movePlayerInterval);
-						triggers.forEach(function(tempTrigger){ //Goes through each trigger to see if the player is within it
-							if(localPlayer.y >= tempTrigger[1] && localPlayer.y <= tempTrigger[3] && localPlayer.x >= tempTrigger[0] && localPlayer.x <= tempTrigger[2]){
-								activateTrigger(tempTrigger);
-								//Apparently breaks aren't allowed here so I'll do that later
-							}
-						});
-						return collided = true;
+			if(willCollide == true){
+				for(let i = 0; i < collisionArray.length; i+=2){
+					if(timeToPlayerReachDestination <= 0) return collided = true;
+					if(this.x + velX <= collisionArray[i] + roomCollCellWidth && this.x + velX >= collisionArray[i]){
+						if(this.y + velY <= collisionArray[i + 1] + roomCollCellHeight && this.y + velY >= collisionArray[i + 1]){
+							this.isMoving = false;
+							clearInterval(this.movePlayerInterval);
+							collided = true;
+						}
 					}
 				}
+				if(collided == true){
+					triggers.forEach(function(tempTrigger){ //Goes through each trigger to see if the player is within it
+						if(localPlayer.y >= tempTrigger[1] && localPlayer.y <= tempTrigger[3] && localPlayer.x >= tempTrigger[0] && localPlayer.x <= tempTrigger[2]){
+							activateTrigger(tempTrigger);
+						}
+					});
+					return;
+				}
 			}
-			if(collided == true){
-				return;
-			}
+			
 			this.x += velX;
 			this.y += velY;
 			timeToPlayerReachDestination--;
