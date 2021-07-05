@@ -1,5 +1,7 @@
 form = document.getElementById("form");
 input = document.getElementById("input");
+PlayFab.settings.titleId = '238E6';
+PlayFab._internalSettings.sessionTicket = sessionStorage.ticket;
 
 let timeScale = 1;
 
@@ -60,6 +62,33 @@ localPlayer.items.forEach(item => {
 	localPlayer.addItem(item.ItemClass, item.ItemId);
 });
 document.getElementById('loading').remove();
-
+document.getElementById('inventory').onclick = function(){test()};
+function test(){
+	command('/updateInventory', true);
+	PlayFabClientSDK.GetUserInventory({SessionTicket: sessionStorage.ticket}, (result, error) =>{
+		if(result !== null){
+			localPlayer.items = result.data.Inventory;
+			localPlayer.itemsImgs = new Array();
+			let colors = new Array();
+			localPlayer.items.forEach((item) => {
+				if(item.CustomData.isEquipped == 'true'){
+					localPlayer.addItem(item.ItemClass, item.ItemId);
+				}
+				if(item.ItemClass == 'color'){
+					let colorItem = {ItemId: item.ItemId, isEquipped: item.CustomData.isEquipped}
+					colors.push(colorItem);
+				}
+			})
+			if(getElementFromArrayByValue('true', 'isEquipped', colors) == false){
+				let tempCharacterImg = new Image();
+				tempCharacterImg.src = charactersSrc + "bird_blue.png";
+				localPlayer.img = tempCharacterImg;
+				localPlayer.img.name = 'bird_blue';
+			}
+		}else if(error !== null){
+			console.log(error);
+		}
+	})
+}
 render();
 main();

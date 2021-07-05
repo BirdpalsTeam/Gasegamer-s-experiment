@@ -70,35 +70,20 @@ class Player{
 		let roomCollCellWidth = 800 / roomCollMapX;
 		let roomCollCellHeight = 500 / roomCollMapY;
 		let collisionArray = room.collision;
-		let predictArray = room.noCollidersArea;
-		let collided, willCollide;
-		function predictCollision(x1, y1, x2, y2, x, y)
-		{
-			//x1 and y1 are bottom-left and x2 and y2 are top-right
-			if (x > x1 && x < x2 && y > y1 && y < y2){
-				willCollide = false;
-			}else{
-				willCollide = true;
-			}
-		}
-		predictCollision(predictArray[0],predictArray[1],predictArray[2],predictArray[3],this.mouseX,this.mouseY);
+		let collided;
 
 		this.movePlayerInterval = setInterval(() => {
-			
-			if(willCollide == true){
-				for(let i = 0; i < collisionArray.length; i+=2){
-					if(timeToPlayerReachDestination <= 0) return collided = true;
-					
-					if(this.x + velX <= collisionArray[i] + roomCollCellWidth && this.x + velX >= collisionArray[i]){
-						if(this.y + velY <= collisionArray[i + 1] + roomCollCellHeight && this.y + velY >= collisionArray[i + 1]){
-							this.isMoving = false;
-							clearInterval(this.movePlayerInterval);
-							return collided = true;
-						}
+			for(let i = 0; i < collisionArray.length; i+=2){
+				if(timeToPlayerReachDestination <= 0) return collided = true;
+				
+				if(this.x + velX <= collisionArray[i] + roomCollCellWidth && this.x + velX >= collisionArray[i]){
+					if(this.y + velY <= collisionArray[i + 1] + roomCollCellHeight && this.y + velY >= collisionArray[i + 1]){
+						this.isMoving = false;
+						clearInterval(this.movePlayerInterval);
+						return collided = true;
 					}
 				}
 			}
-
 			this.x += velX;
 			this.y += velY;
 
@@ -198,14 +183,20 @@ io.on('connection', (socket) => {
 							if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){ //Player is verified
 								PlayFabAdmin.GetUserInventory({PlayFabId: PlayFabId}, (error, result) =>{ //Get player inventory
 									if(result !== null){
-										let alreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'id', players);
-										if(alreadyLogged != false) return
 										if(players.length > 0){	//Check if there is at least one player online
-											let logged;
-											let playerAlreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'playerId', io.sockets.sockets);
+											let logged, preventRecursion;
+											preventRecursion = io.sockets.sockets;
+											let playerAlreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'playerId', preventRecursion);
 											//Check if the player is already logged in
-											if(playerAlreadyLogged.playerId == PlayFabId){
+											if(playerAlreadyLogged != false){
 												socket.emit('alreadyLoggedIn');
+												let thisPlayerRoom = server_utils.getElementFromArrayByValue(playerAlreadyLogged.gameRoom, 'name', Object.values(rooms));
+												let preventRecursion2 = thisPlayerRoom.players;
+												let thisPlayer = server_utils.getElementFromArrayByValue(playerAlreadyLogged.playerId, 'id', preventRecursion2);
+												if(thisPlayer.isMoving == true){
+													clearInterval(thisPlayer.movePlayerInterval);
+													thisPlayer.isMoving == false;
+												}
 												playerAlreadyLogged.emit('loggedOut');
 												playerAlreadyLogged.disconnect(true);
 												logged = true;
@@ -224,7 +215,19 @@ io.on('connection', (socket) => {
 								
 						
 								function createPlayer(thisPlayer, inventory){
-									thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, 500, 460, 62, 82, false, 500, 460, "", false, inventory);
+									playerGear = new Array();
+									inventory.forEach((equippedItem) =>{
+										if(equippedItem.CustomData.isEquipped == 'true'){ //Get the items the player is wearing
+											let item, ItemClass, ItemId, isEquipped;
+											ItemClass = equippedItem.ItemClass;
+											ItemId = equippedItem.ItemId;
+											isEquipped = equippedItem.CustomData;
+											item = {ItemClass, ItemId, isEquipped}; //Removes informations that may affect the security
+											playerGear.push(item);
+										}
+										
+									})
+									thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, 500, 460, 62, 82, false, 500, 460, "", false, playerGear);
 									if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
 										thisPlayer.isDev = true;
 									};
@@ -314,16 +317,15 @@ io.on('connection', (socket) => {
 		let channel = client.channels.cache.get('845340183984341075');
 		let dateUTC = new Date(Date.now()).toUTCString();
 		if(message != undefined && server_utils.separateString(message)[0].includes("/") == false){
-			isprofanity(message, function(t){
-				if(t == true || message.toLowerCase().includes('asshole') == true || message.toLowerCase().includes('ass hole') == true){
+			isprofanity(message, function(t, blocked){
+				if(t == true){
 					let messageObject = {
 						socket: socket.id,
 						message: "🤬"
 					}
-
-					console.log(player.username +' said the following bad word: '+ message);
-					let embed = embedText(dateUTC + '\n' +player.username + ' said the following bad word:', message);
-					channel.send(embed.setColor("#FF0000"));
+					console.log(player.username +' said the following bad word: '+ blocked[0].word + ' that looks like ' + blocked[0].closestTo);
+					let embed = embedText(dateUTC + '\n' +player.username + ' said the following bad word that looks like ' + blocked[0].closestTo + ':', blocked[0].word);
+					//channel.send(embed.setColor("#FF0000"));
 					socket.emit('badWord', '🤬');
 					socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
 				}else{
@@ -333,11 +335,11 @@ io.on('connection', (socket) => {
 					}
 					let embed = embedText(dateUTC + '\n' +player.username + ' said:', message);
 					console.log(dateUTC +'\n' + player.username + ' said: ' + message + '\n');
-					channel.send(embed.setColor("1ABBF5"))
+					//channel.send(embed.setColor("1ABBF5"))
 					socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
 				}	
 				
-			},'data/profanity.csv','data/exceptions.csv',0.4);
+			},'data/profanity.csv','data/exceptions.csv', 0.4);
 		}
 	})
 
@@ -353,8 +355,8 @@ io.on('connection', (socket) => {
 			clearInterval(player.movePlayerInterval);
 			player.isMoving = false;
 		}
-		player.x = 410;
-		player.y = 380;
+		player.x = wantedRoom.exit[0];
+		player.y = wantedRoom.exit[1];
 		server_utils.removeElementFromArray(player, thisPlayerRoom.players); //Remove player from the room
 		socket.broadcast.to(socket.gameRoom).emit('byePlayer', player);//Say to everyone on the room that this player is gone
 		socket.emit('leaveRoom');
@@ -374,6 +376,32 @@ io.on('connection', (socket) => {
 		socket.emit('loggedIn', (preventRecursion)); //Say to the player who are in the new room
 	})
 
+	socket.on('/updateInventory', (message) => {
+		if(socket.playerId == undefined || message !== true) return;
+		server_utils.resetTimer(socket, AFKTime);
+		let thisPlayerId = socket.playerId;
+		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
+		PlayFabAdmin.GetUserInventory({PlayFabId: socket.playerId}, (error,result) =>{
+			if(result !== null){
+				let items = new Array();
+				result.data.Inventory.forEach((item) =>{
+					if(item.CustomData.isEquipped == 'true'){
+						let ItemId, ItemClass, CustomData;
+						ItemId = item.ItemId;
+						ItemClass = item.ItemClass;
+						CustomData = item.CustomData;
+						items.push({ItemId, ItemClass, CustomData});
+					}
+				})
+				player.items = items;
+				socket.broadcast.to(socket.gameRoom).emit('playerUpdatedGear', {player: thisPlayerId, gear: items});
+			}else if(error !== null){
+				console.log(error);
+			}
+		})
+	})
+	//Moderations functions
 	socket.on('/report', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
@@ -402,7 +430,6 @@ io.on('connection', (socket) => {
 		
 	})
 	
-
 	socket.on('/ban', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
@@ -489,6 +516,7 @@ io.on('connection', (socket) => {
 			removePlayerSocket.disconnect(true);
 		}
 	})
+
 }) // io connection end
 
 //Start the server on port 3000

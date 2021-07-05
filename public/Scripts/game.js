@@ -145,7 +145,7 @@ socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 			delete tempPlayer;
 		}
 	});
-	let ref = document.getElementById('Classes');
+	let ref = document.getElementById('Game');
 	ref.appendChild(script);		//Add index.js
 })
 
@@ -215,6 +215,26 @@ socket.on('leaveRoom', () => {
 	playersInGame = [];
 	playersObject = [];
 })
+
+socket.on('playerUpdatedGear', (message) =>{
+	let player = getElementFromArrayByValue(message.player, id, playersObject);
+	player.items = message.gear;
+	player.itemsImgs = new Array();
+	let colors = false;
+	player.items.forEach((item) =>{
+		player.addItem(item.ItemClass, item.ItemId);
+		if(item.ItemClass == 'color'){
+			colors = true;
+		}
+	})
+	if(colors == false){
+		let tempCharacterImg = new Image();
+		tempCharacterImg.src = charactersSrc + "bird_blue.png";
+		player.img = tempCharacterImg;
+		player.img.name = 'bird_blue';
+	}
+})
+
 socket.on('playerBanned!', () =>{
 	setLocalMessage('Successfully Banned :)', true);
 })

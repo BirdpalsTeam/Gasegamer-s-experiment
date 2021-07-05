@@ -57,22 +57,30 @@ class Player extends Sprite{
 	}
 
 	drawBubble(){
+		var canvasTxt = window.canvasTxt.default;
 		//draw bubble
 		if(this.message != undefined){
-			ctx.fillStyle = "black";
-			ctx.font = "13px sans-serif";
-			ctx.textAlign = 'center';
-			if(isCaptalized(this.message, 70) == false){
-				if(this.message.length > 0 && this.message.length <18){
-					ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, this.y - this.height - 25, 131, 47); 
-					ctx.fillText(this.message,this.x , this.y - 85);
-				}else if(this.message.length >= 18 && this.message.length < 30){
-					drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 35, 57, 100);
-				}
-				else if(this.message.length >= 30 && this.message.length <= 52){
-					drawWrapText(this.speechBubbleImage, this.message, this.x, this.y, this.height, 50, 77, 110);
-				}
+			let textHeight, imageHeight, bubbleHeight;
+			if(this.message.length > 0 && this.message.length < 18){
+				bubbleHeight = 25;
+				imageHeight = 47;
+				textHeight = 20;
+			}else if(this.message.length >= 18 && this.message.length < 30){
+				bubbleHeight = 35;
+				imageHeight = 57;
+				textHeight = 20;
 			}
+			else if(this.message.length >= 30 && this.message.length <= 52){
+				bubbleHeight = 65;
+				imageHeight = 97;
+				textHeight = 33;
+			}
+			let drawHeight = this.y - this.height - bubbleHeight;
+			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, drawHeight, 131, imageHeight); //draws the bubble
+			ctx.fontSize = 12;
+			canvasTxt.font = "sans-serif";
+			//canvasTxt.debug = true; //good way to test the text size
+			canvasTxt.drawText(ctx, this.message, this.x - 50, drawHeight + 2 , 100, imageHeight - textHeight); //draws the message
 		}
 	}
 
@@ -163,7 +171,9 @@ class Player extends Sprite{
 				willCollide = true;
 			}
 		}
+
 		predictCollision(predictArray[0],predictArray[1],predictArray[2],predictArray[3],this.mouseX,this.mouseY);
+
 		this.movePlayerInterval = setInterval(() => {
 			if(willCollide == true){
 				for(let i = 0; i < collisionArray.length; i+=2){
@@ -209,6 +219,7 @@ class Player extends Sprite{
 			case "color":
 				tempItemImg.src = charactersSrc + itemname + ".png";
 				this.img = tempItemImg;
+				this.img.name = itemname;
 				break;
 		
 			default:
