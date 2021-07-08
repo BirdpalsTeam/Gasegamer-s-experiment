@@ -28,7 +28,7 @@ class WorldState extends State{
         allObjects = playersObject.concat(details);
         allObjects.push(localPlayer);
 
-        allObjects.sort(function(a, b){return b.y-a.y});
+        allObjects.sort(function(a, b){return a.y-b.y});
 
         allObjects.forEach((object) => {
             if(object != undefined){
@@ -93,7 +93,7 @@ class DebugWorldState extends WorldState{
     }
 }
 
-class WorldEditorStateSpritesheet extends State{
+class DebugWorldEditorStateSpritesheet extends State{
     constructor(){
         super();
 
@@ -123,5 +123,45 @@ class WorldEditorStateSpritesheet extends State{
 
     onclick(evt){
         
+    }
+}
+
+class DebugItemEditorState extends State{
+    constructor(itemimg){
+        super();
+        
+        this.itemimg = itemimg;
+        this.click1 = [0,0];
+        this.click2 = [0,0];
+        this.currentclick = 0;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(this.itemimg, 0, 0);
+    }
+
+    onclick(evt){
+        let tempmousepos = getMousePos(canvas, evt);
+        if(this.currentclick == 0){
+            this.click1 = [tempmousepos.x, tempmousepos.y];
+            this.currentclick = 1;
+        }
+        else if(this.currentclick == 1){
+            this.click2 = [tempmousepos.x, tempmousepos.y];
+            this.currentclick = 2;
+            //ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.rect(this.click1[0], this.click1[1], this.click2[0] - this.click1[0], this.click2[1] - this.click1[1]);
+            ctx.stroke();
+        }
+        else{
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.rect(0,0,canvas.width,canvas.height);
+            ctx.fill();
+            ctx.stroke();
+            ctx.drawImage(this.itemimg,this.click1[0],this.click1[1],this.click2[0] - this.click1[0], this.click2[1] - this.click1[1],10,10, this.click2[0] - this.click1[0], this.click2[1] - this.click1[1]);
+
+            debugParagraph.innerHTML = this.click1[0].toString() + "," + this.click1[1].toString() + "," + (this.click2[0] - this.click1[0]).toString() + "," + (this.click2[1] - this.click1[1]).toString();
+        }
     }
 }
