@@ -10,10 +10,20 @@
   "author": "Gabriel Ciriaco de Carvalho",
   "license": "ISC",
   "dependencies": {
+    "compression": "^1.7.4",
     "discord.js": "^12.5.3",
     "express": "^4.17.1",
+    "helmet": "^4.6.0",
     "isprofanity": "^1.4.1",
-    "playfab-sdk": "^2.64.210208",
+    "playfab-sdk": "^2.68.210511",
     "socket.io": "^3.1.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BirdpalsTeam/Gasegamer-s-experiment.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BirdpalsTeam/Gasegamer-s-experiment/issues"
+  },
+  "homepage": "https://github.com/BirdpalsTeam/Gasegamer-s-experiment#readme"
 }

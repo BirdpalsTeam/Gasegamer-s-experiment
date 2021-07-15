@@ -133,11 +133,11 @@ function assetLoadingLoop(){
 socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 	players.forEach(player => {
 		if(player.id == playerId && localPlayer == undefined){
-			localPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev, player.items);
+			localPlayer = new Player(player);
 		} 
-		else if(player.id != playerId && !checkIfElementIsInArray(player, 'id',playersInGame)){	
+		else if(player.id != playerId && !checkIfElementIsInArray(player, 'id', playersInGame)){	
 			playersInGame.push(player); 
-			let tempPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev, player.items);
+			let tempPlayer = new Player(player);
 			tempPlayer.items.forEach(item=>{
 				tempPlayer.addItem(item.ItemClass, item.ItemId);
 			})
@@ -151,7 +151,7 @@ socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 
 socket.on('newPlayer', (player) => {
 	playersInGame.push(player); 
-	let tempPlayer = new Player(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67, bubble_image, player.id, player.username, player.isMoving, player.mouseX, player.mouseY, player.isDev, player.items);
+	let tempPlayer = new Player(player);
 	tempPlayer.items.forEach(item =>{
 		tempPlayer.addItem(item.ItemClass, item.ItemId);
 	})
@@ -195,12 +195,13 @@ socket.on('joinRoom', (joinRoom) =>{
 	roomSprite.img = loadSprite(roomsSrc+ rooms[joinRoom.name].image);
 	details.img = loadSprite(roomsSrc + rooms[joinRoom.name].details.image);
 	currentRoom = joinRoom.name;
+	let background_music = document.getElementById('background_music');
 	switch(joinRoom.name){
 		case "town":
-			document.getElementById('background_music').src = 'Audio/Alpha_Party.mp3';
+			background_music.src = 'Audio/Alpha_Party.mp3';
 			break;
 		case "cabin":
-			document.getElementById('background_music').src = 'Audio/Cabin.mp3';
+			background_music.src = 'Audio/Cabin.mp3';
 			break;
 	}
 	localPlayer.x = joinRoom.posX;

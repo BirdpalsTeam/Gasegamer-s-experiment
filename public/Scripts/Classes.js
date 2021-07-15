@@ -24,21 +24,22 @@ class Sprite{
 }
 
 class Player extends Sprite{
-	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, speechBubbleImage, id, username, isMoving, mouseX, mouseY, isDev, items=[], itemsImgs=[]){
-		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
-		this.speechBubbleImage = speechBubbleImage;
-		this.id = id;
-		this.username = username;
-		this.isMoving = isMoving;
-		this.mouseX = mouseX;
-		this.mouseY = mouseY;
+	constructor(player){
+		super(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67);
+
+		this.speechBubbleImage = bubble_image;
+		this.id = player.id;
+		this.username = player.username;
+		this.isMoving = player.isMoving;
+		this.mouseX = player.mouseX;
+		this.mouseY = player.mouseY;
 		this.movePlayerInterval;
 		this.messageTimeout;
-		this.isDev = isDev;
+		this.isDev = player.isDev;
 
 		//items
-		this.items = items;
-		this.itemsImgs = itemsImgs;
+		this.items = player.items;
+		this.itemsImgs = new Array();
 	}
 
 	customDraw(){
