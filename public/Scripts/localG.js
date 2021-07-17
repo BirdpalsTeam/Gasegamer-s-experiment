@@ -27,6 +27,9 @@ function getMousePos(cv, evt) {
 canvas.addEventListener('click', function(evt) {
 	currentState.onclick(evt);
 }, false);
+canvas.addEventListener('mousemove', function(evt){
+	currentState.onmousemove(evt);
+})
 
 form.addEventListener('submit', function(e) {
 	e.preventDefault();
@@ -58,9 +61,11 @@ function getFPS() {
 	lastCalledTime = Date.now();
 }
 
-localPlayer.items.forEach(item => {
-	localPlayer.addItem(item.ItemClass, item.ItemId);
-});
+if(localPlayer.items.length > 0){
+	localPlayer.items.forEach(item => {
+		localPlayer.addItem(item.ItemClass, item.ItemId);
+	});
+}
 document.getElementById('loading').remove();
 document.getElementById('inventory').onclick = function(){test()};
 function test(){
