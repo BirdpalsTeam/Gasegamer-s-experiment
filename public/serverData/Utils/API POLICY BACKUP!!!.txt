@@ -1,0 +1,176 @@
+THIS IS THE BACKUP OF THE API POLICY VERSION 2! BE VERY CAREFULL WHEN MESSING AROUND WITH THE API POLICY!
+
+
+{
+    "PolicyName": "ApiPolicy",
+    "Statements": [
+        {
+            "Resource": "pfrn:api--*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all statement."
+        },
+        {
+            "Resource": "pfrn:api--/Admin/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all admin APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Authentication/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all authentication APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/AutomationRule/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all automation rule APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Catalog/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all catalog APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Event/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all event APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Experimentation/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all experimentation APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Group/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all group APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Inventory/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all inventory APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Leaderboard/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all leaderboard APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Limits/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all limits APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Locale/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all locale APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Match/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all match APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Matchmaker/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all matchmaker APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Notification/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all notification APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Object/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all object APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Profile/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all profile APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Server/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all server APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/Statistic/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all statistic APIs statement."
+        },
+        {
+            "Resource": "pfrn:api--/UserGeneratedContent/*",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "The default allow all user generated content APIs statement."
+        },
+		{
+            "Resource": "pfrn:api--/Client/LoginWithEmailAddress",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "Allow all clients to login with email."
+        },
+		{
+            "Resource": "pfrn:api--/Client/RegisterPlayFabUser",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "Allow all clients to register on PlayFab."
+        },
+		{
+            "Resource": "pfrn:api--/Client/AddOrUpdateContactEmail",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "Allow all clients to add or update contact email on PlayFab."
+        },
+		{
+            "Resource": "pfrn:api--/Client/GetUserInventory",
+            "Action": "*",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Comment": "Allow all clients to get their inventory."
+        }
+    ]
+}
