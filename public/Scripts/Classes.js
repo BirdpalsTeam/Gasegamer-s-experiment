@@ -36,7 +36,7 @@ class Player extends Sprite{
 		this.movePlayerInterval;
 		this.messageTimeout;
 		this.isDev = player.isDev;
-
+		this.canMove = true;
 		//items
 		this.items = player.items;
 		this.itemsImgs = new Array();
@@ -96,6 +96,7 @@ class Player extends Sprite{
 			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, drawHeight, 131, imageHeight); //draws the bubble
 			ctx.fontSize = 12;
 			canvasTxt.font = "sans-serif";
+			ctx.fillStyle = "black";
 			//canvasTxt.debug = true; //good way to test the text size
 			canvasTxt.drawText(ctx, this.message, this.x - 50, drawHeight + 2 , 100, imageHeight - textHeight); //draws the message
 		}
@@ -153,7 +154,7 @@ class Player extends Sprite{
 	move(){
 		// get the difference vector between the player position and the mouse position
 		//Notice that lastX is the position of the player when he clicked somwhere on the screen
-
+		if(this.canMove == true){
 			if(this.isMoving == false){
 				this.movePlayer();
 			}else{
@@ -162,7 +163,7 @@ class Player extends Sprite{
 				this.movePlayer();
 			}
 			this.whereToLook();
-			
+		}	
 	}
 
 	movePlayer(){
@@ -234,14 +235,14 @@ class Player extends Sprite{
 		let tempItemImg = new Image();
 		switch (itemtype) {
 			case "color":
-				tempItemImg.src = charactersSrc + itemname + ".png";
+				tempItemImg.src = "Sprites/items/" + itemtype + "/" + itemname + ".png";
 				this.img = tempItemImg;
 				this.img.name = itemname;
 				break;
 		
 			default:
 				tempItemImg.src = "Sprites/items/" + itemtype + "/" + itemname + ".png";
-				this.itemsImgs.push(new Item(tempItemImg, this.sourceX, this.sourceY, this.sourceWidth, this.sourceHeight, this.x, this.y, this.width, this.height, this.originX, this.originY, 1, itemtype));
+				this.itemsImgs.push(new Item(tempItemImg, this.sourceX, this.sourceY, this.sourceWidth, this.sourceHeight, this.x, this.y, this.width, this.height, this.originX, this.originY, 1, itemtype, itemname));
 			break;
 		}
 
@@ -249,13 +250,17 @@ class Player extends Sprite{
 		
 	}
 	
+	removeItem(itemName){
+		removeElementFromArray(itemName, this.itemsImgs);
+	}
 }
 
 class Item extends Sprite{
-	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY, layer, type){
+	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, layer, type, name){
 		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
 		this.layer = layer;
 		this.type = type;
+		this.name = name;
 	}
 }
 
@@ -272,5 +277,175 @@ class Room_Details extends Sprite{
 		super(img, 0, 0, 892, 512, 0, 0, 1000, 600, layer, type);
 		this.layer = layer;
 		this.type = type;
+	}
+}
+
+class Button{
+	constructor(x, y, width, height){
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.isSelected = false;
+	}
+
+	isInsideButton(pos){
+		if(pos.x > this.x && pos.x < this.x + this.width && pos.y < this.y + this.height && pos.y > this.y){
+			this.isSelected == false ? this.isSelected = true : this.isSelected = false;
+			return true;
+		}
+	}
+}
+
+class Inventory extends Sprite{
+	constructor(img, layer, type){
+		super(img, 0, 0, 892, 512, 0, 0, 1000, 600, layer, type);
+		this.layer = layer;
+		this.type = type;
+		this.isOpen = false;
+		this.closeButton = new Button(875,30, 65, 86);
+		this.isChanging = false;
+	}
+
+	open(){
+		if(this.isOpen == false){
+			this.isChanging == false ? this.getInventory() : this.createItemsButtons();
+			this.isOpen = true;
+			localPlayer.canMove = false;
+		}
+	} 
+
+	close(){
+		if(this.closeButton.isInsideButton(mousePos) == true){
+			command('/updateInventory', this.items);
+			this.updateGear();
+			this.isOpen = false;
+			localPlayer.canMove = true;
+			this.canDrawItems = false;
+		}
+	}
+
+	getInventory(){
+		PlayFabClientSDK.GetUserInventory({SessionTicket: sessionStorage.ticket}, (result, error) =>{
+			if(result !== null){
+				this.items = result.data.Inventory;
+				this.createItemsButtons();
+			}else if(error !== null){
+				console.log(error);
+			}
+		})
+	}
+	createItemsButtons(){
+		let pastX = 513;
+		let pastY = 132;
+		for(let i = 0; i < this.items.length; i++){
+			if(i % 4 == 0 && i != 0){
+				pastX = 507;
+				pastY += 77.5;
+			}
+			this.items[i].button = new Button(pastX, pastY, 85, 77.5);
+			if(this.items[i].CustomData.isEquipped == 'true') this.items[i].button.isSelected = true;
+			pastX += 95;
+		}
+		this.canDrawItems = true;
+	}
+	updateGear(){
+		localPlayer.items = this.items;
+		localPlayer.itemsImgs = new Array();
+		let colors = new Array();
+		localPlayer.items.forEach((item) => {
+			if(item.CustomData.isEquipped == 'true'){
+				localPlayer.addItem(item.ItemClass, item.ItemId);
+			}
+			if(item.ItemClass == 'color'){
+				let colorItem = {ItemId: item.ItemId, isEquipped: item.CustomData.isEquipped}
+				colors.push(colorItem);
+			}
+		})
+		if(getElementFromArrayByValue('true', 'isEquipped', colors) == false){
+			let tempCharacterImg = new Image();
+			tempCharacterImg.src = charactersSrc + "bird_blue.png";
+			localPlayer.img = tempCharacterImg;
+			localPlayer.img.name = 'bird_blue';
+		}
+	}
+	drawSquares(pastX, pastY, squareHeight, array, callback){
+		for(let i = 0; i < array.length; i++){
+			if(i % 4 == 0 && i != 0){
+				pastX = 507;
+				pastY += squareHeight;
+			}
+			callback(array, i, pastX, pastY);
+			pastX += 95;
+		}
+	}
+	drawItems(items, i, pastX, pastY){
+		items[i].img = new Image();
+		items[i].img.src = "Sprites/items/" + items[i].ItemClass + "/" + items[i].ItemId + "_icon.png";
+		ctx.fillStyle = "#bab6aa";
+		ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey rectangle
+		ctx.drawImage(items[i].img, pastX, pastY);
+		
+		if(items[i].button.isSelected == true){
+			ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+			ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey rectangle
+		}
+	}
+	selectItem(){
+		this.items.forEach(item =>{
+			item.button.isInsideButton(mousePos);
+			if(item.button.isSelected == true){
+				item.CustomData.isEquipped = "true";
+			}else{
+				item.CustomData.isEquipped = "false";
+			}
+		})
+	}
+	drawGrid(pastX, pastY, squareWidth, squareHeight){
+		ctx.beginPath();
+		ctx.rect(pastX, pastY, squareWidth, squareHeight);
+		ctx.strokeStyle = "black";
+		ctx.stroke();
+	}
+	drawWhiteRectangle(pastX, pastY){
+		ctx.beginPath();
+		ctx.strokeStyle = "white";
+		ctx.lineWidth = 6;
+		ctx.rect(pastX - 4, pastY - 3.2, 95, 87.5); //draws the white rectangle
+		ctx.stroke();
+	}
+	customDraw(){
+		if(this.isOpen == true){
+			if(this.canDrawItems == true){
+				this.drawSquares(511, 130, 80, this.items, this.drawItems);
+			}
+			let pastX = 507;
+			let pastY = 127;
+			let squareWidth = 95;
+			let squareHeight = 87.5;
+			for(let i = 0; i < 16; i++){
+				if(i % 4 == 0 && i != 0){
+					pastX = 507;
+					pastY += squareHeight;
+				}
+				this.drawGrid(pastX, pastY, squareWidth, squareHeight);
+				pastX += 95;
+			}
+
+			if(this.canDrawItems == true){
+				let pastX = 511;
+				let pastY = 130;
+				for(let i = 0; i < this.items.length; i++){
+					if(i % 4 == 0 && i != 0){
+						pastX = 507;
+						pastY += squareHeight;
+					}
+					if(this.items[i].button.isSelected == true){
+						this.drawWhiteRectangle(pastX, pastY);
+					}
+					pastX += 95;
+				}
+			}
+		}
 	}
 }

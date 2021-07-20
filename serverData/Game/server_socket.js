@@ -7,6 +7,8 @@ const AFKTime = 300000; //5 minutes
 const movement_messages = require('./movement_messages');
 const login_createAccount = require('./login_createAccount');
 const moderation_commands = require('./moderation_commands');
+const { RateLimiterMemory } = require('rate-limiter-flexible');
+const rateLimiter = new RateLimiterMemory({points: 3, duration: 1})
 exports.connect = (io, PlayFabServer, PlayFabAdmin, PlayFabClient, client) => {
 	var roomsJson = fs.readFileSync('./serverData/Utils/roomsJSON.json');
 	var rooms = JSON.parse(roomsJson);
@@ -97,30 +99,35 @@ io.on('connection', (socket) => {
 	})
 	
 	socket.on('Im Ready', () =>{
-		if(socket.playerId == undefined) return;
-		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
-		//socket.io can't send running functions, so you need to pause the players movement
-		let preventRecursion = thisPlayerRoom.players;
-		preventRecursion.forEach(player=>{
-			if(player.isMoving == true){
-				clearInterval(player.movePlayerInterval);
-				player.isMoving == false;
-			}
+		rateLimiter.consume(socket.id).then(()=>{
+			if(socket.playerId == undefined) return;
+			let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+			//socket.io can't send running functions, so you need to pause the players movement
+			let preventRecursion = thisPlayerRoom.players;
+			preventRecursion.forEach(player=>{
+				if(player.isMoving == true){
+					clearInterval(player.movePlayerInterval);
+					player.isMoving == false;
+				}
+			})
+			socket.emit('loggedIn', (preventRecursion)); //there is a problem here
+			socket.isAFK = setTimeout(()=>{	//AFK cronometer
+				socket.disconnect(true);
+			}, AFKTime)
+		}).catch(() =>{
+			console.log(`This jerk is trying to DoS our game ${socket.playerId}`);
 		})
-		socket.emit('loggedIn', (preventRecursion)); //there is a problem here
-		socket.isAFK = setTimeout(()=>{	//AFK cronometer
-			socket.disconnect(true);
-		}, AFKTime)
+		
 	})
 
-	login_createAccount.run(io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayFabClient, PlayFabAdmin, isProfanity, server_utils);
+	login_createAccount.run(io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayFabClient, PlayFabAdmin, isProfanity, server_utils, rateLimiter);
 
-	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, isProfanity); //Rooms command is here
+	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, isProfanity, rateLimiter); //Rooms command is here
 
 	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, PlayFabServer);
 
-	socket.on('/updateInventory', (message) => {
-		if(socket.playerId == undefined || message !== true) return;
+	socket.on('/updateInventory', (playerInventory) => {
+		if(socket.playerId == undefined || playerInventory == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
 		let thisPlayerId = socket.playerId;
 		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
@@ -128,20 +135,47 @@ io.on('connection', (socket) => {
 		PlayFabAdmin.GetUserInventory({PlayFabId: socket.playerId}, (error,result) =>{
 			if(result !== null){
 				let items = new Array();
-				result.data.Inventory.forEach((item) =>{
-					if(item.CustomData.isEquipped == 'true'){
-						let ItemId, ItemClass, CustomData;
-						ItemId = item.ItemId;
-						ItemClass = item.ItemClass;
-						CustomData = item.CustomData;
-						items.push({ItemId, ItemClass, CustomData});
+				let equippedItems = 0;
+				let updatedPlayfab = 0;
+				playerInventory.forEach((item) =>{
+					if(server_utils.getElementFromArray(item, "ItemId", result.data.Inventory) !== false){
+						if(item.CustomData.isEquipped == "true"){
+							equippedItems += 1;
+							PlayFabServer.UpdateUserInventoryItemCustomData({PlayfabId: socket.playerId, ItemInstanceId: item.ItemInstanceId, Data: {"isEquipped": "true"}}, (error, result) =>{
+								if(result !== null){
+									updatedPlayfab += 1;
+									items.push({ItemClass: item.ItemClass, ItemId: item.ItemId, isEquipped: item.CustomData});
+									if(updatedPlayfab == equippedItems){
+										player.items = items;
+										socket.broadcast.to(socket.gameRoom).emit('playerUpdatedGear', {player: thisPlayerId, gear: items});
+										socket.emit('changingInventory', false);
+									}
+								//	console.log(result);
+								}else if(error !== null){
+									console.log(error);
+								}
+							})
+						}else if(item.CustomData.isEquipped == "false"){
+							equippedItems += 1;
+							PlayFabServer.UpdateUserInventoryItemCustomData({PlayfabId: socket.playerId, ItemInstanceId: item.ItemInstanceId, Data: {"isEquipped": "false"}}, (error, result) =>{
+								if(result !== null){
+									updatedPlayfab += 1;
+									if(updatedPlayfab == equippedItems){
+										player.items = items;
+										socket.broadcast.to(socket.gameRoom).emit('playerUpdatedGear', {player: thisPlayerId, gear: items});
+										socket.emit('changingInventory', false);
+									}
+								}else if(error !== null){
+									console.log(error);
+								}
+							})
+						}
 					}
 				})
-				player.items = items;
-				socket.broadcast.to(socket.gameRoom).emit('playerUpdatedGear', {player: thisPlayerId, gear: items});
+				socket.emit('changingInventory', true);
 			}else if(error !== null){
 				console.log(error);
-			}
+			}//User inventory end
 		})
 	})
 

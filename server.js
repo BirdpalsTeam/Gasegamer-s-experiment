@@ -40,9 +40,11 @@ app.use((req, res, next) => {
 });
 
 //Use compression to reduce files size
-app.use(compression());
+app.use(compression({filter: function (req, res) {
+    return true;
+  }}));
 
-//Send the public files to the domain
+  //Send the public files to the domain
 app.use(express.static('public', {dotfiles: 'allow'}));
 
 //Websockets communication

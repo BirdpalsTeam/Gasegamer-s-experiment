@@ -24,12 +24,13 @@ var roomsSrc = spritesSrc + 'rooms/';
 var hudSrc = spritesSrc + 'hud/';
 
 var rooms, currentRoom, triggers;
-var birdImage, roomImage, backgroundImage, foregroundImage, bubble_image;
+var birdImage, roomImage, backgroundImage, foregroundImage, bubble_image, inventoryImage;
 var collisionArray, predictArray = new Array();
 bubble_image = loadSprite(hudSrc + 'hud.png');
 birdImage = loadSprite(charactersSrc + 'bird_blue.png');
 backgroundImage = loadSprite(roomsSrc + 'town_background.png');
 foregroundImage = loadSprite(roomsSrc + 'town_foreground.png');
+inventoryImage = loadSprite(hudSrc + 'inventory.png')
 customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	rooms = response;
 	currentRoom = rooms.town.name;
@@ -241,6 +242,16 @@ socket.on('playerUpdatedGear', (message) =>{
 	}
 })
 
+socket.on('changingInventory', (message) =>{
+	if(message == false){
+		setTimeout(() => {
+			inventory.isChanging = message;
+		}, 5000);
+	}else{
+		inventory.isChanging = message;
+	}
+	
+})
 socket.on('playerBanned!', () =>{
 	setLocalMessage('Successfully Banned :)', true);
 })

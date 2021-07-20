@@ -17,6 +17,7 @@
 	</div>
 </center>
 <center>
+<div id="inputElements" hidden="true">
 	<form id="form" action="">
 		<input id="input" type="text" maxlength="50" autocomplete="off" placeholder="Type a Message..."/>
 		<button>Send</button>
@@ -25,6 +26,7 @@
 	<div id="debugDiv">
 		<p id="debugParagraph"></p>
 	</div>
+</div>
 </center>
 <script src="/socket.io/socket.io.js"></script>
 <script src='./Modules/PlayFabClientApi.js'></script>
@@ -34,7 +36,5 @@
 <script src="Scripts/States.js"></script>
 <script src='Scripts/Classes.js'></script>
 <script src="Scripts/game.js" id="Game"></script>
-
-
 </body>
 </html>

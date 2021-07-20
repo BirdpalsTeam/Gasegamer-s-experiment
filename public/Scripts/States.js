@@ -51,21 +51,26 @@ class WorldState extends State{
             localPlayer.drawUsername();
             localPlayer.drawBubble();
         }
-
+		if(inventory != undefined && inventory.isOpen == true){
+			inventory.draw();
+		}
     }
 
     onclick(evt){
         mousePos = getMousePos(canvas, evt);
-        if(localPlayer != undefined){
+        if(localPlayer != undefined && localPlayer.canMove == true){
             localPlayer.mouseX = mousePos.x;
             localPlayer.mouseY = mousePos.y;
             localPlayer.move();
-        }
-        const playerMovement = {
-            mouseX: mousePos.x,
-            mouseY: mousePos.y
-        }
-        socket.emit('playerMovement', playerMovement);
+			const playerMovement = {
+				mouseX: mousePos.x,
+				mouseY: mousePos.y
+			}
+			socket.emit('playerMovement', playerMovement);
+		}else if(inventory != undefined && inventory.isOpen == true){
+			inventory.close();
+			inventory.selectItem();
+		}
     }
 }
 

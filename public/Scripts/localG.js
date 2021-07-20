@@ -9,7 +9,7 @@ let timeScale = 1;
 var roomSprite = new Room(roomImage, 0, 0);
 var background = new Room_Details(backgroundImage, 0, 0);
 var foreground = new Room_Details(foregroundImage, 3, 0);
-
+var inventory = new Inventory(inventoryImage, 4, 0);
 function drawCollisionMap(){	//Just a debug function
 	let x, y;
 	for(y = 0; y < roomCollMapY; y++){
@@ -69,33 +69,7 @@ if(localPlayer.items.length > 0){
 	});
 }
 document.getElementById('loading').remove();
-document.getElementById('inventory').onclick = function(){test()};
-function test(){
-	command('/updateInventory', true);
-	PlayFabClientSDK.GetUserInventory({SessionTicket: sessionStorage.ticket}, (result, error) =>{
-		if(result !== null){
-			localPlayer.items = result.data.Inventory;
-			localPlayer.itemsImgs = new Array();
-			let colors = new Array();
-			localPlayer.items.forEach((item) => {
-				if(item.CustomData.isEquipped == 'true'){
-					localPlayer.addItem(item.ItemClass, item.ItemId);
-				}
-				if(item.ItemClass == 'color'){
-					let colorItem = {ItemId: item.ItemId, isEquipped: item.CustomData.isEquipped}
-					colors.push(colorItem);
-				}
-			})
-			if(getElementFromArrayByValue('true', 'isEquipped', colors) == false){
-				let tempCharacterImg = new Image();
-				tempCharacterImg.src = charactersSrc + "bird_blue.png";
-				localPlayer.img = tempCharacterImg;
-				localPlayer.img.name = 'bird_blue';
-			}
-		}else if(error !== null){
-			console.log(error);
-		}
-	})
-}
+document.getElementById('inventory').onclick = function(){inventory.open()};
+
 render();
 main();
