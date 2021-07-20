@@ -175,8 +175,8 @@ class Player extends Sprite{
 
 		let speed = 4;
 
-		let velX = Math.cos(angleToMove) * speed * timeScale;
-		let velY = Math.sin(angleToMove) * speed * timeScale;
+		let velX = Math.cos(angleToMove) * speed;
+		let velY = Math.sin(angleToMove) * speed;
 
 		let timeToPlayerReachDestination = Math.floor(dx/velX);
 		let collided, willCollide;
@@ -317,6 +317,7 @@ class Inventory extends Sprite{
 
 	close(){
 		if(this.closeButton.isInsideButton(mousePos) == true){
+			this.isChanging = true;
 			command('/updateInventory', this.items);
 			this.updateGear();
 			this.isOpen = false;
@@ -335,6 +336,7 @@ class Inventory extends Sprite{
 			}
 		})
 	}
+
 	createItemsButtons(){
 		let pastX = 513;
 		let pastY = 132;
@@ -349,6 +351,7 @@ class Inventory extends Sprite{
 		}
 		this.canDrawItems = true;
 	}
+
 	updateGear(){
 		localPlayer.items = this.items;
 		localPlayer.itemsImgs = new Array();
@@ -369,6 +372,7 @@ class Inventory extends Sprite{
 			localPlayer.img.name = 'bird_blue';
 		}
 	}
+
 	drawSquares(pastX, pastY, squareHeight, array, callback){
 		for(let i = 0; i < array.length; i++){
 			if(i % 4 == 0 && i != 0){
@@ -379,6 +383,7 @@ class Inventory extends Sprite{
 			pastX += 95;
 		}
 	}
+
 	drawItems(items, i, pastX, pastY){
 		items[i].img = new Image();
 		items[i].img.src = "Sprites/items/" + items[i].ItemClass + "/" + items[i].ItemId + "_icon.png";
@@ -391,6 +396,7 @@ class Inventory extends Sprite{
 			ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey rectangle
 		}
 	}
+
 	selectItem(){
 		this.items.forEach(item =>{
 			item.button.isInsideButton(mousePos);
@@ -401,12 +407,14 @@ class Inventory extends Sprite{
 			}
 		})
 	}
+
 	drawGrid(pastX, pastY, squareWidth, squareHeight){
 		ctx.beginPath();
 		ctx.rect(pastX, pastY, squareWidth, squareHeight);
 		ctx.strokeStyle = "black";
 		ctx.stroke();
 	}
+
 	drawWhiteRectangle(pastX, pastY){
 		ctx.beginPath();
 		ctx.strokeStyle = "white";
@@ -414,6 +422,7 @@ class Inventory extends Sprite{
 		ctx.rect(pastX - 4, pastY - 3.2, 95, 87.5); //draws the white rectangle
 		ctx.stroke();
 	}
+	
 	customDraw(){
 		if(this.isOpen == true){
 			if(this.canDrawItems == true){

@@ -172,7 +172,6 @@ io.on('connection', (socket) => {
 						}
 					}
 				})
-				socket.emit('changingInventory', true);
 			}else if(error !== null){
 				console.log(error);
 			}//User inventory end

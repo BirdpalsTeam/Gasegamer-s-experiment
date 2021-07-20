@@ -243,15 +243,11 @@ socket.on('playerUpdatedGear', (message) =>{
 })
 
 socket.on('changingInventory', (message) =>{
-	if(message == false){
-		setTimeout(() => {
-			inventory.isChanging = message;
-		}, 5000);
-	}else{
+	setTimeout(() => {
 		inventory.isChanging = message;
-	}
-	
+	}, 5000);
 })
+
 socket.on('playerBanned!', () =>{
 	setLocalMessage('Successfully Banned :)', true);
 })
