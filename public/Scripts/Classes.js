@@ -26,7 +26,6 @@ class Sprite{
 class Player extends Sprite{
 	constructor(player){
 		super(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67);
-
 		this.speechBubbleImage = bubble_image;
 		this.id = player.id;
 		this.username = player.username;
@@ -50,7 +49,7 @@ class Player extends Sprite{
 				item.draw();
 		});
 	}
-
+	
 	drawUsername(){
 		let username = this.username;
 		let x = this.x;
@@ -287,11 +286,18 @@ class Button{
 		this.width = width;
 		this.height = height;
 		this.isSelected = false;
+		this.isOver = false;
 	}
 
 	isInsideButton(pos){
 		if(pos.x > this.x && pos.x < this.x + this.width && pos.y < this.y + this.height && pos.y > this.y){
 			this.isSelected == false ? this.isSelected = true : this.isSelected = false;
+			return true;
+		}
+	}
+
+	isOverButton(pos){
+		if(pos.x > this.x && pos.x < this.x + this.width && pos.y < this.y + this.height && pos.y > this.y){
 			return true;
 		}
 	}
@@ -303,8 +309,10 @@ class Inventory extends Sprite{
 		this.layer = layer;
 		this.type = type;
 		this.isOpen = false;
-		this.closeButton = new Button(875,30, 65, 86);
+		this.closeButton = new Button(870, 30, 65, 86);
 		this.isChanging = false;
+		this.bigBird = new Image();
+		this.bigBird.src = hudSrc + "big_bird.png";
 	}
 
 	open(){
@@ -395,16 +403,19 @@ class Inventory extends Sprite{
 			ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
 			ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey rectangle
 		}
+
+		items[i].button.isOverButton(mouseOver) == true ? items[i].button.isOver = true : items[i].button.isOver = false;
+
+		if(items[i].button.isOver == true){
+			ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+			ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey select rectangle
+		}
 	}
 
 	selectItem(){
 		this.items.forEach(item =>{
 			item.button.isInsideButton(mousePos);
-			if(item.button.isSelected == true){
-				item.CustomData.isEquipped = "true";
-			}else{
-				item.CustomData.isEquipped = "false";
-			}
+			item.button.isSelected == true ? item.CustomData.isEquipped = "true" : item.CustomData.isEquipped = "false";
 		})
 	}
 
@@ -423,15 +434,37 @@ class Inventory extends Sprite{
 		ctx.stroke();
 	}
 	
+	grayCloseButton(){
+		ctx.fillStyle = "rgba(0, 0, 0, 0.4)"
+		ctx.beginPath();
+		ctx.moveTo(this.closeButton.x, this.closeButton.y);
+		ctx.lineTo(this.closeButton.x + 66,this.closeButton.y);
+		ctx.lineTo(this.closeButton.x + 70, 100);
+		ctx.fill();
+		ctx.beginPath();
+		ctx.moveTo(this.closeButton.x, this.closeButton.y);
+		ctx.bezierCurveTo(this.closeButton.x, this.closeButton.y + 15,this.closeButton.x + 35, this.closeButton.y + 60, this.closeButton.x + 70, 100);
+		ctx.fill();
+	}
+
+	drawBigBird(){
+		ctx.drawImage(this.bigBird, this.x + 150, this.y + 150);
+	}
 	customDraw(){
 		if(this.isOpen == true){
+			if(this.closeButton.isOver == true){
+				this.grayCloseButton();
+			}
+			this.drawBigBird();
 			if(this.canDrawItems == true){
 				this.drawSquares(511, 130, 80, this.items, this.drawItems);
 			}
+
 			let pastX = 507;
 			let pastY = 127;
 			let squareWidth = 95;
 			let squareHeight = 87.5;
+
 			for(let i = 0; i < 16; i++){
 				if(i % 4 == 0 && i != 0){
 					pastX = 507;

@@ -30,7 +30,7 @@ bubble_image = loadSprite(hudSrc + 'hud.png');
 birdImage = loadSprite(charactersSrc + 'bird_blue.png');
 backgroundImage = loadSprite(roomsSrc + 'town_background.png');
 foregroundImage = loadSprite(roomsSrc + 'town_foreground.png');
-inventoryImage = loadSprite(hudSrc + 'inventory.png')
+inventoryImage = loadSprite(hudSrc + 'inventory.png');
 customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	rooms = response;
 	currentRoom = rooms.town.name;
@@ -79,7 +79,7 @@ script.src = 'Scripts/localG.js';
 var ready = false;
 var ticket = sessionStorage.getItem('ticket');
 var playerId = sessionStorage.getItem('playerId');
-var mousePos, click, localPlayer;
+var mousePos, mouseOver, localPlayer;
 var id = 'id';
 
 var playersInGame = new Array();

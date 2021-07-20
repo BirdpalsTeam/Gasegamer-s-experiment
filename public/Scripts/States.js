@@ -31,7 +31,7 @@ class WorldState extends State{
         allObjects = playersObject.concat(background, foreground);
         allObjects.push(localPlayer);
 
-        allObjects.sort(function(a, b){return a.y-b.y});
+        allObjects.sort(function(a, b){return a.layer-b.layer});
 
         allObjects.forEach((object) => {
             if(object != undefined){
@@ -52,6 +52,8 @@ class WorldState extends State{
             localPlayer.drawBubble();
         }
 		if(inventory != undefined && inventory.isOpen == true){
+			ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+			ctx.fillRect(0,0,canvas.width, canvas.height);
 			inventory.draw();
 		}
     }
@@ -71,7 +73,14 @@ class WorldState extends State{
 			inventory.close();
 			inventory.selectItem();
 		}
-    }
+	}
+
+	onmousemove(evt){
+		mouseOver = getMousePos(canvas, evt);
+		if(inventory != undefined && inventory.isOpen == true){
+			inventory.closeButton.isOverButton(mouseOver) == true ? inventory.closeButton.isOver = true : inventory.closeButton.isOver = false;
+		}
+	}
 }
 
 
