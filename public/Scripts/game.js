@@ -5,6 +5,13 @@ var debugParagraph = document.getElementById('debugParagraph');
 
 var currentState = new WorldState();
 
+var caslonFont = new FontFace('Caslon', 'url(./CaslonAntique-BoldItalic.ttf)');
+caslonFont.load().then(function(font){
+	console.log(font)
+	document.fonts.add(font);
+  }).catch((error) =>{
+	  console.log(error)
+  });
 var spritesStillLoading = 0;
 
 var loadSprite = function(imageName){
@@ -80,6 +87,7 @@ var ready = false;
 var ticket = sessionStorage.getItem('ticket');
 var playerId = sessionStorage.getItem('playerId');
 var mousePos, mouseOver, localPlayer;
+mouseOver = {x: 0, y: 0};
 var id = 'id';
 
 var playersInGame = new Array();

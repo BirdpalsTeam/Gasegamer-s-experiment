@@ -311,8 +311,11 @@ class Inventory extends Sprite{
 		this.isOpen = false;
 		this.closeButton = new Button(870, 30, 65, 86);
 		this.isChanging = false;
-		this.bigBird = new Image();
-		this.bigBird.src = hudSrc + "big_bird.png";
+		this.bigBird = {x: this.x + 150, y: this.y + 150};
+		this.bigBird.img = new Image();
+		this.bigBird.shadowImg = new Image();
+		this.bigBird.img.src = hudSrc + "big_bird.png";
+		this.bigBird.shadowImg.src = hudSrc + 'big_bird_shadow.png';
 	}
 
 	open(){
@@ -384,7 +387,7 @@ class Inventory extends Sprite{
 	drawSquares(pastX, pastY, squareHeight, array, callback){
 		for(let i = 0; i < array.length; i++){
 			if(i % 4 == 0 && i != 0){
-				pastX = 507;
+				pastX = 511;
 				pastY += squareHeight;
 			}
 			callback(array, i, pastX, pastY);
@@ -415,7 +418,19 @@ class Inventory extends Sprite{
 	selectItem(){
 		this.items.forEach(item =>{
 			item.button.isInsideButton(mousePos);
-			item.button.isSelected == true ? item.CustomData.isEquipped = "true" : item.CustomData.isEquipped = "false";
+			if(item.button.isSelected == true){
+				item.CustomData.isEquipped = "true";
+				if(item.ItemClass == "color"){
+					this.items.forEach(colorItem => {
+						if(item.ItemClass == "color" && colorItem.ItemId != item.ItemId && colorItem.ItemClass == "color" && colorItem.CustomData.isEquipped == "true"){
+							colorItem.button.isSelected = false;
+							colorItem.CustomData.isEquipped = "false";
+						}
+					})
+				}
+			}else{
+				item.CustomData.isEquipped = "false";
+			}
 		})
 	}
 
@@ -448,8 +463,20 @@ class Inventory extends Sprite{
 	}
 
 	drawBigBird(){
-		ctx.drawImage(this.bigBird, this.x + 150, this.y + 150);
+		ctx.drawImage(this.bigBird.shadowImg, this.bigBird.x, this.bigBird.y + 230);
+		ctx.drawImage(this.bigBird.img, this.bigBird.x, this.bigBird.y);
 	}
+
+	drawUsername(){
+		if(localPlayer.username.length > 16){
+			ctx.font = '46px Caslon';
+		}else{
+			ctx.font = '55px Caslon';
+		}
+		ctx.fillStyle = '#615f5b';
+		ctx.fillText(localPlayer.username, this.x + 260, this.y + 80);
+	}
+
 	customDraw(){
 		if(this.isOpen == true){
 			if(this.closeButton.isOver == true){
@@ -457,9 +484,9 @@ class Inventory extends Sprite{
 			}
 			this.drawBigBird();
 			if(this.canDrawItems == true){
-				this.drawSquares(511, 130, 80, this.items, this.drawItems);
+				this.drawSquares(511, 130, 90, this.items, this.drawItems);
 			}
-
+			this.drawUsername();
 			let pastX = 507;
 			let pastY = 127;
 			let squareWidth = 95;
@@ -479,7 +506,7 @@ class Inventory extends Sprite{
 				let pastY = 130;
 				for(let i = 0; i < this.items.length; i++){
 					if(i % 4 == 0 && i != 0){
-						pastX = 507;
+						pastX = 511;
 						pastY += squareHeight;
 					}
 					if(this.items[i].button.isSelected == true){

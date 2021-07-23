@@ -6,7 +6,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayF
 					console.log('Player name is a bad word');
 					socket.emit('dirtyWord');
 				}else{
-					if(create.username != "" && create.password != ""|| create.username != " " && create.password != " "){
+					if(create.username != "" && create.password != "" || create.username != " " && create.password != " "){
 						var registerRequest={
 							TitleId: PlayFab.settings.titleId,
 							Email: create.eMail,
@@ -65,11 +65,13 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayF
 						socket.emit('youAreBanned'); 
 						return;
 					}
+					
 					PlayFabServer.GetPlayerProfile(playerProfileRequest, (error,result)=>{ //Get player profile
 						if(result !== null && result.data.PlayerProfile.ContactEmailAddresses[0] != undefined){
 								if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){ //Player is verified
 									PlayFabAdmin.GetUserInventory({PlayFabId: PlayFabId}, (error, result) =>{ //Get player inventory
 										if(result !== null){
+											let inventory = result.data.Inventory;
 											if(players.length > 0){	//Check if there is at least one player online
 												let logged, preventRecursion;
 												preventRecursion = io.sockets.sockets;
@@ -90,10 +92,10 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayF
 													logged = true;
 												}
 			
-												logged == true ? logged = false : createPlayer(PlayFabId, result.data.Inventory);	//If the player is not logged in create player
+												logged == true ? logged = false : createPlayer(PlayFabId, inventory);	//If the player is not logged in create player
 												
 											}else{	//If not create this first player
-												createPlayer(PlayFabId,result.data.Inventory);
+												createPlayer(PlayFabId, inventory);
 											}
 										}else if(error !== null){
 											console.log("Inventory error: "+ error);
