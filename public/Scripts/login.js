@@ -20,16 +20,21 @@ function logIn() {
 				}else if(error != null){
 				//You can get what was the error by the error var and show something to the client
 				//For example, if(error == "InvalidUsername"){ show to that client that the username is invalid}  To know what are the errors test with accounts that doesn't exist
-				console.log(error.errorDetails);
 				if(error.errorDetails == undefined){
 					alert(error.errorMessage);
 				}else{
-					if(error.errorDetails.Email != undefined){
-						alert(error.errorDetails.Email);
+					let details = Object.values(error.errorDetails)[0];
+					if(error.error == "AccountBanned"){
+						let reason = Object.keys(error.errorDetails)[0];
+						if(details != "Indefinite"){
+							
+						}
+						let alertMessage = error.errorMessage + ". Reason of ban: " + reason + ". Duration of ban: " + details;
+						alert(alertMessage);
+					}else{
+						alert(details);
 					}
-					if(error.errorDetails.Password != undefined){
-						alert(error.errorDetails.Password);
-					}
+					
 				}
 				
 			}

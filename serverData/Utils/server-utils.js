@@ -1,4 +1,4 @@
-const { PlayFab, PlayFabAdmin } = require('playfab-sdk');
+const { PlayFab, PlayFabAdmin, PlayFabServer } = require('playfab-sdk');
 var GAME_ID = '238E6';
 PlayFab.settings.titleId = GAME_ID;
 PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
@@ -43,8 +43,52 @@ functions = {
 						reject(error);
 					}
 				})
-			})
+		})
 		
+	},
+	addPlayerTag: async function addPlayerTag(PlayfabId, tag){
+		return await new Promise((resolve, reject) =>{
+			PlayFabServer.AddPlayerTag({PlayFabId: PlayfabId, TagName: tag}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
+	},
+	getPlayersInSegment: async function getPlayersInSegment(SegmentId){
+		return await new Promise((resolve, reject) =>{
+			PlayFabServer.GetPlayersInSegment({SegmentId: SegmentId}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
+	},
+	getPlayerTags: async function getPlayerTags(PlayFabId){
+		return await new Promise((resolve, reject) =>{
+			PlayFabServer.GetPlayerTags({PlayFabId: PlayFabId}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
+	},
+	removePlayerTag: async function removePlayerTag(PlayFabId, TagName){
+		return await new Promise((resolve, reject) =>{
+			PlayFabServer.RemovePlayerTag({PlayFabId: PlayFabId,TagName: TagName}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
 	},
 	separateString: function separateStrings(string){
 		if(string == undefined) return;

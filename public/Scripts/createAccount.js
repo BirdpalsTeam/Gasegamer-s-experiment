@@ -37,6 +37,8 @@ function create() {
 				alert(error.errorDetails.Password);
 			}
 		
+		}else{
+			alert(error.errorMessage);
 		}
 	})
 }

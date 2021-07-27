@@ -28,15 +28,20 @@ app.use(helmet({contentSecurityPolicy:{
 	  "script-src": ["'self'"],
       "connect-src": ["'self'", "*.playfabapi.com"],
 	  "style-src": ["'self'", "fonts.googleapis.com"]
-    },
-  }}));
+    },}
+}));
 
 app.use((req, res, next) => {
-	res.setHeader(
-		"Permissions-Policy",
-		'fullscreen=(self), geolocation=(self), camera=(), microphone=(), payment=(), autoplay=(self), document-domain=()'
-	);
-	next();
+	//if(req.get('cf-ray') != undefined){
+		res.setHeader(
+			"Permissions-Policy",
+			'fullscreen=(self), geolocation=(self), camera=(), microphone=(), payment=(), autoplay=(self), document-domain=()'
+		);
+		next();
+	//}else{
+	//	res.send('error');
+	//}
+	
 });
 
 //Use compression to reduce files size
@@ -48,7 +53,7 @@ app.use(compression({filter: function (req, res) {
 app.use(express.static('public', {dotfiles: 'allow'}));
 
 //Websockets communication
-server_socket.connect(io, PlayFabServer, PlayFabAdmin, PlayFabClient, discordBot.client);
+server_socket.connect(io, PlayFab, PlayFabServer, PlayFabAdmin, PlayFabClient, discordBot.client);
 
 //Start the server on port 3000
 http.listen(process.env.PORT || 3000, () => {

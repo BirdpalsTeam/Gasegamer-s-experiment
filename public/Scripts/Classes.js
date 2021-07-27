@@ -664,7 +664,6 @@ class PlayerCard extends Sprite{
 		ctx.stroke();
 		canvasTxt.fontSize = 40;
 		canvasTxt.font = "Caslon";
-		canvasTxt.justify = true;
 		canvasTxt.drawText(ctx, this.bio, 510, 135 , 370, 335); //draws the message
 	}
 

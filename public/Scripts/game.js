@@ -112,20 +112,10 @@ socket.on('disconnect', () => {
 	window.location.href = "index.html";
 });
 
-socket.on('verificationStatus', () => {
-	alert('You are not verified! Please check your e-mail to verify your account.');
-	window.location.href = "index.html";
-});
-
-socket.on('youAreBanned', () =>{
-	alert('Sorry, but you are banned.');
+socket.on('error', (error) =>{
+	alert(error);
 	window.location.href = "index.html";
 })
-
-socket.on('alreadyLoggedIn', () => {
-	alert('You are already logged in! Please enter with another account or try to login again.');
-	window.location.href = "index.html";
-});
 
 socket.on('loggedOut', () =>{
 	window.location.href = "index.html";
