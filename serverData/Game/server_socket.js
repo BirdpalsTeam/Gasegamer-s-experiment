@@ -16,13 +16,13 @@ exports.connect = (io, PlayFabServer, PlayFabAdmin, PlayFabClient, client) => {
 	var players = new Array();
 	
 	class Player{
-		constructor(id, username, items=[]){
+		constructor(id, username, items=[], biography){
 			this.id = id;
 			this.username = username;
 			this.x = 500;
 			this.y = 460;
-			this.width = 62;
-			this.height = 82;
+			this.width = 82;
+			this.height = 110;
 			this.isMoving = false;
 			this.mouseX = 500;
 			this.mouseY = 460;
@@ -30,6 +30,7 @@ exports.connect = (io, PlayFabServer, PlayFabAdmin, PlayFabClient, client) => {
 			this.movePlayerInterval;
 			this.isDev = false;
 			this.items = items;
+			this.bio = biography;
 		}
 		move(room){
 			this.isMoving = true;
@@ -140,6 +141,12 @@ io.on('connection', (socket) => {
 				playerInventory.forEach((item) =>{
 					if(server_utils.getElementFromArray(item, "ItemId", result.data.Inventory) !== false){
 						if(item.CustomData.isEquipped == "true"){
+							playerInventory.forEach((fItem) =>{
+								if(fItem.ItemClass == item.ItemClass && fItem.ItemId != item.ItemId && fItem.CustomData.isEquipped == "true"){
+									fItem.CustomData.isEquipped = "false";
+									fItem.button.isSelected = false;
+								}
+							})
 							equippedItems += 1;
 							PlayFabServer.UpdateUserInventoryItemCustomData({PlayfabId: socket.playerId, ItemInstanceId: item.ItemInstanceId, Data: {"isEquipped": "true"}}, (error, result) =>{
 								if(result !== null){
@@ -175,6 +182,43 @@ io.on('connection', (socket) => {
 			}else if(error !== null){
 				console.log(error);
 			}//User inventory end
+		})
+	})
+
+	socket.on('/changeBio', (newBio) =>{
+		rateLimiter.consume(socket.id).then(()=>{
+			if(socket.playerId == undefined || newBio == undefined) return;
+			server_utils.resetTimer(socket, AFKTime);
+			let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+			let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
+			if(newBio.length > 144){
+				return;
+			}
+
+			isProfanity(newBio, (t, blocked) =>{
+				if(t == true){
+					blocked.forEach(word => {
+						newBio = newBio.replace(word.word, 'love');
+					});
+					updateBio();
+				}else{
+					updateBio();
+				}
+			},'data/profanity.csv','data/exceptions.csv', 0.4)
+
+			function updateBio(){
+				PlayFabAdmin.UpdateUserReadOnlyData({PlayFabId: socket.playerId, Data:{biography: newBio}}, (error, result) =>{
+					if(result !== null){
+						player.bio = newBio;
+						socket.broadcast.to(socket.gameRoom).emit('changedBio', {player: socket.playerId, newBio: newBio});
+					}else if(error !== null){
+						console.log(error);
+					}
+				})
+			}
+			
+		}).catch(() =>{
+			console.log(`This jerk is trying to DoS our game ${socket.playerId}`);
 		})
 	})
 

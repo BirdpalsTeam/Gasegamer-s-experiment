@@ -2,6 +2,7 @@ var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
 
 var debugParagraph = document.getElementById('debugParagraph');
+var bioInput = document.getElementById('bioInput');
 
 var currentState = new WorldState();
 
@@ -12,6 +13,9 @@ caslonFont.load().then(function(font){
   }).catch((error) =>{
 	  console.log(error)
   });
+
+var canvasTxt = window.canvasTxt.default;
+
 var spritesStillLoading = 0;
 
 var loadSprite = function(imageName){
@@ -29,22 +33,26 @@ var spritesSrc = 'Sprites/';
 var charactersSrc = spritesSrc + 'characters/';
 var roomsSrc = spritesSrc + 'rooms/';
 var hudSrc = spritesSrc + 'hud/';
+var itemsSrc = spritesSrc + 'items/';
 
 var rooms, currentRoom, triggers;
 var birdImage, roomImage, backgroundImage, foregroundImage, bubble_image, inventoryImage;
 var collisionArray, predictArray = new Array();
+
 bubble_image = loadSprite(hudSrc + 'hud.png');
 birdImage = loadSprite(charactersSrc + 'bird_blue.png');
 backgroundImage = loadSprite(roomsSrc + 'town_background.png');
 foregroundImage = loadSprite(roomsSrc + 'town_foreground.png');
-inventoryImage = loadSprite(hudSrc + 'inventory.png');
+inventoryImage = loadSprite(hudSrc + 'inventory2.png');
+
 customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	rooms = response;
 	currentRoom = rooms.town.name;
 	roomImage = loadSprite(roomsSrc + rooms.town.image);
+	assetLoadingLoop(); //Will only start when it get's the rooms json
 	roomCollision();
-	assetLoadingLoop(); //Will only start when it get's the rooms image
 })
+
 var f = [] // debug array
 //Room stuff
 var roomCollMapX, roomCollMapY, roomCollCellWidth,roomCollCellHeight, roomCollMap;
@@ -87,6 +95,7 @@ var ready = false;
 var ticket = sessionStorage.getItem('ticket');
 var playerId = sessionStorage.getItem('playerId');
 var mousePos, mouseOver, localPlayer;
+mousePos = {x: 0, y: 0};
 mouseOver = {x: 0, y: 0};
 var id = 'id';
 
@@ -173,7 +182,10 @@ socket.on('newPlayer', (player) => {
 socket.on('byePlayer', (playerThatLeft) =>{
 	let playerO = getElementFromArray(playerThatLeft, id, playersObject);
 	let playerG = getElementFromArray(playerThatLeft, id, playersInGame);
-
+	if(playerO.card.isOpen == true){
+		playerO.card.close();
+		localPlayer.canMove = true;
+	}
 	playersInGame.splice(playersInGame.indexOf(playerG), 1);
 	playersObject.splice(playersObject.indexOf(playerO), 1);
 });
@@ -254,6 +266,11 @@ socket.on('changingInventory', (message) =>{
 	setTimeout(() => {
 		inventory.isChanging = message;
 	}, 5000);
+})
+
+socket.on('changedBio', (newBio) =>{
+	let player = getElementFromArrayByValue(newBio.player, id, playersObject);
+	player.card.bio = newBio.newBio;
 })
 
 socket.on('playerBanned!', () =>{

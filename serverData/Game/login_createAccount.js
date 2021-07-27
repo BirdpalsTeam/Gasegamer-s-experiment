@@ -48,6 +48,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayF
 			console.log(`This guy is trying to DoS createAccount ${socket.id}`);
 		})
 	})
+
 	socket.on('login',(ticket)=>{
 		rateLimiter.consume(socket.id).then(()=>{
 			PlayFabServer.AuthenticateSessionTicket({SessionTicket: ticket},(error,result)=>{
@@ -69,34 +70,48 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayF
 					PlayFabServer.GetPlayerProfile(playerProfileRequest, (error,result)=>{ //Get player profile
 						if(result !== null && result.data.PlayerProfile.ContactEmailAddresses[0] != undefined){
 								if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){ //Player is verified
+
 									PlayFabAdmin.GetUserInventory({PlayFabId: PlayFabId}, (error, result) =>{ //Get player inventory
 										if(result !== null){
 											let inventory = result.data.Inventory;
-											if(players.length > 0){	//Check if there is at least one player online
-												let logged, preventRecursion;
-												preventRecursion = io.sockets.sockets;
-												let playerAlreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'playerId', preventRecursion);
-												//Check if the player is already logged in
-												if(playerAlreadyLogged != false){
-													socket.emit('alreadyLoggedIn');
-													//It is needed to stop the player's movement from the account that it is already logged.
-													let thisPlayerRoom = server_utils.getElementFromArrayByValue(playerAlreadyLogged.gameRoom, 'name', Object.values(rooms));
-													let preventRecursion2 = thisPlayerRoom.players;
-													let thisPlayer = server_utils.getElementFromArrayByValue(playerAlreadyLogged.playerId, 'id', preventRecursion2);
-													if(thisPlayer.isMoving == true){
-														clearInterval(thisPlayer.movePlayerInterval);
-														thisPlayer.isMoving == false;
+
+											PlayFabAdmin.GetUserReadOnlyData({PlayFabId: PlayFabId}, (error, result) =>{ //Get Biography
+												if(result !== null){
+													let biography;
+													//Check if the player has a biography.
+													result.data.Data.biography == undefined ? biography = "I like to play Birdpals!" : biography = result.data.Data.biography.Value;
+													if(result.data.Data.biography != undefined && result.data.Data.biography.Value.includes("🖕")){
+														biography = "love";
 													}
-													playerAlreadyLogged.emit('loggedOut');
-													playerAlreadyLogged.disconnect(true);
-													logged = true;
+													if(players.length > 0){	//Check if there is at least one player online
+														let logged, preventRecursion;
+														preventRecursion = io.sockets.sockets;
+														let playerAlreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'playerId', preventRecursion);
+														//Check if the player is already logged in
+														if(playerAlreadyLogged != false){
+															socket.emit('alreadyLoggedIn');
+															//It is needed to stop the player's movement from the account that it is already logged.
+															let thisPlayerRoom = server_utils.getElementFromArrayByValue(playerAlreadyLogged.gameRoom, 'name', Object.values(rooms));
+															let preventRecursion2 = thisPlayerRoom.players;
+															let thisPlayer = server_utils.getElementFromArrayByValue(playerAlreadyLogged.playerId, 'id', preventRecursion2);
+															if(thisPlayer.isMoving == true){
+																clearInterval(thisPlayer.movePlayerInterval);
+																thisPlayer.isMoving == false;
+															}
+															playerAlreadyLogged.emit('loggedOut');
+															playerAlreadyLogged.disconnect(true);
+															logged = true;
+														}
+														
+														logged == true ? logged = false : createPlayer(PlayFabId, inventory, biography);	//If the player is not logged in create player
+														
+													}else{	//If not create this first player
+														createPlayer(PlayFabId, inventory, biography);
+													}
+												}else if(error !== null){
+													console.log("Get User Readable data error: " + error);
 												}
-			
-												logged == true ? logged = false : createPlayer(PlayFabId, inventory);	//If the player is not logged in create player
-												
-											}else{	//If not create this first player
-												createPlayer(PlayFabId, inventory);
-											}
+											})
 										}else if(error !== null){
 											console.log("Inventory error: "+ error);
 										}
@@ -104,7 +119,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayF
 									})
 									
 							
-									function createPlayer(thisPlayer, inventory){
+									function createPlayer(thisPlayer, inventory, biography){
 										playerGear = new Array();
 										inventory.forEach((equippedItem) =>{
 											if(equippedItem.CustomData.isEquipped == 'true'){ //Get the items the player is wearing
@@ -117,7 +132,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayF
 											}
 											
 										})
-										thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, playerGear);
+										thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, playerGear, biography);
 										if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
 											thisPlayer.isDev = true;
 										};

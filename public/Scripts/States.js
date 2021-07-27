@@ -18,20 +18,19 @@ class State{
 
     }
 }
-
+var allObjects;
 class WorldState extends State{
     constructor(){
         super();
     }
-
+	
     render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         roomSprite.draw();
-        let allObjects = [];
-        allObjects = playersObject.concat(background, foreground);
-        allObjects.push(localPlayer);
+        allObjects = [];
+        allObjects = playersObject.concat(background, localPlayer);
 
-        allObjects.sort(function(a, b){return a.layer-b.layer});
+        allObjects.sort(function(a, b){return a.y-b.y});
 
         allObjects.forEach((object) => {
             if(object != undefined){
@@ -39,22 +38,32 @@ class WorldState extends State{
             }
         });
 
+		foreground.draw();
+
         if(playersObject.length > 0){
             playersObject.forEach((player) => {
                 player.whereToLook();
                 player.drawUsername();
                 player.drawBubble();
+				if(player.card.isOpen == true){
+					player.card.draw();
+				}
             });
         }
 
         if(localPlayer != undefined){
-            localPlayer.drawUsername();
+			if(localPlayer.canDrawUsername == true){
+				localPlayer.drawUsername();
+			}
             localPlayer.drawBubble();
         }
+
 		if(inventory != undefined && inventory.isOpen == true){
 			ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
 			ctx.fillRect(0,0,canvas.width, canvas.height);
 			inventory.draw();
+		}else{
+			bioInput.hidden = true;
 		}
     }
 
@@ -72,6 +81,7 @@ class WorldState extends State{
 		}else if(inventory != undefined && inventory.isOpen == true){
 			inventory.close();
 			inventory.selectItem();
+			inventory.writeBio();
 		}
 	}
 
@@ -81,6 +91,7 @@ class WorldState extends State{
 			inventory.closeButton.isOverButton(mouseOver) == true ? inventory.closeButton.isOver = true : inventory.closeButton.isOver = false;
 		}
 	}
+	
 }
 
 
@@ -164,42 +175,54 @@ class DebugSkinEditorState extends State{
     onclick(evt){
         let tempmousepos = getMousePos(canvas, evt);
         if(this.currentclick == 0){
-            this.click1 = [tempmousepos.x, tempmousepos.y];
+            this.click1 = [this.tempmousepos.x, this.tempmousepos.y];
             this.currentclick = 1;
             this.drawSpritesheetthingy();
         }
         else if(this.currentclick == 1){
-            this.click2 = [tempmousepos.x, tempmousepos.y];
+            this.click2 = [this.tempmousepos.x - this.click1[0], this.tempmousepos.y - this.click1[1]];
             this.currentclick = 2;
             //ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
-            ctx.rect(this.click1[0], this.click1[1], this.click2[0] - this.click1[0], this.click2[1] - this.click1[1]);
+            ctx.rect(this.click1[0], this.click1[1], this.click2[0], this.click2[1]);
             ctx.stroke();
         }
         else if(this.currentclick == 2){
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
             ctx.rect(0,0,canvas.width,canvas.height);
             ctx.fill();
             ctx.stroke();
-            ctx.drawImage(this.itemimg,this.click1[0],this.click1[1],this.click2[0] - this.click1[0], this.click2[1] - this.click1[1],10,10, this.click2[0] - this.click1[0], this.click2[1] - this.click1[1]);
+            ctx.drawImage(this.itemimg,this.click1[0],this.click1[1],this.click2[0], this.click2[1],10,10, this.click2[0], this.click2[1]);
 
-            debugParagraph.innerHTML = this.click1[0].toString() + "," + this.click1[1].toString() + "," + (this.click2[0] - this.click1[0]).toString() + "," + (this.click2[1] - this.click1[1]).toString();
+            debugParagraph.innerHTML = this.click1[0].toString() + "," + this.click1[1].toString() + "," + (this.click2[0]).toString() + "," + (this.click2[1]).toString();
             this.currentclick = 3;
         }
         else{
-            this.spritesArray.push([this.click1[0],this.click1[1],this.click2[0] - this.click1[0], this.click2[1] - this.click1[1], canvas.width / 2 - tempmousepos.x, canvas.height/2 - tempmousepos.y]);
+			this.spritesArray.push([this.click1[0],this.click1[1],this.click2[0], this.click2[1], canvas.width / 2 - this.tempmousepos.x, canvas.height/2 - this.tempmousepos.y]);
             this.currentclick = 0;
             this.drawSpritesheetthingy();
         }
     }
     onmousemove(evt){
-        if(this.currentclick > 2){
-            let tempmousepos = getMousePos(canvas, evt);
-            
+        this.tempmousepos = getMousePos(canvas, evt);
+        ctx.lineWidth = "1";
+        if(this.currentclick == 0){
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(this.itemimg,this.click1[0],this.click1[1],this.click2[0] - this.click1[0], this.click2[1] - this.click1[1],tempmousepos.x,tempmousepos.y, this.click2[0] - this.click1[0], this.click2[1] - this.click1[1]);
-            
+            this.drawSpritesheetthingy();
+            ctx.beginPath();
+            ctx.rect(this.tempmousepos.x, this.tempmousepos.y, 10, 10);
+            ctx.stroke();
+        }
+        else if(this.currentclick == 1){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            this.drawSpritesheetthingy();
+            ctx.beginPath();
+            ctx.rect(this.click1[0], this.click1[1], this.tempmousepos.x - this.click1[0], this.tempmousepos.y - this.click1[1]);
+            ctx.stroke();
+        }
+        else if(this.currentclick > 2){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(this.itemimg,this.click1[0],this.click1[1],this.click2[0], this.click2[1],this.tempmousepos.x,this.tempmousepos.y, this.click2[0], this.click2[1]);
+
             ctx.beginPath();
             ctx.arc(canvas.width / 2, canvas.height / 2, 5, 0, 2 * Math.PI);
             ctx.fill();

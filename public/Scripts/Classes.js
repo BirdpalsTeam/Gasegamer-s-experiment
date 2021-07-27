@@ -36,11 +36,17 @@ class Player extends Sprite{
 		this.messageTimeout;
 		this.isDev = player.isDev;
 		this.canMove = true;
+		this.canDrawUsername = true;
 		//items
 		this.items = player.items;
 		this.itemsImgs = new Array();
 		if(this.id == sessionStorage.playerId) this.local = true;
 		this.layer = 1;
+		//card
+		this.bio = player.bio;
+		if(this.local != true){
+			this.card = new PlayerCard(inventoryImage, this, 3, 0);
+		}
 	}
 
 	customDraw(){
@@ -48,6 +54,16 @@ class Player extends Sprite{
 		this.itemsImgs.forEach((item) => {
 				item.draw();
 		});
+
+		if(this.card != undefined && this.card.playerButton.isInsideButton(mousePos) == true && this.card.isOpen == false){
+			if(localPlayer.isMoving == true){
+				localPlayer.isMoving = false;
+				clearInterval(localPlayer.movePlayerInterval);
+			}
+			this.card.open();
+		}else if(this.card != undefined && this.card.closeButton.isInsideButton(mousePos) == true && this.card.isOpen == true){
+			this.card.close();
+		}
 	}
 	
 	drawUsername(){
@@ -60,9 +76,9 @@ class Player extends Sprite{
 			ctx.strokeStyle = "black";
 			ctx.lineWidth = outlineWidth;
 			ctx.lineJoin = "round";
-			ctx.strokeText(username, x, y + height / 2.5);
+			ctx.strokeText(username, x + 7, y + height / 2.0);
 			ctx.fillStyle = baseColor;
-			ctx.fillText(username, x, y + height / 2.5);
+			ctx.fillText(username, x + 7, y + height / 2.0);
 		}
 		ctx.textAlign = 'center';
 		if(this.local == true){
@@ -73,31 +89,30 @@ class Player extends Sprite{
 	}
 
 	drawBubble(){
-		var canvasTxt = window.canvasTxt.default;
 		//draw bubble
 		if(this.message != undefined){
 			let textHeight, imageHeight, bubbleHeight;
 			if(this.message.length > 0 && this.message.length < 18){
-				bubbleHeight = 25;
+				bubbleHeight = -6;
 				imageHeight = 47;
 				textHeight = 20;
 			}else if(this.message.length >= 18 && this.message.length < 30){
-				bubbleHeight = 35;
+				bubbleHeight = 5;
 				imageHeight = 57;
 				textHeight = 20;
 			}
 			else if(this.message.length >= 30 && this.message.length <= 52){
-				bubbleHeight = 65;
+				bubbleHeight = 45;
 				imageHeight = 97;
 				textHeight = 33;
 			}
 			let drawHeight = this.y - this.height - bubbleHeight;
-			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 66, drawHeight, 131, imageHeight); //draws the bubble
-			ctx.fontSize = 12;
+			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 45, drawHeight, 131, imageHeight); //draws the bubble
+			canvasTxt.fontSize = 14;
 			canvasTxt.font = "sans-serif";
 			ctx.fillStyle = "black";
 			//canvasTxt.debug = true; //good way to test the text size
-			canvasTxt.drawText(ctx, this.message, this.x - 50, drawHeight + 2 , 100, imageHeight - textHeight); //draws the message
+			canvasTxt.drawText(ctx, this.message, this.x - this.originX, drawHeight + 2 , 100, imageHeight - textHeight); //draws the message
 		}
 	}
 
@@ -220,6 +235,10 @@ class Player extends Sprite{
 				item.x = this.x;
 				item.y = this.y;
 			});
+			if(this.card != undefined){
+				this.card.playerButton.x = this.x;
+				this.card.playerButton.y = this.y;
+			}
 
 			if(timeToPlayerReachDestination <= 0){
 				this.isMoving = false;
@@ -232,21 +251,41 @@ class Player extends Sprite{
 
 	addItem(itemtype, itemname){
 		let tempItemImg = new Image();
+		let itemsImgs = this.itemsImgs;
+		let sX= this.sourceX;
+		let sY = this.sourceY;
+		let sW = this.sourceWidth;
+		let sH = this.sourceHeight;
+		let x = this.x;
+		let y = this.y;
+		let w = this.width;
+		let h = this.height;
+		let oX = this.originX;
+		let oY = this.originY;
+		function addItemImg(layer){
+			tempItemImg.src = itemsSrc + itemtype + "/" + itemname + ".png";
+			itemsImgs.push(new Item(tempItemImg,sX, sY, sW, sH, x, y, w, h, oX, oY, layer, itemtype, itemname));
+		}
 		switch (itemtype) {
 			case "color":
-				tempItemImg.src = "Sprites/items/" + itemtype + "/" + itemname + ".png";
+				tempItemImg.src = itemsSrc + itemtype + "/" + itemname + ".png";
 				this.img = tempItemImg;
 				this.img.name = itemname;
 				break;
-		
-			default:
-				tempItemImg.src = "Sprites/items/" + itemtype + "/" + itemname + ".png";
-				this.itemsImgs.push(new Item(tempItemImg, this.sourceX, this.sourceY, this.sourceWidth, this.sourceHeight, this.x, this.y, this.width, this.height, this.originX, this.originY, 1, itemtype, itemname));
-			break;
+			case "head":
+				addItemImg(4);
+				break;
+			case "face":
+				addItemImg(3);
+				break;
+			case "neck":
+				addItemImg(2);
+				break;
+			case "body":
+				addItemImg(1)
+				break;
 		}
-
-		this.items.sort(function(a, b){a.layer, b.layer});
-		
+		this.itemsImgs.sort(function(a, b){return a.layer-b.layer});
 	}
 	
 	removeItem(itemName){
@@ -256,7 +295,7 @@ class Player extends Sprite{
 
 class Item extends Sprite{
 	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, layer, type, name){
-		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
+		super(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY);
 		this.layer = layer;
 		this.type = type;
 		this.name = name;
@@ -310,12 +349,16 @@ class Inventory extends Sprite{
 		this.type = type;
 		this.isOpen = false;
 		this.closeButton = new Button(870, 30, 65, 86);
+		this.bioButton = new Button(355, 505, 60, 50);
 		this.isChanging = false;
 		this.bigBird = {x: this.x + 150, y: this.y + 150};
 		this.bigBird.img = new Image();
 		this.bigBird.shadowImg = new Image();
 		this.bigBird.img.src = hudSrc + "big_bird.png";
 		this.bigBird.shadowImg.src = hudSrc + 'big_bird_shadow.png';
+		this.canDrawBigBird = false;
+		this.canDrawGrid = true;
+		this.canDrawBio = false;
 	}
 
 	open(){
@@ -323,6 +366,9 @@ class Inventory extends Sprite{
 			this.isChanging == false ? this.getInventory() : this.createItemsButtons();
 			this.isOpen = true;
 			localPlayer.canMove = false;
+			this.canDrawBigBird = false;
+			this.canDrawGrid = true;
+			this.canDrawBio = false;
 		}
 	} 
 
@@ -333,7 +379,6 @@ class Inventory extends Sprite{
 			this.updateGear();
 			this.isOpen = false;
 			localPlayer.canMove = true;
-			this.canDrawItems = false;
 		}
 	}
 
@@ -397,10 +442,10 @@ class Inventory extends Sprite{
 
 	drawItems(items, i, pastX, pastY){
 		items[i].img = new Image();
-		items[i].img.src = "Sprites/items/" + items[i].ItemClass + "/" + items[i].ItemId + "_icon.png";
+		items[i].img.src = itemsSrc + items[i].ItemClass + "/" + items[i].ItemId + "_icon.png";
 		ctx.fillStyle = "#bab6aa";
-		ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey rectangle
-		ctx.drawImage(items[i].img, pastX, pastY);
+		ctx.fillRect(pastX - 4, pastY, 95, 85); //draws the grey rectangle
+		ctx.drawImage(items[i].img, pastX, pastY + 2);
 		
 		if(items[i].button.isSelected == true){
 			ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
@@ -411,7 +456,7 @@ class Inventory extends Sprite{
 
 		if(items[i].button.isOver == true){
 			ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-			ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey select rectangle
+			ctx.fillRect(pastX - 4, pastY, 95, 85); //draws the grey select rectangle
 		}
 	}
 
@@ -420,33 +465,55 @@ class Inventory extends Sprite{
 			item.button.isInsideButton(mousePos);
 			if(item.button.isSelected == true){
 				item.CustomData.isEquipped = "true";
-				if(item.ItemClass == "color"){
-					this.items.forEach(colorItem => {
-						if(item.ItemClass == "color" && colorItem.ItemId != item.ItemId && colorItem.ItemClass == "color" && colorItem.CustomData.isEquipped == "true"){
-							colorItem.button.isSelected = false;
-							colorItem.CustomData.isEquipped = "false";
-						}
-					})
-				}
+				this.items.forEach(fItem =>{
+					if(fItem.ItemClass == item.ItemClass && fItem.ItemId != item.ItemId && fItem.CustomData.isEquipped == "true"){
+						fItem.CustomData.isEquipped = "false";
+						fItem.button.isSelected = false;
+					}
+				})
 			}else{
 				item.CustomData.isEquipped = "false";
 			}
 		})
 	}
 
-	drawGrid(pastX, pastY, squareWidth, squareHeight){
-		ctx.beginPath();
-		ctx.rect(pastX, pastY, squareWidth, squareHeight);
-		ctx.strokeStyle = "black";
-		ctx.stroke();
+	drawGrid(){
+		let pastX = 507;
+		let pastY = 127;
+		let squareWidth = 95;
+		let squareHeight = 87.5;
+		for(let i = 0; i < 16; i++){
+			if(i % 4 == 0 && i != 0){
+				pastX = 507;
+				pastY += squareHeight;
+			}
+			ctx.beginPath();
+			ctx.rect(pastX, pastY, squareWidth, squareHeight);
+			ctx.strokeStyle = "black";
+			ctx.stroke();
+			pastX += 95;
+		}
 	}
 
-	drawWhiteRectangle(pastX, pastY){
-		ctx.beginPath();
-		ctx.strokeStyle = "white";
-		ctx.lineWidth = 6;
-		ctx.rect(pastX - 4, pastY - 3.2, 95, 87.5); //draws the white rectangle
-		ctx.stroke();
+	drawWhiteRectangle(){
+		if(this.canDrawItems == true){
+			let pastX = 511;
+			let pastY = 130;
+			for(let i = 0; i < this.items.length; i++){
+				if(i % 4 == 0 && i != 0){
+					pastX = 511;
+					pastY += 87.5;
+				}
+				if(this.items[i].button.isSelected == true){
+					ctx.beginPath();
+					ctx.strokeStyle = "white";
+					ctx.lineWidth = 6;
+					ctx.rect(pastX - 4, pastY - 3.2, 95, 87.5); //draws the white rectangle
+					ctx.stroke();
+				}
+				pastX += 95;
+			}
+		}
 	}
 	
 	grayCloseButton(){
@@ -465,6 +532,15 @@ class Inventory extends Sprite{
 	drawBigBird(){
 		ctx.drawImage(this.bigBird.shadowImg, this.bigBird.x, this.bigBird.y + 230);
 		ctx.drawImage(this.bigBird.img, this.bigBird.x, this.bigBird.y);
+		this.bigBird.items = this.items;
+		this.bigBird.items.forEach(item =>{
+			if(item.button.isSelected == true){
+				item.img = new Image();
+				item.img.src = itemsSrc + item.ItemClass + '/' + item.ItemId + '_big.png';
+				ctx.drawImage(item.img, this.bigBird.x, this.bigBird.y);
+			}
+		})
+
 	}
 
 	drawUsername(){
@@ -477,44 +553,153 @@ class Inventory extends Sprite{
 		ctx.fillText(localPlayer.username, this.x + 260, this.y + 80);
 	}
 
+	writeBio(){
+		this.bioButton.isInsideButton(mousePos);
+		if(this.bioButton.isSelected == true){
+			this.canDrawItems = false;
+			this.canDrawGrid = false;
+			this.canDrawBio = true;
+			this.saveBio();
+			bioInput.hidden = false;
+			if(localPlayer.bio != "I like to play Birdpals!"){
+				bioInput.value = localPlayer.bio;
+			}
+		}else{
+			this.canDrawItems = true;
+			this.canDrawGrid = true;
+			this.canDrawBio = false;
+			bioInput.hidden = true;
+			bioInput.disabled = false;
+		}
+	}
+	saveBio(){
+		bioInput.onkeyup = function(evt) {
+            evt = evt || window.event;
+
+            if (evt.keyCode == 13) {
+				 bioInput.disabled = true;
+				 command('/changeBio', bioInput.value);
+				 localPlayer.bio = bioInput.value;
+            }
+        };
+	}
 	customDraw(){
 		if(this.isOpen == true){
 			if(this.closeButton.isOver == true){
 				this.grayCloseButton();
 			}
-			this.drawBigBird();
 			if(this.canDrawItems == true){
-				this.drawSquares(511, 130, 90, this.items, this.drawItems);
+				this.drawSquares(511, 130, 87, this.items, this.drawItems);
+				this.canDrawBigBird = true;
+			}
+			if(this.canDrawBigBird == true){
+				this.drawBigBird();
 			}
 			this.drawUsername();
-			let pastX = 507;
-			let pastY = 127;
-			let squareWidth = 95;
-			let squareHeight = 87.5;
-
-			for(let i = 0; i < 16; i++){
-				if(i % 4 == 0 && i != 0){
-					pastX = 507;
-					pastY += squareHeight;
-				}
-				this.drawGrid(pastX, pastY, squareWidth, squareHeight);
-				pastX += 95;
+			if(this.canDrawGrid == true){
+				this.drawGrid();
 			}
-
-			if(this.canDrawItems == true){
-				let pastX = 511;
-				let pastY = 130;
-				for(let i = 0; i < this.items.length; i++){
-					if(i % 4 == 0 && i != 0){
-						pastX = 511;
-						pastY += squareHeight;
-					}
-					if(this.items[i].button.isSelected == true){
-						this.drawWhiteRectangle(pastX, pastY);
-					}
-					pastX += 95;
-				}
+			if(this.canDrawBio == true){
+				ctx.beginPath();
+				ctx.rect(507, 130, 380, 350);
+				ctx.strokeStyle = "black";
+				ctx.stroke();
 			}
+			this.drawWhiteRectangle();
 		}
 	}
+}
+
+class PlayerCard extends Sprite{
+	constructor(img, player, layer, type){
+		super(img, 0, 0, 892, 512, 0, 0, 1000, 600, layer, type);
+		this.username = player.username;
+		this.layer = layer;
+		this.type = type;
+		this.isOpen = false;
+		this.closeButton = new Button(870, 30, 65, 86);
+		this.playerButton = new Button(player.x - player.originX, player.y - player.originY, player.width, player.height);
+		this.bigBird = {x: this.x + 150, y: this.y + 150};
+		this.bigBird.img = new Image();
+		this.bigBird.shadowImg = new Image();
+		this.bigBird.img.src = hudSrc + "big_bird.png";
+		this.bigBird.shadowImg.src = hudSrc + 'big_bird_shadow.png';
+		this.items = player.items;
+		this.bio = player.bio;
+	}
+
+	open(){
+		if(this.isOpen == false){
+			this.isOpen = true;
+			localPlayer.canMove = false;
+			localPlayer.canDrawUsername = false;
+		}
+	} 
+
+	close(){
+		if(this.closeButton.isInsideButton(mousePos) == true){
+			this.isOpen = false;
+			localPlayer.canMove = true;
+			localPlayer.canDrawUsername = true;
+		}
+	}
+
+	grayCloseButton(){
+		ctx.fillStyle = "rgba(0, 0, 0, 0.4)"
+		ctx.beginPath();
+		ctx.moveTo(this.closeButton.x, this.closeButton.y);
+		ctx.lineTo(this.closeButton.x + 66,this.closeButton.y);
+		ctx.lineTo(this.closeButton.x + 70, 100);
+		ctx.fill();
+		ctx.beginPath();
+		ctx.moveTo(this.closeButton.x, this.closeButton.y);
+		ctx.bezierCurveTo(this.closeButton.x, this.closeButton.y + 15,this.closeButton.x + 35, this.closeButton.y + 60, this.closeButton.x + 70, 100);
+		ctx.fill();
+	}
+
+	drawBiographyArea(){
+		ctx.beginPath();
+		ctx.rect(507, 130, 380, 350);
+		ctx.strokeStyle = "black";
+		ctx.stroke();
+		canvasTxt.fontSize = 40;
+		canvasTxt.font = "Caslon";
+		canvasTxt.justify = true;
+		canvasTxt.drawText(ctx, this.bio, 510, 135 , 370, 335); //draws the message
+	}
+
+	drawUsername(){
+		if(this.username.length > 16){
+			ctx.font = '46px Caslon';
+		}else{
+			ctx.font = '55px Caslon';
+		}
+		ctx.fillStyle = '#615f5b';
+		ctx.fillText(this.username, this.x + 260, this.y + 80);
+	}
+
+	drawBigBird(){
+		ctx.drawImage(this.bigBird.shadowImg, this.bigBird.x, this.bigBird.y + 230);
+		ctx.drawImage(this.bigBird.img, this.bigBird.x, this.bigBird.y);
+		this.bigBird.items = this.items;
+		this.bigBird.items.forEach(item =>{
+				item.img = new Image();
+				item.img.src = itemsSrc + item.ItemClass + '/' + item.ItemId + '_big.png';
+				ctx.drawImage(item.img, this.bigBird.x, this.bigBird.y);
+		})
+
+	}
+
+	customDraw(){
+		if(this.isOpen == true){
+			if(this.closeButton.isOver == true){
+				this.grayCloseButton();
+			}
+			this.drawUsername();
+			this.drawBigBird();
+			this.drawBiographyArea();
+			this.closeButton.isOverButton(mouseOver) == true ? this.closeButton.isOver = true : this.closeButton.isOver = false;
+		}
+	}
+	
 }
