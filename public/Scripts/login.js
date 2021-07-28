@@ -27,9 +27,10 @@ function logIn() {
 					if(error.error == "AccountBanned"){
 						let reason = Object.keys(error.errorDetails)[0];
 						if(details != "Indefinite"){
-							
+							details = details[0] + '.000Z';
+							details = new Date(details).toString();
 						}
-						let alertMessage = error.errorMessage + ". Reason of ban: " + reason + ". Duration of ban: " + details;
+						let alertMessage = error.errorMessage + ". Reason of ban: " + reason + ". Ban expires at: " + details;
 						alert(alertMessage);
 					}else{
 						alert(details);

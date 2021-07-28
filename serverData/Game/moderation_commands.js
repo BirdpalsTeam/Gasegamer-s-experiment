@@ -60,10 +60,14 @@ exports.run = (io, socket, server_utils, AFKTime ,rooms, devTeam, PlayFabServer)
 					PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
 						if(result !== null){
 							console.log(result);
-							let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(banPlayerId, 'playerId', io.sockets.sockets);
-							socket.emit('playerBanned!');
-							if(removeBannedPlayerSocket == false) return; //Check if the player is online
-							removeBannedPlayerSocket.disconnect(true);
+							server_utils.addPlayerTag(banPlayerId, 'isBanned').then(()=>{
+								let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(banPlayerId, 'playerId', io.sockets.sockets);
+								socket.emit('playerBanned!');
+								if(removeBannedPlayerSocket == false) return; //Check if the player is online
+								removeBannedPlayerSocket.disconnect(true);
+							}).catch((error) =>{
+								console.log(error);
+							})
 						}else if(error !== null){
 							console.log(error)
 						}
@@ -86,10 +90,15 @@ exports.run = (io, socket, server_utils, AFKTime ,rooms, devTeam, PlayFabServer)
 			if(banPlayerName == undefined) return; //Check if the message is in the correct form.
 			
 			server_utils.getPlayfabUserByUsername(banPlayerName).then(response =>{
-				PlayFabServer.RevokeAllBansForUser({PlayFabId: response.data.UserInfo.PlayFabId}, (error, result) =>{	//Revoke All Bans from user
+				let PlayFabId =  response.data.UserInfo.PlayFabId;
+				PlayFabServer.RevokeAllBansForUser({PlayFabId: PlayFabId}, (error, result) =>{	//Revoke All Bans from user
 					if(result !== null){
 						console.log(result);
-						socket.emit('playerUnbanned!');
+						server_utils.removePlayerTag(PlayFabId, 'isBanned').then(()=>{
+							socket.emit('playerUnbanned!');
+						}).catch((error) =>{
+							console.log(error);
+						})
 					}else if(error !== null){
 						console.log(error);
 					}

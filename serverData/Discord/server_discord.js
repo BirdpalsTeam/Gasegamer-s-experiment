@@ -1,6 +1,7 @@
 //Discord Bot
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const server_utils = require('../Utils/server-utils');
 exports.embedText = function embedText(who, message){
 	return new Discord.MessageEmbed().addField(who, message);
 }
@@ -34,7 +35,11 @@ exports.startBot = () => {
 						}
 						PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
 							if(result !== null){
-								message.channel.send(embedText('Banned:', banMessage).setColor('#FF0000'))
+								server_utils.addPlayerTag(banPlayerId, 'isBanned').then(()=>{
+									message.channel.send(embedText('Banned:', banMessage).setColor('#FF0000'));
+								}).catch((error) =>{
+									console.log(error);
+								})
 							}else if(error !== null){
 								console.log(error)
 							}
