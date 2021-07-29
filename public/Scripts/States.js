@@ -46,6 +46,8 @@ class WorldState extends State{
                 player.drawUsername();
                 player.drawBubble();
 				if(player.card.isOpen == true){
+					ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+					ctx.fillRect(0,0,canvas.width, canvas.height);
 					player.card.draw();
 				}
             });

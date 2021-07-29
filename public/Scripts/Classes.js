@@ -663,8 +663,8 @@ class PlayerCard extends Sprite{
 		this.bigBird.shadowImg = new Image();
 		this.bigBird.img.src = hudSrc + "big_bird.png";
 		this.bigBird.shadowImg.src = hudSrc + 'big_bird_shadow.png';
-		this.items = player.items;
 		this.bio = player.bio;
+		this.p = player;
 	}
 
 	open(){
@@ -672,6 +672,7 @@ class PlayerCard extends Sprite{
 			this.isOpen = true;
 			localPlayer.canMove = false;
 			localPlayer.canDrawUsername = false;
+			this.items = this.p.items;
 		}
 	} 
 
@@ -720,11 +721,44 @@ class PlayerCard extends Sprite{
 		ctx.drawImage(this.bigBird.shadowImg, this.bigBird.x, this.bigBird.y + 230);
 		ctx.drawImage(this.bigBird.img, this.bigBird.x, this.bigBird.y);
 		this.bigBird.items = this.items;
+		this.bigBird.gear = new Array();
+		this.bigBird.colors = new Array();
 		this.bigBird.items.forEach(item =>{
-				item.img = new Image();
-				item.img.src = itemsSrc + item.ItemClass + '/' + item.ItemId + '_big.png';
-				ctx.drawImage(item.img, this.bigBird.x, this.bigBird.y);
+			item.img = new Image();
+			item.img.src = itemsSrc + item.ItemClass + '/' + item.ItemId + '_big.png';
+			let imgX, imgY;
+			let canPush = false;
+			switch(item.ItemClass){
+				case 'head':
+					imgX = this.bigBird.x + 14;
+					imgY = this.bigBird.y - 14;
+					canPush = true;
+					break;
+				case 'face':
+					imgX = this.bigBird.x + 30;
+					imgY = this.bigBird.y + 47;
+					canPush = true;
+					break;
+				case 'neck':
+					imgX = this.bigBird.x + 75;
+					imgY = this.bigBird.y + 150;
+					canPush = true
+					break;
+				case 'color':
+					this.bigBird.img.src = item.img.src;
+					this.bigBird.colors.push(item);
+					canPush = false;
+					break;
+			}
+			if(canPush == true){this.bigBird.gear.push({i: item.img, x: imgX, y: imgY});}
 		})
+		this.bigBird.gear.sort((b, a) => {return a.y - b.y});
+		this.bigBird.gear.forEach((item) =>{
+			ctx.drawImage(item.i, item.x, item.y);
+		})
+		if(this.bigBird.colors.length == 0){
+			this.bigBird.img.src = hudSrc + "big_bird.png";
+		}
 
 	}
 
