@@ -1,4 +1,4 @@
-exports.run = (io, socket, server_utils, AFKTime ,rooms, devTeam, PlayFabServer) =>{
+exports.run = (io, socket, server_utils, AFKTime , rooms, devTeam, PlayFabServer, client, server_discord) =>{
 	socket.on('/report', (message) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
@@ -37,7 +37,8 @@ exports.run = (io, socket, server_utils, AFKTime ,rooms, devTeam, PlayFabServer)
 			message = server_utils.separateString(message);
 			let timeOfBan = message[1];
 			let banPlayerName = message[2];
-			let reason = message.slice(3,message.length);
+			let IPban = message[3];
+			let reason = message.slice(4,message.length);
 			reason = reason.toString().split(',').join(' '); //Returns the reason with spaces
 			
 			if(isNaN(timeOfBan) == true || banPlayerName == undefined || reason == undefined) return; //Check if the message is in correct form
@@ -45,24 +46,57 @@ exports.run = (io, socket, server_utils, AFKTime ,rooms, devTeam, PlayFabServer)
 			let banRequest;
 	
 			server_utils.getPlayfabUserByUsername(banPlayerName).then(response => { 
+				let banMessage = response.data.UserInfo.TitleInfo.DisplayName + ' was banned because ' + reason + ' until ' + timeOfBan + ' h.';
 				let banPlayerId = response.data.UserInfo.PlayFabId;
 				if(server_utils.getElementFromArrayByValue(banPlayerId, 'id', devTeam.devs) == false){ //Find if the mod is not trying to ban a dev
 					if(timeOfBan === '9999'){	//Perma ban
-						banRequest = {
-							Bans: [{PlayFabId: banPlayerId, Reason: reason}]
+						if(IPban == 'true'){
+							server_utils.getPlayerInternalData(banPlayerId).then((response)=>{
+								banRequest = {
+									Bans: [{PlayFabId: banPlayerId, Reason: reason, IPAddress: response.data.Data.ipaddress.Value}]
+								}
+								ban();
+							}).catch((error)=>{
+								console.log(error);
+							})
+							
+						}else{
+							banRequest = {
+								Bans: [{PlayFabId: banPlayerId, Reason: reason}]
+							}
+							ban();
 						}
+						
 					}else{
-						banRequest = {
-							Bans: [{DurationInHours: timeOfBan, PlayFabId: banPlayerId, Reason: reason}]
+						if(IPban == 'true'){
+							server_utils.getPlayerInternalData(banPlayerId).then((response)=>{
+								banRequest = {
+									Bans: [{DurationInHours: timeOfBan, PlayFabId: banPlayerId, Reason: reason, IPAddress: response.data.Data.ipaddress.Value}]
+								}
+								ban();
+							}).catch((error)=>{
+								console.log(error);
+							})
+						}else{
+							banRequest = {
+								Bans: [{DurationInHours: timeOfBan, PlayFabId: banPlayerId, Reason: reason}]
+							}
+							ban();
 						}
+						
 					}
-				
+				function ban(){
 					PlayFabServer.BanUsers(banRequest, (error, result) =>{	//Ban request to playfab
 						if(result !== null){
 							console.log(result);
 							server_utils.addPlayerTag(banPlayerId, 'isBanned').then(()=>{
 								let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(banPlayerId, 'playerId', io.sockets.sockets);
 								socket.emit('playerBanned!');
+								let channel = client.channels.cache.get('845331071322423318');
+								let dateUTC = new Date(Date.now()).toUTCString();
+								let embed = server_discord.embedText(dateUTC, banMessage);
+								channel.send(embed.setColor("#FF0000"));
+								console.log(channel)
 								if(removeBannedPlayerSocket == false) return; //Check if the player is online
 								removeBannedPlayerSocket.disconnect(true);
 							}).catch((error) =>{
@@ -72,6 +106,8 @@ exports.run = (io, socket, server_utils, AFKTime ,rooms, devTeam, PlayFabServer)
 							console.log(error)
 						}
 					})
+				}
+					
 				}
 			}).catch(console.log); //Log error
 	
@@ -96,6 +132,10 @@ exports.run = (io, socket, server_utils, AFKTime ,rooms, devTeam, PlayFabServer)
 						console.log(result);
 						server_utils.removePlayerTag(PlayFabId, 'isBanned').then(()=>{
 							socket.emit('playerUnbanned!');
+							let channel = client.channels.cache.get('845331071322423318');
+							let dateUTC = new Date(Date.now()).toUTCString();
+							let embed = server_discord.embedText(dateUTC, banPlayerName + ' was unbanned :)');
+							channel.send(embed.setColor("#00FF00"));
 						}).catch((error) =>{
 							console.log(error);
 						})

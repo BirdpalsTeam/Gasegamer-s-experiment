@@ -89,6 +89,16 @@ functions = {
 				}
 			})
 		})
+	},getPlayerInternalData: async function getPlayerInternalData(PlayFabId){
+		return await new Promise((resolve, reject) =>{
+			PlayFabServer.GetUserInternalData({PlayFabId: PlayFabId}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
 	},
 	separateString: function separateStrings(string){
 		if(string == undefined) return;

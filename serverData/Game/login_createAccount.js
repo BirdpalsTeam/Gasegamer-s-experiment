@@ -50,6 +50,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 								console.log("Here's some debug information:");
 								console.log(error);
 								socket.emit('error', error);
+								socket.disconnect(true);
 							}
 						}
 					}
@@ -75,9 +76,41 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 					}
 					if(resultFromAuthentication.data.UserInfo.TitleInfo.isBanned == true){ //Check if the player is banned
 						socket.emit('error', 'Sorry, but you are banned.'); 
+						socket.disconnect(true)
 						return;
+					}else{
+						server_utils.getPlayersInSegment('1B7192766262CE36').then((response)=>{
+							let bannedList = response.data.PlayerProfiles;
+							if(bannedList.length > 0){
+								bannedList.forEach((player) =>{
+									PlayFabServer.GetUserBans({PlayFabId: player.PlayerId}, (error, result) =>{
+										if(result !== null){
+											result.data.BanData.forEach((ban) =>{
+												if(ban.Active == true && ban.IPAddress != undefined){
+													if(socket.handshake.headers['cf-connecting-ip'] == ban.IPAddress){
+														socket.emit('error', 'The IP making this request was banned. Player Banned: ' + player.DisplayName + '. Reason of the ban: ' + ban.Reason + '. Ban expires at: ' + new Date(ban.Expires));
+														socket.disconnect(true);
+														return;
+													}
+												}
+											})
+										}else if(error !== null){
+											console.log(error);
+										}
+									})
+								})
+							}
+						}).catch((error) =>{
+							console.log(error)
+						});
 					}
-					
+					/*PlayFabAdmin.UpdateUserInternalData({PlayFabId: PlayFabId, Data: {ipaddress: socket.ip}}, (error,result) =>{
+						if(result !== null){
+						}else if(error !== null){
+							console.log(error);
+						}
+					})uncomment at final build */
+
 					PlayFabServer.GetPlayerProfile(playerProfileRequest, (error,result)=>{ //Get player profile
 						if(result !== null && result.data.PlayerProfile.ContactEmailAddresses[0] != undefined){
 								if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){ //Player is verified
@@ -85,7 +118,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 										response.data.Tags.forEach((tag) =>{
 											if(tag.includes('isNotVerified')){ //This tag is added when the player creates an account
 												server_utils.removePlayerTag(PlayFabId, 'isNotVerified').then(()=>{
-													server_utils.addPlayerTag(PlayFabId, 'isVerified').then().catch((error)=>{ //Player is verified
+													server_utils.addPlayerTag(PlayFabId, 'Verified').then().catch((error)=>{ //Player is verified
 														console.log(error);
 													});
 												}).catch((error) =>{
@@ -140,6 +173,11 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 													
 												})
 											}
+											if(tag.includes('isBanned') && resultFromAuthentication.data.UserInfo.TitleInfo.isBanned == false){ //Remove isBanned tag for unbanned players.
+												server_utils.removePlayerTag(PlayFabId, 'isBanned').then().catch((error) =>{
+													console.log(error);
+												});
+											}
 										})
 									}).catch((error) =>{
 										console.log(error);
@@ -187,6 +225,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 								})
 		
 								socket.emit('error', 'You are not verified! Please check your e-mail to verify your account.');
+								socket.disconnect(true);
 							}
 							
 						}

@@ -9,6 +9,7 @@ const login_createAccount = require('./login_createAccount');
 const moderation_commands = require('./moderation_commands');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 const rateLimiter = new RateLimiterMemory({points: 3, duration: 1})
+
 exports.connect = (io, PlayFab, PlayFabServer, PlayFabAdmin, PlayFabClient, client) => {
 	var roomsJson = fs.readFileSync('./serverData/Utils/roomsJSON.json');
 	var rooms = JSON.parse(roomsJson);
@@ -81,8 +82,12 @@ exports.connect = (io, PlayFab, PlayFabServer, PlayFabAdmin, PlayFabClient, clie
 
 io.on('connection', (socket) => {
 	console.log('A user connected: ' + socket.id);
-	//if(socket.handshake.headers['cf-ray'] == undefined){socket.disconnect(true);}
-	console.log(socket.handshake.headers['x-forwarded-for']);
+	/*if(socket.handshake.headers['cf-ray'] == undefined || socket.handshake.headers['cf-connecting-ip'] == undefined ){
+		socket.disconnect(true);
+	}else{
+		socket.ip = socket.handshake.headers['cf-connecting-ip'];
+	}uncomment at final build*/
+	
 	socket.on('disconnect', function(){
 		console.log('A user disconnected: ' + socket.id);
 		if(players.length > 0){
@@ -126,7 +131,7 @@ io.on('connection', (socket) => {
 
 	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, isProfanity, rateLimiter); //Rooms command is here
 
-	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, PlayFabServer);
+	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, PlayFabServer, client, server_discord);
 
 	socket.on('/updateInventory', (playerInventory) => {
 		if(socket.playerId == undefined || playerInventory == undefined) return;

@@ -4,6 +4,7 @@ var express = require('express');
 var helmet = require('helmet');
 var app = express();
 const http = require('http').Server(app);
+const path = require('path');
 const io = require('socket.io')(http,{
 	cors: {
 		origin: "https://localhost:*",
@@ -20,7 +21,7 @@ PlayFab.settings.titleId = GAME_ID;
 PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
 //Discord
 const discordBot = require('./serverData/Discord/server_discord');
-
+app.enable('trust proxy');
 //Setups security headers
 app.use(helmet({contentSecurityPolicy:{
 	useDefaults: true,
@@ -32,15 +33,15 @@ app.use(helmet({contentSecurityPolicy:{
 }));
 
 app.use((req, res, next) => {
-	//if(req.get('cf-ray') != undefined){
+	//if(req.get('cf-ray') != undefined && req.headers['x-forwarded-proto'] == 'https'){
 		res.setHeader(
 			"Permissions-Policy",
 			'fullscreen=(self), geolocation=(self), camera=(), microphone=(), payment=(), autoplay=(self), document-domain=()'
 		);
 		next();
 	//}else{
-	//	res.send('error');
-	//}
+	//	return	res.status(404).send('Not found');
+	//} uncomment at final build
 	
 });
 
@@ -60,4 +61,4 @@ http.listen(process.env.PORT || 3000, () => {
 	console.log('listening on *:3000');
 });
 //Discord
-discordBot.startBot();
+discordBot.startBot(PlayFabServer);
