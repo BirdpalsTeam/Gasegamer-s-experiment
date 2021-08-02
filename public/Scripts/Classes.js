@@ -273,6 +273,9 @@ class Player extends Sprite{
 				this.img = tempItemImg;
 				this.img.name = itemname;
 				break;
+			case "feet":
+				addItemImg(5);
+				break;
 			case "head":
 				addItemImg(4);
 				break;
