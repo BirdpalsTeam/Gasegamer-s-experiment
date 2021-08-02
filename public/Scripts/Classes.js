@@ -273,20 +273,20 @@ class Player extends Sprite{
 				this.img = tempItemImg;
 				this.img.name = itemname;
 				break;
-			case "feet":
+			case "head":
 				addItemImg(5);
 				break;
-			case "head":
+			case "face":
 				addItemImg(4);
 				break;
-			case "face":
+			case "neck":
 				addItemImg(3);
 				break;
-			case "neck":
+			case "body":
 				addItemImg(2);
 				break;
-			case "body":
-				addItemImg(1)
+			case "feet":
+				addItemImg(1);
 				break;
 		}
 		this.itemsImgs.sort(function(a, b){return a.layer-b.layer});
