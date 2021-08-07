@@ -96,6 +96,52 @@ class WorldState extends State{
 	
 }
 
+class TableTennisState extends State{
+    constructor(){
+        super();
+        this.ballX = canvas.width/2;
+        this.ballY = 0;
+        this.ballVelX = 0;
+        this.ballVelY = 10;
+        this.ballGoingDown = true;
+
+        let paddleSprite = loadSprite("Sprites/minigames/tabletennis/Paddle.png");
+        let tableSprite = loadSprite("Sprites/minigames/tabletennis/table.png");
+        this.player1Paddle = new Sprite(paddleSprite, 0, 0, 224, 245, 0, 400, 224, 245, 110, 0);
+        this.table = new Sprite(tableSprite, 0, 0, 1000, 600, 0, 0, 1000, 600, 0, 0);
+    }
+
+    main(){
+        if(this.ballGoingDown){
+            if(this.ballY >= 500){
+                this.ballGoingDown = false;
+                this.ballVelY *= -1
+            }
+        }
+        else{
+
+        }
+
+        this.ballX += this.ballVelX;
+        this.ballY += this.ballVelY;
+    }
+
+    render(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.table.draw();
+        var c = document.getElementById("myCanvas");
+        ctx.beginPath();
+        ctx.arc(this.ballX, this.ballY, 10, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        this.player1Paddle.draw();
+    }
+
+    onmousemove(evt){
+        let tempMousePos = getMousePos(canvas, evt);
+        this.player1Paddle.x = tempMousePos.x;
+    }
+}
 
 
 
