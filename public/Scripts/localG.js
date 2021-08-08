@@ -14,7 +14,7 @@ function drawCollisionMap(){	//Just a debug function
 	let x, y;
 	for(y = 0; y < roomCollMapY; y++){
 		for(x = 0; x < roomCollMapX; x++){
-			if(roomCollMap[y*roomCollMapX+x] == 1) {ctx.beginPath(); ctx.fillStyle = "red"; ctx.rect(roomCollCellWidth * x, roomCollCellHeight * y,800 / roomCollMapX, 500 / roomCollMapY); ctx.fill(); }
+			if(roomCollMap[y*roomCollMapX+x] == 1) {ctx.beginPath(); ctx.fillStyle = "red"; ctx.rect(roomCollCellWidth * x, roomCollCellHeight * y,canvas.width / roomCollMapX, canvas.height / roomCollMapY); ctx.fill(); }
 		}
 	}
 }

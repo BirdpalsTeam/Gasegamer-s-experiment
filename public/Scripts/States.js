@@ -67,6 +67,12 @@ class WorldState extends State{
 		}else{
 			bioInput.hidden = true;
 		}
+
+        this.customrender();
+    }
+
+    customrender(){
+
     }
 
     onclick(evt){
@@ -166,6 +172,10 @@ class DebugWorldState extends WorldState{
         socket.emit('playerMovement', playerMovement);
 
         debugParagraph.innerHTML = "mouse X: " + mousePos.x.toString() + " mouse Y: " + mousePos.y.toString();
+    }
+
+    customrender(){
+        drawCollisionMap();
     }
 }
 

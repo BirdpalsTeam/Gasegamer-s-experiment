@@ -65,17 +65,17 @@ function roomCollision(){
 	roomCollMap = rooms[currentRoom].roomCollMap;
 	triggers = rooms[currentRoom].triggers;
 	predictArray = rooms[currentRoom].noCollidersArea;
-	/*for(y = 0; y < roomCollMapY; y++){
+	
+	for(y = 0; y < roomCollMapY; y++){
 		for(x = 0; x < roomCollMapX; x++){
 			if(roomCollMap[y*roomCollMapX+x] == 1){
 				f.push(roomCollCellWidth * x, roomCollCellHeight * y);
-				console.log(f)
 			}
 			
 		}
-	}*/
+	}
 	
-	collisionArray = rooms[currentRoom].collision;
+	collisionArray = f;
 }
 //Trigger Stuff
 function activateTrigger(triggerArray){
