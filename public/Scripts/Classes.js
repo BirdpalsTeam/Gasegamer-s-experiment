@@ -273,6 +273,9 @@ class Player extends Sprite{
 				this.img = tempItemImg;
 				this.img.name = itemname;
 				break;
+			case "hand":
+				addItemImg(6);
+				break;
 			case "head":
 				addItemImg(5);
 				break;
@@ -288,6 +291,7 @@ class Player extends Sprite{
 			case "feet":
 				addItemImg(1);
 				break;
+			
 		}
 		this.itemsImgs.sort(function(a, b){return a.layer-b.layer});
 	}
@@ -543,39 +547,56 @@ class Inventory extends Sprite{
 			if(item.button.isSelected == true){
 				item.img = new Image();
 				item.img.src = itemsSrc + item.ItemClass + '/' + item.ItemId + '_big.png';
-				let imgX, imgY;
+				let imgX, imgY, imgLayer;
 				let canPush = false;
 				switch(item.ItemClass){
+					case 'hand':
+						imgX = this.bigBird.x;
+						imgY = this.bigBird.y;
+						canPush = true
+						imgLayer = 6;
+						break;
 					case 'head':
 						imgX = this.bigBird.x + 14;
 						imgY = this.bigBird.y - 14;
 						canPush = true;
+						imgLayer = 5;
 						break;
 					case 'face':
 						imgX = this.bigBird.x + 30;
 						imgY = this.bigBird.y + 47;
 						canPush = true;
+						imgLayer = 4;
 						break;
 					case 'neck':
 						imgX = this.bigBird.x + 75;
 						imgY = this.bigBird.y + 150;
 						canPush = true
+						imgLayer = 3;
+						break;
+					case 'body':
+						imgX = this.bigBird.x;
+						imgY = this.bigBird.y;
+						canPush = true
+						imgLayer = 2;
 						break;
 					case 'feet':
 						imgX = this.bigBird.x;
 						imgY = this.bigBird.y;
 						canPush = true
+						imgLayer = 1;
 						break;
 					case 'color':
 						this.bigBird.img.src = item.img.src;
 						this.bigBird.colors.push(item);
 						canPush = false;
+						imgLayer = 0;
 						break;
 				}
-				if(canPush == true){this.bigBird.gear.push({i: item.img, x: imgX, y: imgY});}
+				if(canPush == true){this.bigBird.gear.push({i: item.img, x: imgX, y: imgY, layer: imgLayer});}
 			}
 		})
-		this.bigBird.gear.sort((b, a) => {return a.y - b.y});
+		this.bigBird.gear.sort((b, a) => {return b.layer - a.layer});
 		this.bigBird.gear.forEach((item) =>{
 			ctx.drawImage(item.i, item.x, item.y);
 		})
@@ -750,7 +771,17 @@ class PlayerCard extends Sprite{
 				case 'neck':
 					imgX = this.bigBird.x + 75;
 					imgY = this.bigBird.y + 150;
-					canPush = true
+					canPush = true;
+					break;
+				case 'feet':
+					imgX = this.bigBird.x;
+					imgY = this.bigBird.y;
+					canPush = true;
+					break;
+				case 'hand':
+					imgX = this.bigBird.x;
+					imgY = this.bigBird.y;
+					canPush = true;
 					break;
 				case 'color':
 					this.bigBird.img.src = item.img.src;
