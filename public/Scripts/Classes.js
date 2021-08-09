@@ -25,7 +25,7 @@ class Sprite{
 
 class Player extends Sprite{
 	constructor(player){
-		super(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, 31, 67);
+		super(birdImage, 37, 175, 110, 154, player.x, player.y, player.width, player.height, player.width / 2, player.height * 0.85);
 		this.speechBubbleImage = bubble_image;
 		this.id = player.id;
 		this.username = player.username;
