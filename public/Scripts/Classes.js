@@ -561,6 +561,11 @@ class Inventory extends Sprite{
 						imgY = this.bigBird.y + 150;
 						canPush = true
 						break;
+					case 'feet':
+						imgX = this.bigBird.x;
+						imgY = this.bigBird.y;
+						canPush = true
+						break;
 					case 'color':
 						this.bigBird.img.src = item.img.src;
 						this.bigBird.colors.push(item);

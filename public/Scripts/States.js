@@ -179,35 +179,53 @@ class DebugWorldState extends WorldState{
     }
 }
 
-class DebugWorldEditorStateSpritesheet extends State{
-    constructor(){
+class DebugRoomState extends State{
+    constructor(roombackgroundsrc, roomdetailssrc){
         super();
+        
+        this.roombackgroundimg = new Image();
+        this.roombackgroundimg.src = roomsSrc + roombackgroundsrc;
 
-        this.cutobjectsx = 0;
-        this.cutobjectsy = 0;
-        this.cutobjectswidth = 0;
-        this.cutobjectsheight = 0;
-        this.cutobjectoriginx = 0;
-        this.cutobjectoriginy = 0;
+        this.roomdetailsimg = new Image();
+        this.roomdetailsimg.src = roomsSrc + roomdetailssrc;
 
-        this.camX = 0;
-        this.camY = 0;
-
-        this.roomediting = "";
-        this.spritesheetediting = "";
-
-        this.roomediting = prompt("Enter Room You want to edit");
-        this.spritesheetediting = "Sprites/rooms/" + prompt("Enter Spritesheet to use");
-        this.roomImage = new Image();
-        this.roomImage.src = this.spritesheetediting;
+        this.tempmousepos = {x:0,y:0};
+        this.currentclick = 0;
     }
 
     render(){
-		ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        ctx.drawImage(this.roombackgroundimg, 0, 0);
+        ctx.drawImage(this.roomdetailsimg, 0, 0);
     }
 
-    onclick(evt){
-        
+    onmousemove(evt){
+        this.tempmousepos = getMousePos(canvas, evt);
+        ctx.lineWidth = "1";
+        if(this.currentclick == 0){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            this.drawSpritesheetthingy();
+            ctx.beginPath();
+            ctx.rect(this.tempmousepos.x, this.tempmousepos.y, 10, 10);
+            ctx.stroke();
+        }
+        else if(this.currentclick == 1){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            this.drawSpritesheetthingy();
+            ctx.beginPath();
+            ctx.rect(this.click1[0], this.click1[1], this.tempmousepos.x - this.click1[0], this.tempmousepos.y - this.click1[1]);
+            ctx.stroke();
+        }
+        else if(this.currentclick > 2){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(this.itemimg,this.click1[0],this.click1[1],this.click2[0], this.click2[1],this.tempmousepos.x,this.tempmousepos.y, this.click2[0], this.click2[1]);
+
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
     }
 }
 
