@@ -29,7 +29,7 @@ class WorldState extends State{
         ctx.clearRect(0,0,canvas.width,canvas.height);
         roomSprite.draw();
         allObjects = [];
-        allObjects = playersObject.concat(background, localPlayer);
+        allObjects = playersObject.concat(roomObjects, localPlayer);
 
         allObjects.sort(function(a, b){return a.y-b.y});
 
@@ -181,7 +181,7 @@ class DebugWorldState extends WorldState{
 }
 
 class DebugRoomState extends State{
-    constructor(roombackgroundsrc, roomdetailssrc, width, height){
+    constructor(roombackgroundsrc, roomdetailssrc){
         super();
         
         this.roombackgroundimg = new Image();
@@ -189,9 +189,6 @@ class DebugRoomState extends State{
 
         this.roomdetailsimg = new Image();
         this.roomdetailsimg.src = roomsSrc + roomdetailssrc;
-
-        this.width = width;
-        this.height = height;
 
         this.tempmousepos = {x:0,y:0};
         this.currentclick = 0;
@@ -203,8 +200,8 @@ class DebugRoomState extends State{
     render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        ctx.drawImage(this.roombackgroundimg, 0, 0, this.width, this.height);
-        ctx.drawImage(this.roomdetailsimg, 0, 0, this.width, this.height);
+        ctx.drawImage(this.roombackgroundimg, 0, 0);
+        ctx.drawImage(this.roomdetailsimg, 0, 0);
 
         if(this.currentclick == 0){
             ctx.beginPath();

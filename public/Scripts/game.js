@@ -36,13 +36,12 @@ var hudSrc = spritesSrc + 'hud/';
 var itemsSrc = spritesSrc + 'items/';
 
 var rooms, currentRoom, triggers;
-var birdImage, roomImage, backgroundImage, foregroundImage, bubble_image, inventoryImage;
+var birdImage, roomImage, foregroundImage, bubble_image, inventoryImage;
 var collisionArray, predictArray = new Array();
 
 bubble_image = loadSprite(hudSrc + 'hud.png');
 birdImage = loadSprite(charactersSrc + 'bird_blue.png');
-backgroundImage = loadSprite(roomsSrc + 'town_background.png');
-foregroundImage = loadSprite(roomsSrc + 'town_foreground.png');
+foregroundImage = loadSprite(roomsSrc + 'town/town_foreground.png');
 inventoryImage = loadSprite(hudSrc + 'inventory2.png');
 
 var roomObjects = [];
@@ -50,9 +49,10 @@ var roomObjects = [];
 customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	rooms = response;
 	currentRoom = rooms.town.name;
-	roomImage = loadSprite(roomsSrc + rooms.town.image);
-	assetLoadingLoop(); //Will only start when it get's the rooms json
+	roomImage = loadSprite(roomsSrc + rooms.town.images.background);
+	assetLoadingLoop(); //Will only start when it gets the rooms json
 	roomCollision();
+	getRoomObjects("town");
 })
 
 var f = [] // debug array
@@ -78,6 +78,16 @@ function roomCollision(){
 	}
 	
 	collisionArray = f;
+}
+function getRoomObjects(roomname){
+	roomObjects = [];
+	let objectsImageSrc = roomsSrc + rooms[roomname].images.details;
+	let objectsImage = new Image();
+	objectsImage.src = objectsImageSrc;
+	let objectDimensions = rooms[roomname].objects;
+	for(let i = 0; i<rooms[roomname].objects.length; i++){
+		roomObjects.push(new Sprite(objectsImage, objectDimensions[i][0],objectDimensions[i][1],objectDimensions[i][2],objectDimensions[i][3],objectDimensions[i][0]+objectDimensions[i][4],objectDimensions[i][1]+objectDimensions[i][5],objectDimensions[i][2],objectDimensions[i][3],objectDimensions[i][4],objectDimensions[i][5]));
+	}
 }
 //Trigger Stuff
 function activateTrigger(triggerArray){
@@ -209,11 +219,9 @@ socket.on('badWord', (message) =>{
 
 socket.on('joinRoom', (joinRoom) =>{
 	clearInterval(localPlayer.movePlayerInterval)
-	roomSprite.img = loadSprite(roomsSrc + rooms[joinRoom.name].image);
-	background.img = loadSprite(roomsSrc + rooms[joinRoom.name].background.image);
-	foreground.img = loadSprite(roomsSrc + rooms[joinRoom.name].foreground.image);
+	roomSprite.img = loadSprite(roomsSrc + rooms[joinRoom.name].images.background);
+	foreground.img = loadSprite(roomsSrc + rooms[joinRoom.name].images.foreground);
 	changeRoomWidthAndHeight(roomSprite, joinRoom.name);
-	changeRoomWidthAndHeight(background, joinRoom.name);
 	changeRoomWidthAndHeight(foreground, joinRoom.name);
 	currentRoom = joinRoom.name;
 	let background_music = document.getElementById('background_music');
@@ -231,6 +239,7 @@ socket.on('joinRoom', (joinRoom) =>{
 		item.x = joinRoom.posX;
 		item.y = joinRoom.posY;
 	});
+	getRoomObjects(joinRoom.name);
 	roomCollision();
 })
 function changeRoomWidthAndHeight(room, roomname){

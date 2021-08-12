@@ -7,7 +7,6 @@ PlayFab._internalSettings.sessionTicket = sessionStorage.ticket;
 let timeScale = 1;
 
 var roomSprite = new Room(roomImage, 0, 0, 1000, 600);
-var background = new Room_Details(backgroundImage, 0, 0, 1000, 600);
 var foreground = new Room_Details(foregroundImage, 3, 0, 1000, 600);
 var inventory = new Inventory(inventoryImage, 4, 0);
 function drawCollisionMap(){	//Just a debug function
