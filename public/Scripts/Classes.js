@@ -76,9 +76,9 @@ class Player extends Sprite{
 			ctx.strokeStyle = "black";
 			ctx.lineWidth = outlineWidth;
 			ctx.lineJoin = "round";
-			ctx.strokeText(username, x + 7, y + height / 2.0);
+			ctx.strokeText(username, x + 7, y + height / 3.5);
 			ctx.fillStyle = baseColor;
-			ctx.fillText(username, x + 7, y + height / 2.0);
+			ctx.fillText(username, x + 7, y + height / 3.5);
 		}
 		ctx.textAlign = 'center';
 		if(this.local == true){
@@ -311,16 +311,16 @@ class Item extends Sprite{
 }
 
 class Room extends Sprite{
-	constructor(img, layer, type){
-		super(img, 0, 0, 892, 512, 0, 0, 1000, 600, layer, type);
+	constructor(img, layer, type, width, height){
+		super(img, 0, 0, 892, 512, 0, 0, width, height, layer, type);
 		this.layer = layer;
 		this.type = type;
 	}
 }
 
 class Room_Details extends Sprite{
-	constructor(img, layer, type){
-		super(img, 0, 0, 892, 512, 0, 0, 1000, 600, layer, type);
+	constructor(img, layer, type, width, height){
+		super(img, 0, 0, 892, 512, 0, 0, width, height, layer, type);
 		this.layer = layer;
 		this.type = type;
 	}

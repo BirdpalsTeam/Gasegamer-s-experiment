@@ -45,6 +45,8 @@ backgroundImage = loadSprite(roomsSrc + 'town_background.png');
 foregroundImage = loadSprite(roomsSrc + 'town_foreground.png');
 inventoryImage = loadSprite(hudSrc + 'inventory2.png');
 
+var roomObjects = [];
+
 customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	rooms = response;
 	currentRoom = rooms.town.name;
@@ -210,6 +212,9 @@ socket.on('joinRoom', (joinRoom) =>{
 	roomSprite.img = loadSprite(roomsSrc + rooms[joinRoom.name].image);
 	background.img = loadSprite(roomsSrc + rooms[joinRoom.name].background.image);
 	foreground.img = loadSprite(roomsSrc + rooms[joinRoom.name].foreground.image);
+	changeRoomWidthAndHeight(roomSprite, joinRoom.name);
+	changeRoomWidthAndHeight(background, joinRoom.name);
+	changeRoomWidthAndHeight(foreground, joinRoom.name);
 	currentRoom = joinRoom.name;
 	let background_music = document.getElementById('background_music');
 	switch(joinRoom.name){
@@ -228,6 +233,10 @@ socket.on('joinRoom', (joinRoom) =>{
 	});
 	roomCollision();
 })
+function changeRoomWidthAndHeight(room, roomname){
+	room.width = rooms[roomname].size.width;
+	room.height = rooms[roomname].size.height;
+}
 socket.on('leaveRoom', () => {
 	playersInGame = [];
 	playersObject = [];
