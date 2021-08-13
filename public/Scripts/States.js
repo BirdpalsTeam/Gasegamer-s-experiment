@@ -160,15 +160,39 @@ class BirdInvadersState extends State{
         let buttonsimg = new Image();
         buttonsimg.src = "Sprites/minigames/BirdInvaders/buttons.png";
         this.buttonsSprite = new Sprite(buttonsimg, 0, 0, 1000, 600, 0, 0, 1000, 600, 0, 0);
+
+        this.customplayer = {x:100, y:100, width:100, height:100, username:"", id:"", bio:"", items:[], mouseX:0, mouseY:0, isDev:false, isMoving:false};
+
+        this.player = new Player(this.customplayer);
+        this.player.img.src = roomsSrc + "town/town_background.png";
+
+        collisionArray = [];
     }
 
     render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
 
         this.machineSprite.draw();
-        this.player = new Player();
+        this.player.draw();
         this.buttonsSprite.draw();
     }
+
+    onclick(evt){
+        mousePos = getMousePos(canvas, evt);
+        if(this.player != undefined && this.player.canMove == true){
+            this.player.mouseX = mousePos.x;
+            this.player.mouseY = mousePos.y;
+            this.player.move();
+			const playerMovement = {
+				mouseX: mousePos.x,
+				mouseY: mousePos.y
+			}
+		}else if(inventory != undefined && inventory.isOpen == true){
+			inventory.close();
+			inventory.selectItem();
+			inventory.writeBio();
+		}
+	}
 }
 
 
