@@ -47,6 +47,8 @@ class Player extends Sprite{
 		if(this.local != true){
 			this.card = new PlayerCard(inventoryImage, this, 3, 0);
 		}
+
+		this.spriteCrops=[[37,175,110,154],[253,175,110,154],[147,175,110,154],[37,25,110,154],[147,25,110,154],[253,25,110,154]];
 	}
 
 	customDraw(){
@@ -134,27 +136,26 @@ class Player extends Sprite{
 		let newSX;
 		let newSY;
 
+		let lookingInt = 1;
+
 		if(angleToLook < 0) angleToLook += 360;
 
 		if(angleToLook > 70 && angleToLook<= 110){	//look to the front
-			newSX = 37;
-			newSY = 175;
+			lookingInt = 1;
 		}else if (angleToLook > 110 && angleToLook <= 220){//look to the left
-			newSX = 253;
-			newSY = 175;
+			lookingInt = 2;
 		}else if(angleToLook > 220 && angleToLook <= 260){ //look to the upper left
-			newSX = 147;
-			newSY = 175;
+			lookingInt = 3;
 		}else if(angleToLook > 260 && angleToLook <= 281 ){//look to the back
-			newSX = 37;
-			newSY = 25;
+			lookingInt = 4;
 		}else if(angleToLook > 281 && angleToLook <= 330){//look to the upper right
-			newSX = 147;
-			newSY = 25;
+			lookingInt = 5;
 		}else if(angleToLook > 330 && angleToLook <= 360 || angleToLook <= 70){//look to the right
-			newSX = 253;
-			newSY = 25;
+			lookingInt = 6;
 		}
+
+		newSX = this.spriteCrops[lookingInt-1][0];
+		newSY = this.spriteCrops[lookingInt-1][1];
 
 		this.sourceX = newSX;
 		this.sourceY = newSY;

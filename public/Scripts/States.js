@@ -161,10 +161,10 @@ class BirdInvadersState extends State{
         buttonsimg.src = "Sprites/minigames/BirdInvaders/buttons.png";
         this.buttonsSprite = new Sprite(buttonsimg, 0, 0, 1000, 600, 0, 0, 1000, 600, 0, 0);
 
-        this.customplayer = {x:100, y:100, width:100, height:100, username:"", id:"", bio:"", items:[], mouseX:0, mouseY:0, isDev:false, isMoving:false};
+        this.customplayer = {x:100, y:100, width:82, height:110, username:"", id:"", bio:"", items:[], mouseX:0, mouseY:0, isDev:false, isMoving:false};
 
         this.player = new Player(this.customplayer);
-        this.player.img.src = roomsSrc + "town/town_background.png";
+        this.player.img.src = "Sprites/minigames/BirdInvaders/Birds/pixel_blue.png";
 
         collisionArray = [];
     }
