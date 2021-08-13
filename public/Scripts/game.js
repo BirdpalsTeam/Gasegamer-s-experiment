@@ -245,6 +245,8 @@ socket.on('joinRoom', (joinRoom) =>{
 function changeRoomWidthAndHeight(room, roomname){
 	room.width = rooms[roomname].size.width;
 	room.height = rooms[roomname].size.height;
+	room.sourceWidth = rooms[roomname].size.width;
+	room.sourceHeight = rooms[roomname].size.height;
 }
 socket.on('leaveRoom', () => {
 	playersInGame = [];

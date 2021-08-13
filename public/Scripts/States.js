@@ -150,6 +150,26 @@ class TableTennisState extends State{
     }
 }
 
+class BirdInvadersState extends State{
+    constructor(){
+        super();
+
+        let machineimg = new Image();
+        machineimg.src = "Sprites/minigames/BirdInvaders/machine.png";
+        this.machineSprite = new Sprite(machineimg, 0, 0, 1000, 600, 0, 0, 1000, 600, 0, 0);
+        let buttonsimg = new Image();
+        buttonsimg.src = "Sprites/minigames/BirdInvaders/buttons.png";
+        this.buttonsSprite = new Sprite(buttonsimg, 0, 0, 1000, 600, 0, 0, 1000, 600, 0, 0);
+    }
+
+    render(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        this.machineSprite.draw();
+        this.player = new Player();
+        this.buttonsSprite.draw();
+    }
+}
 
 
 //Debug States
