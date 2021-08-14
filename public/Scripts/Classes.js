@@ -78,9 +78,9 @@ class Player extends Sprite{
 			ctx.strokeStyle = "black";
 			ctx.lineWidth = outlineWidth;
 			ctx.lineJoin = "round";
-			ctx.strokeText(username, x + 7, y + height / 3.5);
+			ctx.strokeText(username, x, y + height / 3.5);
 			ctx.fillStyle = baseColor;
-			ctx.fillText(username, x + 7, y + height / 3.5);
+			ctx.fillText(username, x, y + height / 3.5);
 		}
 		ctx.textAlign = 'center';
 		if(this.local == true){
@@ -308,6 +308,28 @@ class Item extends Sprite{
 		this.layer = layer;
 		this.type = type;
 		this.name = name;
+	}
+}
+
+class NPC extends Sprite{
+	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, name){
+		super(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY);
+
+		this.name = name;
+	}
+
+	customDraw(){
+		let username = this.name;
+		let x = this.x;
+		let y = this.y;
+		let height = this.height;
+		ctx.font = "15px sans-serif";
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 4.5;
+		ctx.lineJoin = "round";
+		ctx.fillStyle = "white";
+		ctx.fillText(username, x, y + height / 3.5);
+		ctx.textAlign = 'center';
 	}
 }
 

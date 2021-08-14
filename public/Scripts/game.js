@@ -48,6 +48,7 @@ foregroundImage = loadSprite(roomsSrc + 'town/town_foreground.png');
 inventoryImage = loadSprite(hudSrc + 'inventory2.png');
 
 var roomObjects = [];
+var roomNPCs = [];
 
 customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	rooms = response;
@@ -56,6 +57,7 @@ customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	assetLoadingLoop(); //Will only start when it gets the rooms json
 	roomCollision();
 	getRoomObjects("town");
+	getNPCs("town");
 	changeMusic("town");
 })
 
@@ -85,12 +87,27 @@ function roomCollision(){
 }
 function getRoomObjects(roomname){
 	roomObjects = [];
-	let objectsImageSrc = roomsSrc + rooms[roomname].images.details;
-	let objectsImage = new Image();
-	objectsImage.src = objectsImageSrc;
-	let objectDimensions = rooms[roomname].objects;
-	for(let i = 0; i<rooms[roomname].objects.length; i++){
-		roomObjects.push(new Sprite(objectsImage, objectDimensions[i][0],objectDimensions[i][1],objectDimensions[i][2],objectDimensions[i][3],objectDimensions[i][0]+objectDimensions[i][4],objectDimensions[i][1]+objectDimensions[i][5],objectDimensions[i][2],objectDimensions[i][3],objectDimensions[i][4],objectDimensions[i][5]));
+	if(rooms[roomname].objects != undefined){
+		let objectsImageSrc = roomsSrc + rooms[roomname].images.details;
+		let objectsImage = new Image();
+		objectsImage.src = objectsImageSrc;
+		let objectDimensions = rooms[roomname].objects;
+		for(let i = 0; i<rooms[roomname].objects.length; i++){
+			roomObjects.push(new Sprite(objectsImage, objectDimensions[i][0],objectDimensions[i][1],objectDimensions[i][2],objectDimensions[i][3],objectDimensions[i][0]+objectDimensions[i][4],objectDimensions[i][1]+objectDimensions[i][5],objectDimensions[i][2],objectDimensions[i][3],objectDimensions[i][4],objectDimensions[i][5]));
+		}
+	}
+}
+function getNPCs(roomname){
+	roomNPCs = [];
+
+	if(rooms[roomname].NPCs != undefined){
+		for(let i = 0; i<rooms[roomname].NPCs.length; i++){
+			let npcdetails = rooms[roomname].NPCs[i]
+			let npcimgsrc = spritesSrc + npcdetails[0];
+			let npcimg = new Image();
+			npcimg.src = npcimgsrc;
+			roomObjects.push(new NPC(npcimg, npcdetails[2][0], npcdetails[2][1], npcdetails[2][2], npcdetails[2][3], npcdetails[3][0], npcdetails[3][1], npcdetails[3][2], npcdetails[3][3], npcdetails[4][0], npcdetails[4][1], npcdetails[1]));
+		}
 	}
 }
 
@@ -247,6 +264,7 @@ socket.on('joinRoom', (joinRoom) =>{
 		item.y = joinRoom.posY;
 	});
 	getRoomObjects(joinRoom.name);
+	getNPCs(joinRoom.name);
 	roomCollision();
 })
 function changeRoomWidthAndHeight(room, roomname){
