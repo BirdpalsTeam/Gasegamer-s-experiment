@@ -106,7 +106,7 @@ function getNPCs(roomname){
 			let npcimgsrc = spritesSrc + npcdetails[0];
 			let npcimg = new Image();
 			npcimg.src = npcimgsrc;
-			roomObjects.push(new NPC(npcimg, npcdetails[2][0], npcdetails[2][1], npcdetails[2][2], npcdetails[2][3], npcdetails[3][0], npcdetails[3][1], npcdetails[3][2], npcdetails[3][3], npcdetails[4][0], npcdetails[4][1], npcdetails[1]));
+			roomNPCs.push(new NPC(npcimg, npcdetails[2][0], npcdetails[2][1], npcdetails[2][2], npcdetails[2][3], npcdetails[3][0], npcdetails[3][1], npcdetails[3][2], npcdetails[3][3], npcdetails[4][0], npcdetails[4][1], npcdetails[1]));
 		}
 	}
 }

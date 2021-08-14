@@ -318,7 +318,7 @@ class NPC extends Sprite{
 		this.name = name;
 	}
 
-	customDraw(){
+	drawName(){
 		let username = this.name;
 		let x = this.x;
 		let y = this.y;

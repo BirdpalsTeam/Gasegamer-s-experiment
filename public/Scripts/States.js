@@ -29,7 +29,7 @@ class WorldState extends State{
         ctx.clearRect(0,0,canvas.width,canvas.height);
         roomSprite.draw();
         allObjects = [];
-        allObjects = playersObject.concat(roomObjects, localPlayer);
+        allObjects = playersObject.concat(roomObjects, localPlayer, roomNPCs);
 
         allObjects.sort(function(a, b){return a.y-b.y});
 
@@ -52,6 +52,12 @@ class WorldState extends State{
 					player.card.draw();
 				}
             });
+        }
+
+        if(roomNPCs != undefined && roomNPCs.length > 0){
+            roomNPCs.forEach((npc)=>{
+                npc.drawName();
+            })
         }
 
         if(localPlayer != undefined){
