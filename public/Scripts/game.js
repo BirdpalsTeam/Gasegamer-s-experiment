@@ -4,6 +4,8 @@ var ctx = canvas.getContext('2d');
 var debugParagraph = document.getElementById('debugParagraph');
 var bioInput = document.getElementById('bioInput');
 
+var background_music = document.getElementById('background_music');
+
 var currentState = new WorldState();
 
 var caslonFont = new FontFace('Caslon', 'url(./CaslonAntique-BoldItalic.ttf)');
@@ -34,6 +36,7 @@ var charactersSrc = spritesSrc + 'characters/';
 var roomsSrc = spritesSrc + 'rooms/';
 var hudSrc = spritesSrc + 'hud/';
 var itemsSrc = spritesSrc + 'items/';
+var audioSrc = 'Audio/';
 
 var rooms, currentRoom, triggers;
 var birdImage, roomImage, foregroundImage, bubble_image, inventoryImage;
@@ -53,6 +56,7 @@ customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	assetLoadingLoop(); //Will only start when it gets the rooms json
 	roomCollision();
 	getRoomObjects("town");
+	changeMusic("town");
 })
 
 var f = [] // debug array
@@ -89,11 +93,22 @@ function getRoomObjects(roomname){
 		roomObjects.push(new Sprite(objectsImage, objectDimensions[i][0],objectDimensions[i][1],objectDimensions[i][2],objectDimensions[i][3],objectDimensions[i][0]+objectDimensions[i][4],objectDimensions[i][1]+objectDimensions[i][5],objectDimensions[i][2],objectDimensions[i][3],objectDimensions[i][4],objectDimensions[i][5]));
 	}
 }
+
+var currentMusicSrc = "";
+function changeMusic(roomName){
+	if(currentMusicSrc != audioSrc + rooms[roomName].music){
+		background_music.src = audioSrc + rooms[roomName].music;
+		currentMusicSrc = audioSrc + rooms[roomName].music
+	}
+}
 //Trigger Stuff
 function activateTrigger(triggerArray){
 	switch(triggerArray[4]){
 		case "changeRoom":
 			setLocalMessage("/room " + triggerArray[5]);
+			break;
+		case "getFreeItem":
+			socket.emit("getFreeItem", triggerArray[5]);
 			break;
 	}
 }
@@ -224,15 +239,7 @@ socket.on('joinRoom', (joinRoom) =>{
 	changeRoomWidthAndHeight(roomSprite, joinRoom.name);
 	changeRoomWidthAndHeight(foreground, joinRoom.name);
 	currentRoom = joinRoom.name;
-	let background_music = document.getElementById('background_music');
-	switch(joinRoom.name){
-		case "town":
-			background_music.src = 'Audio/Alpha_Party.mp3';
-			break;
-		case "cabin":
-			background_music.src = 'Audio/Cabin.mp3';
-			break;
-	}
+	changeMusic(joinRoom.name);
 	localPlayer.x = joinRoom.posX;
 	localPlayer.y = joinRoom.posY;
 	localPlayer.itemsImgs.forEach(item => {

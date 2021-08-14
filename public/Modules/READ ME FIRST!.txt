@@ -7,3 +7,5 @@ In order to add words to exceptions.csv and profanity.csv, you need to have inst
 If you want to add a dirty word add it to profanity.csv, DELETE profanity.js and then type the following 
 on command prompt: "browserify isProfanity.js -s module > profanity.js"
 
+
+I don't know why this is in the game files but sure I guess -Faraway
