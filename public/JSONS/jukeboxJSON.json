@@ -1,0 +1,26 @@
+{
+    "Alpha Party":{
+        "name":"Alpha Party",
+        "purpose":"Birdpals Classic",
+        "author":"Penguin Giraffe",
+        "file":"Alpha_Party.mp3"
+    },
+    "Cabin":{
+        "name":"Cabin",
+        "purpose":"Cabin Theme",
+        "author":"Gasegamer",
+        "file":"Cabin.mp3"
+    },
+    "Songbirds":{
+        "name":"Songbirds",
+        "purpose":"Town Theme",
+        "author":"Chris Hendricks",
+        "file":"Songbirds.mp3"
+    },
+    "Shop Til You Flop":{
+        "name":"Shop Til You Flop",
+        "purpose":"Shop Theme",
+        "author":"FarawayDrip30",
+        "file":"Shop Til You Flop.mp3"
+    }
+}

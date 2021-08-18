@@ -58,7 +58,7 @@ customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	roomCollision();
 	getRoomObjects("town");
 	getNPCs("town");
-	changeMusic("town");
+	changeMusicByRoom("town");
 })
 
 var f = [] // debug array
@@ -112,11 +112,21 @@ function getNPCs(roomname){
 }
 
 var currentMusicSrc = "";
-function changeMusic(roomName){
+function changeMusicByRoom(roomName){
 	if(currentMusicSrc != audioSrc + rooms[roomName].music){
 		background_music.src = audioSrc + rooms[roomName].music;
-		currentMusicSrc = audioSrc + rooms[roomName].music
+		currentMusicSrc = audioSrc + rooms[roomName].music;
 	}
+}
+function changeMusicBySrc(src){
+	if(currentMusicSrc != audioSrc + src){
+		background_music.src = audioSrc + src;
+		currentMusicSrc = audioSrc + src;
+	}
+}
+function stopMusic(){
+	background_music.pause();
+	background_music.currentTime = 0;
 }
 //Trigger Stuff
 function activateTrigger(triggerArray){
@@ -256,7 +266,7 @@ socket.on('joinRoom', (joinRoom) =>{
 	changeRoomWidthAndHeight(roomSprite, joinRoom.name);
 	changeRoomWidthAndHeight(foreground, joinRoom.name);
 	currentRoom = joinRoom.name;
-	changeMusic(joinRoom.name);
+	changeMusicByRoom(joinRoom.name);
 	localPlayer.x = joinRoom.posX;
 	localPlayer.y = joinRoom.posY;
 	localPlayer.itemsImgs.forEach(item => {

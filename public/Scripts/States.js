@@ -109,6 +109,68 @@ class WorldState extends State{
 	
 }
 
+class JukeboxState extends State{
+    constructor(){
+        super();
+        this.tracks = [];
+        customGetJSON(JSONSrc + 'jukeboxJSON.json').then(response =>{
+            this.jukeboxJSON = response;
+            for(let i in this.jukeboxJSON){
+                this.tracks.push([this.jukeboxJSON[i].name, this.jukeboxJSON[i].purpose, this.jukeboxJSON[i].author, this.jukeboxJSON[i].file]);
+            }
+        })
+        stopMusic();
+    }
+
+    render(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for(let i = 0; i < this.tracks.length; i++){
+            ctx.beginPath();
+            ctx.lineWidth = "6";
+            ctx.strokeStyle = "black";
+            ctx.rect(10, 10+i*110, 400, 100);
+            ctx.stroke();
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.textAlign = "left";
+            ctx.font = "30px Arial";
+            ctx.fillText(this.tracks[i][0], 20, 40+i*110);
+            ctx.font = "20px Arial";
+            ctx.fillText(this.tracks[i][1], 20, 100+i*110);
+            ctx.fillText(this.tracks[i][2], 200, 100+i*110);
+        }
+        ctx.beginPath();
+        ctx.lineWidth = "6";
+        ctx.strokeStyle = "black";
+        ctx.rect(900, 10, 90, 50);
+        ctx.stroke();
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.strokeStyle = "black";
+        ctx.font = "20px Arial";
+        ctx.fillText("Back", 920, 40);
+    }
+
+    onclick(evt){
+        let mousePos = getMousePos(canvas, evt);
+        if(mousePos.x <= 990 && mousePos.x >= 900 && mousePos.y <= 60 && mousePos.y >= 10){
+            currentState = new WorldState();
+            background_music.src = audioSrc + rooms[currentRoom].music;
+		    currentMusicSrc = audioSrc + rooms[currentRoom].music;
+            return;
+        }
+        for(let i = 0; i < this.tracks.length; i++){
+            if(mousePos.x <= 400 && mousePos.x >= 10 && mousePos.y <= 10+i*110+100 && mousePos.y >= 10+i*110){
+                let src = this.tracks[i][3];
+                background_music.src = audioSrc + src;
+		        currentMusicSrc = audioSrc + src;
+                return;
+            }
+        }
+    }
+}
+
 class TableTennisState extends State{
     constructor(){
         super();
