@@ -49,6 +49,9 @@ class Player extends Sprite{
 		}
 
 		this.spriteCrops=[[37,175,110,154],[253,175,110,154],[147,175,110,154],[37,25,110,154],[147,25,110,154],[253,25,110,154]];
+		this.width = birdSize.width;
+		this.height = birdSize.height;
+		this.recalculateOrigin();
 	}
 
 	customDraw(){
@@ -299,6 +302,11 @@ class Player extends Sprite{
 	
 	removeItem(itemName){
 		removeElementFromArray(itemName, this.itemsImgs);
+	}
+
+	recalculateOrigin(){
+		this.originX = this.width/2;
+		this.originY = this.height * 0.85;
 	}
 }
 

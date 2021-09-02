@@ -47,6 +47,8 @@ birdImage = loadSprite(charactersSrc + 'bird_blue.png');
 foregroundImage = loadSprite(roomsSrc + 'town/town_foreground.png');
 inventoryImage = loadSprite(hudSrc + 'inventory2.png');
 
+var birdSize = {width:82, height:110};
+
 var roomObjects = [];
 var roomNPCs = [];
 
@@ -59,6 +61,7 @@ customGetJSON(JSONSrc + 'roomsJSON.json').then(response =>{
 	getRoomObjects("town");
 	getNPCs("town");
 	changeMusicByRoom("town");
+	changeBirdSize("town");
 })
 
 var f = [] // debug array
@@ -109,6 +112,11 @@ function getNPCs(roomname){
 			roomNPCs.push(new NPC(npcimg, npcdetails[2][0], npcdetails[2][1], npcdetails[2][2], npcdetails[2][3], npcdetails[3][0], npcdetails[3][1], npcdetails[3][2], npcdetails[3][3], npcdetails[4][0], npcdetails[4][1], npcdetails[1]));
 		}
 	}
+}
+
+function changeBirdSize(roomname){
+	birdSize.width = rooms[roomname].birdSize.width;
+	birdSize.height = rooms[roomname].birdSize.height;
 }
 
 var currentMusicSrc = "";
@@ -276,6 +284,7 @@ socket.on('joinRoom', (joinRoom) =>{
 	getRoomObjects(joinRoom.name);
 	getNPCs(joinRoom.name);
 	roomCollision();
+	changeBirdSize(joinRoom.name);
 })
 function changeRoomWidthAndHeight(room, roomname){
 	room.width = rooms[roomname].size.width;
