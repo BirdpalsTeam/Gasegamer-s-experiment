@@ -1,61 +1,59 @@
-exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, isprofanity, server_utils, rateLimiter) =>{
+exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, profanity, server_utils, rateLimiter) =>{
 	socket.on('createAccount', (create)=>{
 		rateLimiter.consume(socket.id).then(()=>{
-			isprofanity(create.username,function(t){
-				if(t == true){
-					console.log('Player name is a bad word');
-					socket.emit('dirtyWord');
-				}else{
-					if(create.username != "" && create.password != "" || create.username != " " && create.password != " "){
-						var registerRequest={
-							TitleId: PlayFab.settings.titleId,
-							Email: create.eMail,
-							Username: create.username,
-							Password: create.password,
-							DisplayName: create.username,
-							CustomId: "Player",
-							CreateAccount: true
-						}
-		
-						PlayFabClient.RegisterPlayFabUser(registerRequest, registerCallback);
-						let addContactEmailRequest = {
-							EmailAddress: create.eMail
-						}
-				
-						function registerCallback(error, result) {
-							if (result !== null) {
-								let PlayFabId = result.data.PlayFabId;
-								console.log("Someone created an account!");
-								PlayFabClient.AddOrUpdateContactEmail(addContactEmailRequest, (error, result) => {
-									if(result !== null){
-										console.log(`Contact email added for ${create.username}!`);
-										server_utils.addPlayerTag(PlayFabId, 'isReliable').then(() =>{
-											console.log(`Added isReliable to ${create.username}`);
-											server_utils.addPlayerTag(PlayFabId, 'isNotVerified').then(()=>{
-												console.log(`Added isNotVerified to ${create.username}`);
-												socket.emit('accountCreated!');
-											}).catch((error)=>{
-												console.log(error);
-											})
-										}).catch((error) =>{
+			if(profanity.filter(create.username) == true){
+				console.log('Player name is a bad word');
+				socket.emit('dirtyWord');
+			}else{
+				if(create.username != "" && create.password != "" || create.username != " " && create.password != " "){
+					var registerRequest={
+						TitleId: PlayFab.settings.titleId,
+						Email: create.eMail,
+						Username: create.username,
+						Password: create.password,
+						DisplayName: create.username,
+						CustomId: "Player",
+						CreateAccount: true
+					}
+	
+					PlayFabClient.RegisterPlayFabUser(registerRequest, registerCallback);
+					let addContactEmailRequest = {
+						EmailAddress: create.eMail
+					}
+			
+					function registerCallback(error, result) {
+						if (result !== null) {
+							let PlayFabId = result.data.PlayFabId;
+							console.log("Someone created an account!");
+							PlayFabClient.AddOrUpdateContactEmail(addContactEmailRequest, (error, result) => {
+								if(result !== null){
+									console.log(`Contact email added for ${create.username}!`);
+									server_utils.addPlayerTag(PlayFabId, 'isReliable').then(() =>{
+										console.log(`Added isReliable to ${create.username}`);
+										server_utils.addPlayerTag(PlayFabId, 'isNotVerified').then(()=>{
+											console.log(`Added isNotVerified to ${create.username}`);
+											socket.emit('accountCreated!');
+										}).catch((error)=>{
 											console.log(error);
 										})
-									}else if (error !== null){
-										console.log('Something went wrong... ' + error);
-									}
-								})
-								
-							} else if (error !== null) {
-								console.log("Something went wrong with your API call.");
-								console.log("Here's some debug information:");
-								console.log(error);
-								socket.emit('error', error);
-								socket.disconnect(true);
-							}
+									}).catch((error) =>{
+										console.log(error);
+									})
+								}else if (error !== null){
+									console.log('Something went wrong... ' + error);
+								}
+							})
+							
+						} else if (error !== null) {
+							console.log("Something went wrong with your API call.");
+							console.log("Here's some debug information:");
+							console.log(error);
+							socket.emit('error', error);
+							socket.disconnect(true);
 						}
 					}
 				}
-			},'data/profanity.csv','data/exceptions.csv',0.4);
+			}
 		}).catch(()=>{
 			console.log(`This guy is trying to DoS createAccount ${socket.id}`);
 		})

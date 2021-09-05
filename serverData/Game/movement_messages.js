@@ -1,4 +1,4 @@
-exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, isprofanity, rateLimiter) => {
+exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter) => {
 	socket.on('playerMovement', (playerMovement) =>{
 		if(socket.playerId == undefined) return;
 		server_utils.resetTimer(socket, AFKTime);
@@ -30,29 +30,27 @@ exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, isp
 			let channel = client.channels.cache.get('845340183984341075');
 			let dateUTC = new Date(Date.now()).toUTCString();
 			if(message != undefined && server_utils.separateString(message)[0].includes("/") == false){
-				isprofanity(message, function(t, blocked){
-					if(t == true){
-						let messageObject = {
-							socket: socket.id,
-							message: "🤬"
-						}
-						console.log(player.username +' said the following bad word: '+ blocked[0].word + ' that looks like ' + blocked[0].closestTo);
-						let embed = server_discord.embedText(dateUTC + '\n' +player.username + ' said the following bad word that looks like ' + blocked[0].closestTo + ':', blocked[0].word);
-						channel.send(embed.setColor("#FF0000"));
-						socket.emit('badWord', '🤬');
-						socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
-					}else{
-						let messageObject = {
-							id: player.id,
-							message: message
-						}
-						let embed = server_discord.embedText(dateUTC + '\n' +player.username + ' said:', message);
-						console.log(dateUTC +'\n' + player.username + ' said: ' + message + '\n');
-						channel.send(embed.setColor("1ABBF5"))
-						socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
-					}	
-				
-			},'data/profanity.csv','data/exceptions.csv', 0.4);
+				console.log(profanity.filter(message))
+				if(profanity.filter(message) == true){
+					let messageObject = {
+						socket: socket.id,
+						message: "🤬"
+					}
+					let embed = server_discord.embedText(dateUTC + '\n' + player.username + ' said:', message);
+					console.log(dateUTC +'\n' + player.username + ' said: ' + message + '\n');
+					channel.send(embed.setColor("#FF0000"));
+					socket.emit('badWord', '🤬');
+					socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
+				}else{
+					let messageObject = {
+						id: player.id,
+						message: message
+					}
+					let embed = server_discord.embedText(dateUTC + '\n' +player.username + ' said:', message);
+					console.log(dateUTC +'\n' + player.username + ' said: ' + message + '\n');
+					channel.send(embed.setColor("1ABBF5"))
+					socket.broadcast.to(socket.gameRoom).emit('playerSaid', messageObject);
+				}
 		}
 		}).catch((reason)=>{
 			console.log(`stopped the SPAMMER! ${socket.playerId}`)

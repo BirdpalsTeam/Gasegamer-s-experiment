@@ -1,6 +1,6 @@
-//isProfanity and etc
+//profanity and etc
 const fs = require('fs');
-const isProfanity = require('isprofanity');
+const profanity = require('../Utils/profanity filter');
 const server_utils = require('../Utils/server-utils');
 const server_discord = require('../Discord/server_discord');
 const AFKTime = 300000; //5 minutes
@@ -127,9 +127,9 @@ io.on('connection', (socket) => {
 		
 	})
 	
-	login_createAccount.run(io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, isProfanity, server_utils, rateLimiter);
+	login_createAccount.run(io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, profanity, server_utils, rateLimiter);
 
-	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, isProfanity, rateLimiter); //Rooms command is here
+	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter); //Rooms command is here
 
 	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, PlayFabServer, client, server_discord);
 
@@ -200,17 +200,11 @@ io.on('connection', (socket) => {
 			if(newBio.length > 144){
 				return;
 			}
-
-			isProfanity(newBio, (t, blocked) =>{
-				if(t == true){
-					blocked.forEach(word => {
-						newBio = newBio.replace(word.word, 'love');
-					});
-					updateBio();
-				}else{
-					updateBio();
-				}
-			},'data/profanity.csv','data/exceptions.csv', 0.4)
+			if(profanity.filter(newBio) == true){
+				newBio = 'I wish the world becomes a better place!';
+			}else{
+				updateBio();
+			}
 
 			function updateBio(){
 				PlayFabAdmin.UpdateUserReadOnlyData({PlayFabId: socket.playerId, Data:{biography: newBio}}, (error, result) =>{
