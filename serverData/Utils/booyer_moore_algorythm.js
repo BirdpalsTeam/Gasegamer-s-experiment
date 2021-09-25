@@ -1,3 +1,4 @@
+//Source code: https://www.geeksforgeeks.org/boyer-moore-algorithm-for-pattern-searching/
 /* Javascript Program for Bad Character Heuristic of Boyer
 Moore String Matching Algorithm */
 var NO_OF_CHARS = 256;

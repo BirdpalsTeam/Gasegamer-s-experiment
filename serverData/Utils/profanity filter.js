@@ -1,6 +1,5 @@
 var {NoSwearing, dict} = require('noswearing');
 const {detectAll} = require('tinyld');
-var naughtyWords = require('naughty-words');
 var profanityJson = JSON.parse(require("fs").readFileSync("./serverData/Utils/profanity_words.json", "utf8"));
 let booyer = require('./booyer_moore_algorythm').booyerMoore;
 
@@ -25,7 +24,7 @@ exports.filter = function profanity(sentence){
 	detectAll(sentence).forEach(possibility =>{
 		let language = possibility.lang;	//Return the language as iso2 format
 		let originalSentence = sentence.slice(0, -2); //Removes the " a"
-		if(Object.keys(naughtyWords).includes(language) == true){ //Check if there is a profanity word list for this language
+		if(Object.keys(profanityJson).includes(language) == true){ //Check if there is a profanity word list for this language
 			let result = checker(originalSentence, language)[0]; //Check if there is a bad word by spelling
 			if(result != undefined && result.info == 2){
 				isBadword = true;
@@ -51,7 +50,7 @@ exports.filter = function profanity(sentence){
 	return isBadword == true ? true : false;
 }
 
-exports.whitelist = function whitelist(x){
+exports.whitelist = function whitelist(x, language){
 	whitelisted.push(x)
 	console.log('Whitelist added '+ x)
 }
