@@ -53,7 +53,7 @@ exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, pro
 				}
 		}
 		}).catch((reason)=>{
-			console.log(`stopped the SPAMMER! ${socket.playerId}`)
+			console.log(`stopped the SPAMMER! ${socket.playerId} ${reason}`)
 		})
 		
 	})

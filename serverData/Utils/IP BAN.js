@@ -1,15 +1,15 @@
-handlers.storeIPaddress = function (args, context) {
- 
-    var psEvent = context.playStreamEvent;
-    var IPAddress = psEvent.IPV4Address;
- 
-    var request = {
-        PlayFabId: currentPlayerId,
-        Data: {
-            "IPAddress": IPAddress
-        }
-    }
-    var result = server.UpdateUserInternalData(request);
- 
-    return { result: result };
-};
+let f = require('./profanity filter');
+var b = 'yeah phrases are giving false positive';
+//f.filter(b)
+b = b.split(" ");
+let badWords = false;
+b.forEach(word => {
+	if(f.filter(word) == true){
+		badWords = true;
+	}
+});
+if(badWords == true){
+	console.log('bad words >:(')
+}else{
+	console.log('no bad words')
+}

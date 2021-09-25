@@ -1,32 +1,54 @@
+var {NoSwearing, dict} = require('noswearing');
+const {detectAll} = require('tinyld');
+var naughtyWords = require('naughty-words');
+var profanityJson = JSON.parse(require("fs").readFileSync("./serverData/Utils/profanity_words.json", "utf8"));
+let booyer = require('./booyer_moore_algorythm').booyerMoore;
 
-//use function to see if it is a bad word: filter('Hello world')
-var blacklisted = ['abuse','abusing','anal','analbeads','ass','assfuck','asshole','bastard','bdsm','bitch','bisexual','bj','blowjob','buttplug','canabis','choke','choking','clit','clitoris','cocaine','cock','cuc','cum','cunt','dick','dickhead','dickmuncher','dicksucker','dildo','faggot','fanny','fannymonster','fannymuncher','fingering','fist','fisting','fuck','fucked','fucking','fuckton','fucktonne','führer','gobshite','ho','hoe','hitler','holocaust','kiddy','kiddyfiddler','kill','killing','marijuana','masochism','masochist','murder','murdering','nazi','naked','nigga','nob','nobhead','nobsucker','pedo','pedophile','penis','porn','pussy','pussymonster','pussymuncher','prick','rape','raping','rapist','sadism','sadist','sadomasochism','sex','sexual','sext','sexting','shit','shite','shithouse','shitting','slut','stab','stabbing','suck','swastica','swasticas','swastika','tits','titsucker','titty','tittyfidler','twat','twatmuncher','vagina','wank','wanker','weed','whore','wrist','wtf','4cking','gostosa','g0st0s0','puta','foda','caralho','pau','pênis','cu','buceta','porra','ninfeta','nudes','nua','pelada','bosta','merda']
-var whitelisted = ['duck', 'asset','assert','sit','shut','birch', 'pens']
+function checker(text, language){
+	let noSwear = new NoSwearing(profanityJson[language]);
+	return noSwear.check(text);
+}
 
+function booyerCheck(sentence, language){ //Algorythm to find patterns at text
+	let found = false;
+	Object.keys(profanityJson[language]).forEach(word =>{
+		if(booyer(sentence, word) == true){
+			found = true;
+		}
+	})
+	return found == true ? true : false;
+}
 
-exports.filter = function filter(egg){
-let banana = egg.toLowerCase().replace(/\s/g, '');
-
-if((banana.includes('d') && banana.includes('ck') && !whitelisted.includes(banana))||(banana.includes('f') && banana.includes('ck') && !whitelisted.includes(banana))||(banana.includes('sh') && banana.includes('t') && !whitelisted.includes(banana))||(banana.includes('s') && banana.includes('it') && !whitelisted.includes(banana))||(banana.includes('s') && banana.includes('ut') && !whitelisted.includes(banana))||(banana.includes('b') && banana.includes('ch') && !whitelisted.includes(banana))||(banana.includes('d') && banana.includes('do') && !whitelisted.includes(banana))||(banana.includes('b') && banana.includes('st')  && banana.includes('rd') && !whitelisted.includes(banana))||((banana.includes('a') || banana.includes('@')) && banana.includes('n')  && banana.includes('nl') && !whitelisted.includes(banana))||(banana.includes('b') && banana.includes('w')  && banana.includes('j')&& banana.includes('b') && !whitelisted.includes(banana))||(banana.includes('f') && banana.includes('gg')&& !whitelisted.includes(banana))||((banana.includes('o') || banana.includes('0')) && banana.includes('h')  && banana.includes('e') && !whitelisted.includes(banana))||(banana.includes('n') && banana.includes('gger') && !whitelisted.includes(banana))||(banana.includes('b') && banana.includes('ch') && !whitelisted.includes(banana))||(banana.includes('b') && banana.includes('ch') && !whitelisted.includes(banana))||(banana.includes('h') && banana.includes('tt')&& banana.includes('er') && !whitelisted.includes(banana))||(banana.includes('n') && banana.includes('z') && !whitelisted.includes(banana))||(banana.includes('wh') && banana.includes('re') && !whitelisted.includes(banana))||(banana.includes('p') && banana.includes('n') && banana.includes('s') && !whitelisted.includes(banana))||blacklisted.includes(banana)){
-//if a bad word is detected
-console.log('bad word detected: ' + banana)
-if(banana.includes('an')){console.log('possibly anal')}
-if(banana.includes('as')){console.log('possibly ass')}
-if(banana.includes('bi')){console.log('possibly bisexual or bitch')}
-if(banana.includes('da')){console.log('possibly damn')}
-if(banana.includes('di')){console.log('possibly dick')}
-if(banana.includes('pe')){console.log('possibly penis')}
-if(banana.includes('sh')){console.log('possibly shit')}
-if(banana.includes('se')||banana.includes('s3')){console.log('possibly sex')}
-if(banana.includes('nu')){console.log('possibly nude')}
-if(banana.includes('n') && !banana.includes('u')){console.log('possibly nigger')}
-if(!((banana.includes('n') && !banana.includes('u'))||banana.includes('nu')|| banana.includes('se') || banana.includes('s3')||banana.includes('sh')||banana.includes('pe')||banana.includes('d')||banana.includes('bi')||banana.includes('as')||banana.includes('an'))){console.log('you figure it out')}
-return true;
-}else{
-	//if no bad word is found
-	console.log('ok')
-	}
-	return false;
+exports.filter = function profanity(sentence){
+	sentence = sentence.toLowerCase() + ' a'; //Makes, for some reason, easier to detect the language
+	let isBadword = false;
+	detectAll(sentence).forEach(possibility =>{
+		let language = possibility.lang;	//Return the language as iso2 format
+		let originalSentence = sentence.slice(0, -2); //Removes the " a"
+		if(Object.keys(naughtyWords).includes(language) == true){ //Check if there is a profanity word list for this language
+			let result = checker(originalSentence, language)[0]; //Check if there is a bad word by spelling
+			if(result != undefined && result.info == 2){
+				isBadword = true;
+			}else if(originalSentence.split(" ").length == 1){ //There is no space in the sentence
+				for(let letter in dict){
+					dict[letter].forEach(fakeLetter =>{
+						if(originalSentence.includes(fakeLetter) == true){
+							originalSentence = originalSentence.replace(fakeLetter, letter); //Words like "@ss" will become "ass"
+						}
+					})
+				}
+				if(booyerCheck(originalSentence, language) == true){ //Check if there is a badword in a sentence that doesn't have space
+					isBadword = true;
+				} 
+			}
+		}else if(isBadword == false){
+			let result = checker(originalSentence, 'en')[0];
+			if(result !== undefined && result.info == 2){ //Garantee that is not an english bad word
+				isBadword = true;
+			}
+		}
+	})
+	return isBadword == true ? true : false;
 }
 
 exports.whitelist = function whitelist(x){
