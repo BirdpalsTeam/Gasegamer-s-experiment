@@ -180,7 +180,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 									}).catch((error) =>{
 										console.log(error);
 									})
-							
+					
 									function createPlayer(thisPlayer, inventory, biography){
 										playerGear = new Array();
 										inventory.forEach((equippedItem) =>{
@@ -225,7 +225,6 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 								socket.emit('error', 'You are not verified! Please check your e-mail to verify your account.');
 								socket.disconnect(true);
 							}
-							
 						}
 						else if(error !== null){
 							console.log(error)

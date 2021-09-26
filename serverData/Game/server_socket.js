@@ -4,79 +4,22 @@ const profanity = require('../Utils/profanity filter');
 const server_utils = require('../Utils/server-utils');
 const server_discord = require('../Discord/server_discord');
 const AFKTime = 300000; //5 minutes
+//Scripts
+var { Player } = require('./Player');
 const movement_messages = require('./movement_messages');
 const login_createAccount = require('./login_createAccount');
+const update_inventory = require('./update_inventory');
+const change_bio = require('./change_bio');
 const moderation_commands = require('./moderation_commands');
+//DDoS prevention
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const rateLimiter = new RateLimiterMemory({points: 3, duration: 1})
+const rateLimiter = new RateLimiterMemory({points: 3, duration: 1});
+const movementLimiter = new RateLimiterMemory({points: 5, duration: 1});
 
 exports.connect = (io, PlayFab, PlayFabServer, PlayFabAdmin, PlayFabClient, client) => {
 	var roomsJson = fs.readFileSync('./serverData/Utils/roomsJSON.json');
 	var rooms = JSON.parse(roomsJson);
-	
 	var players = new Array();
-	
-	class Player{
-		constructor(id, username, items=[], biography){
-			this.id = id;
-			this.username = username;
-			this.x = 500;
-			this.y = 460;
-			this.width = 82;
-			this.height = 110;
-			this.isMoving = false;
-			this.mouseX = 500;
-			this.mouseY = 460;
-			this.message = "";
-			this.movePlayerInterval;
-			this.isDev = false;
-			this.items = items;
-			this.bio = biography;
-		}
-		move(room){
-			this.isMoving = true;
-			let dx = this.mouseX - this.x;
-			let dy = this.mouseY - this.y;
-			
-			let angleToMove = Math.atan2(dy,dx);
-	
-			let speed = 4;
-	
-			let velX = Math.cos(angleToMove) * speed;
-			let velY = Math.sin(angleToMove) * speed;
-			let timeToPlayerReachDestination = Math.floor(dx/velX);
-	
-			let roomCollMapX = room.roomCollMapX;
-			let roomCollMapY = room.roomCollMapY;
-			let roomCollCellWidth = 800 / roomCollMapX;
-			let roomCollCellHeight = 500 / roomCollMapY;
-			let collisionArray = room.collision;
-			let collided;
-	
-			this.movePlayerInterval = setInterval(() => {
-				for(let i = 0; i < collisionArray.length; i+=2){
-					if(timeToPlayerReachDestination <= 0) return collided = true;
-					
-					if(this.x + velX <= collisionArray[i] + roomCollCellWidth && this.x + velX >= collisionArray[i]){
-						if(this.y + velY <= collisionArray[i + 1] + roomCollCellHeight && this.y + velY >= collisionArray[i + 1]){
-							this.isMoving = false;
-							clearInterval(this.movePlayerInterval);
-							return collided = true;
-						}
-					}
-				}
-				this.x += velX;
-				this.y += velY;
-	
-				timeToPlayerReachDestination--;
-				if(timeToPlayerReachDestination <= 0){
-					this.isMoving = false;
-					clearInterval(this.movePlayerInterval);
-				}
-			}, 1000 / 60);	
-		}
-	}
-
 	var devTeamJson = fs.readFileSync('./serverData/Utils/devTeam.json');
 	var devTeam = JSON.parse(devTeamJson);
 
@@ -129,97 +72,12 @@ io.on('connection', (socket) => {
 	
 	login_createAccount.run(io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, profanity, server_utils, rateLimiter);
 
-	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter); //Rooms command is here
+	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter, movementLimiter); //Rooms command is here
+
+	update_inventory.run(socket, rooms, AFKTime, PlayFabAdmin, PlayFabServer, server_utils, rateLimiter);
+
+	change_bio.run(socket, rooms, AFKTime, PlayFabAdmin, profanity, server_utils, rateLimiter);
 
 	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, PlayFabServer, client, server_discord);
-
-	socket.on('/updateInventory', (playerInventory) => {
-		if(socket.playerId == undefined || playerInventory == undefined) return;
-		server_utils.resetTimer(socket, AFKTime);
-		let thisPlayerId = socket.playerId;
-		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
-		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
-		PlayFabAdmin.GetUserInventory({PlayFabId: socket.playerId}, (error,result) =>{
-			if(result !== null){
-				let items = new Array();
-				let equippedItems = 0;
-				let updatedPlayfab = 0;
-				playerInventory.forEach((item) =>{
-					if(server_utils.getElementFromArray(item, "ItemId", result.data.Inventory) !== false){
-						if(item.CustomData.isEquipped == "true"){
-							playerInventory.forEach((fItem) =>{
-								if(fItem.ItemClass == item.ItemClass && fItem.ItemId != item.ItemId && fItem.CustomData.isEquipped == "true"){
-									fItem.CustomData.isEquipped = "false";
-									fItem.button.isSelected = false;
-								}
-							})
-							equippedItems += 1;
-							PlayFabServer.UpdateUserInventoryItemCustomData({PlayfabId: socket.playerId, ItemInstanceId: item.ItemInstanceId, Data: {"isEquipped": "true"}}, (error, result) =>{
-								if(result !== null){
-									updatedPlayfab += 1;
-									items.push({ItemClass: item.ItemClass, ItemId: item.ItemId, isEquipped: item.CustomData});
-									if(updatedPlayfab == equippedItems){
-										player.items = items;
-										socket.broadcast.to(socket.gameRoom).emit('playerUpdatedGear', {player: thisPlayerId, gear: items});
-										socket.emit('changingInventory', false);
-									}
-								//	console.log(result);
-								}else if(error !== null){
-									console.log(error);
-								}
-							})
-						}else if(item.CustomData.isEquipped == "false"){
-							equippedItems += 1;
-							PlayFabServer.UpdateUserInventoryItemCustomData({PlayfabId: socket.playerId, ItemInstanceId: item.ItemInstanceId, Data: {"isEquipped": "false"}}, (error, result) =>{
-								if(result !== null){
-									updatedPlayfab += 1;
-									if(updatedPlayfab == equippedItems){
-										player.items = items;
-										socket.broadcast.to(socket.gameRoom).emit('playerUpdatedGear', {player: thisPlayerId, gear: items});
-										socket.emit('changingInventory', false);
-									}
-								}else if(error !== null){
-									console.log(error);
-								}
-							})
-						}
-					}
-				})
-			}else if(error !== null){
-				console.log(error);
-			}//User inventory end
-		})
-	})
-
-	socket.on('/changeBio', (newBio) =>{
-		rateLimiter.consume(socket.id).then(()=>{
-			if(socket.playerId == undefined || newBio == undefined) return;
-			server_utils.resetTimer(socket, AFKTime);
-			let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
-			let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
-			if(newBio.length > 144){
-				return;
-			}
-			if(profanity.filter(newBio) == true){
-				newBio = 'I wish the world becomes a better place!';
-			}else{
-				updateBio();
-			}
-
-			function updateBio(){
-				PlayFabAdmin.UpdateUserReadOnlyData({PlayFabId: socket.playerId, Data:{biography: newBio}}, (error, result) =>{
-					if(result !== null){
-						player.bio = newBio;
-						socket.broadcast.to(socket.gameRoom).emit('changedBio', {player: socket.playerId, newBio: newBio});
-					}else if(error !== null){
-						console.log(error);
-					}
-				})
-			}
-			
-		}).catch(() =>{
-			console.log(`This jerk is trying to DoS our game ${socket.playerId}`);
-		})
-	})
 
 })} // io connection end

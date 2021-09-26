@@ -196,9 +196,9 @@ class Player extends Sprite{
 
 		let velX = Math.cos(angleToMove) * speed;
 		let velY = Math.sin(angleToMove) * speed;
-
 		let timeToPlayerReachDestination = Math.floor(dx/velX);
 		let collided, willCollide;
+
 		function predictCollision(x1, y1, x2, y2, x, y)
 		{
 			//x1 and y1 are bottom-left and x2 and y2 are top-right

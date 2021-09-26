@@ -1,24 +1,29 @@
-exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter) => {
+exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter, movementLimiter) => {
 	socket.on('playerMovement', (playerMovement) =>{
-		if(socket.playerId == undefined) return;
-		server_utils.resetTimer(socket, AFKTime);
-		let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
-		let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
-		let movePlayerObject = {
-			id: player.id,
-			mouseX: playerMovement.mouseX, 
-			mouseY: playerMovement.mouseY
-		}
-		player.mouseX = playerMovement.mouseX;
-		player.mouseY = playerMovement.mouseY;
-		if(player.isMoving == false){
-			player.move(thisPlayerRoom);
-		}else{
-			clearInterval(player.movePlayerInterval);
-			player.isMoving = false;
-			player.move(thisPlayerRoom);
-		}
-		socket.broadcast.to(socket.gameRoom).emit('playerIsMoving', movePlayerObject);
+		movementLimiter.consume(socket.id, 1).then(()=>{
+			if(socket.playerId == undefined) return;
+			server_utils.resetTimer(socket, AFKTime);
+			let thisPlayerRoom = server_utils.getElementFromArrayByValue(socket.gameRoom, 'name', Object.values(rooms));
+			let player = server_utils.getElementFromArrayByValue(socket.playerId, 'id', thisPlayerRoom.players);
+			let movePlayerObject = {
+				id: player.id,
+				mouseX: playerMovement.mouseX, 
+				mouseY: playerMovement.mouseY
+			}
+			player.mouseX = playerMovement.mouseX;
+			player.mouseY = playerMovement.mouseY;
+			if(player.isMoving == false){
+				player.move(thisPlayerRoom);
+			}else{
+				clearInterval(player.movePlayerInterval);
+				player.isMoving = false;
+				player.move(thisPlayerRoom);
+			}
+			socket.broadcast.to(socket.gameRoom).emit('playerIsMoving', movePlayerObject);
+		}).catch((reason)=>{
+			console.log(`stopped the SPAMMER! ${socket.playerId} ${reason}`)
+		})
+		
     })//Player Movement end
 
 	socket.on('message',(message)=>{
