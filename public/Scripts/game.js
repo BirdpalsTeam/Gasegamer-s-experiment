@@ -334,3 +334,7 @@ socket.on('playerBanned!', () =>{
 socket.on('playerUnbanned!', () =>{
 	setLocalMessage('Successfully UnBanned :)', true);
 })
+
+function GetFreeItem(itemName){
+	socket.emit('getFreeItem', {name:itemName});
+}
