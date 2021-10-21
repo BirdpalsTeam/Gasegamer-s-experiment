@@ -89,7 +89,8 @@ functions = {
 				}
 			})
 		})
-	},getPlayerInternalData: async function getPlayerInternalData(PlayFabId){
+	},
+	getPlayerInternalData: async function getPlayerInternalData(PlayFabId){
 		return await new Promise((resolve, reject) =>{
 			PlayFabServer.GetUserInternalData({PlayFabId: PlayFabId}, (error, result) =>{
 				if(result !== null){
@@ -105,7 +106,17 @@ functions = {
 		let separated = string.split(" ");
 		return separated;
 	},
+	grantItemsToUser: async function grantItemsToUser(ItemIds, PlayFabId){
+		return await new Promise((resolve, reject) =>{
+			PlayFabServer.GrantItemsToUser({ItemIds: ItemIds,PlayFabId: PlayFabId}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
+	}
 }
-
 
 module.exports = functions;
