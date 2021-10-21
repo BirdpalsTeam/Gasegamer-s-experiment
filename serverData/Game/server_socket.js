@@ -10,6 +10,7 @@ const movement_messages = require('./movement_messages');
 const login_createAccount = require('./login_createAccount');
 const update_inventory = require('./update_inventory');
 const change_bio = require('./change_bio');
+const give_item = require('./give_item.js');
 const moderation_commands = require('./moderation_commands');
 //DDoS prevention
 const { RateLimiterMemory } = require('rate-limiter-flexible');
@@ -77,6 +78,8 @@ io.on('connection', (socket) => {
 	update_inventory.run(socket, rooms, AFKTime, PlayFabAdmin, PlayFabServer, server_utils, rateLimiter);
 
 	change_bio.run(socket, rooms, AFKTime, PlayFabAdmin, profanity, server_utils, rateLimiter);
+
+	give_item.run(socket, rooms, AFKTime, PlayFabServer, profanity, server_utils, rateLimiter);
 
 	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, PlayFabServer, client, server_discord);
 

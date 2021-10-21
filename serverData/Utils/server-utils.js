@@ -104,7 +104,8 @@ functions = {
 		if(string == undefined) return;
 		let separated = string.split(" ");
 		return separated;
-	}
+	},
 }
+
 
 module.exports = functions;

@@ -184,15 +184,19 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 									function createPlayer(thisPlayer, inventory, biography){
 										playerGear = new Array();
 										inventory.forEach((equippedItem) =>{
-											if(equippedItem.CustomData.isEquipped == 'true'){ //Get the items the player is wearing
-												let item, ItemClass, ItemId, isEquipped;
-												ItemClass = equippedItem.ItemClass;
-												ItemId = equippedItem.ItemId;
-												isEquipped = equippedItem.CustomData;
-												item = {ItemClass, ItemId, isEquipped}; //Removes informations that may affect the security
-												playerGear.push(item);
+											try{ //This try catch stops the server from crashing until the player opens their inventory.
+												if(equippedItem.CustomData.isEquipped == 'true'){ //Get the items the player is wearing
+													let item, ItemClass, ItemId, isEquipped;
+													ItemClass = equippedItem.ItemClass;
+													ItemId = equippedItem.ItemId;
+													isEquipped = equippedItem.CustomData;
+													item = {ItemClass, ItemId, isEquipped}; //Removes informations that may affect the security
+													playerGear.push(item);
+												}
 											}
-											
+											catch(error){
+												console.log("There's an error here: " + error);
+											}
 										})
 										thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, playerGear, biography);
 										if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
