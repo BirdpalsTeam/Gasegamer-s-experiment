@@ -7,7 +7,7 @@ const AFKTime = 300000; //5 minutes
 //Scripts
 var { Player } = require('./Player');
 const movement_messages = require('./movement_messages');
-const login_createAccount = require('./login_createAccount');
+const login = require('./login');
 const update_inventory = require('./update_inventory');
 const change_bio = require('./change_bio');
 const give_item = require('./give_item.js');
@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
 		
 	})
 	
-	login_createAccount.run(io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, profanity, server_utils, rateLimiter);
+	login.run(io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, profanity, server_utils, rateLimiter);
 
 	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter, movementLimiter); //Rooms command is here
 
