@@ -21,7 +21,7 @@ exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, pro
 			}
 			socket.broadcast.to(socket.gameRoom).emit('playerIsMoving', movePlayerObject);
 		}).catch((reason)=>{
-			console.log(`stopped the SPAMMER! ${socket.playerId} ${reason}`)
+			console.log(`stopped the SPAMMER! ${socket.playerId} ${reason} at movement`)
 		})
 		
     })//Player Movement end
@@ -58,7 +58,7 @@ exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, pro
 				}
 		}
 		}).catch((reason)=>{
-			console.log(`stopped the SPAMMER! ${socket.playerId} ${reason}`)
+			console.log(`stopped the SPAMMER! ${socket.playerId} ${reason} at messages`)
 		})
 		
 	})
@@ -92,6 +92,8 @@ exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, pro
 				if(player.isMoving == true){
 					clearInterval(player.movePlayerInterval);
 					player.isMoving = false;
+					player.x = player.mouseX;
+					player.y = player.mouseY;
 				}
 			})
 			socket.emit('loggedIn', (preventRecursion)); //Say to the player who are in the new room

@@ -1,4 +1,4 @@
-exports.run = (socket, rooms, AFKTime, PlayFabServer, profanity, server_utils, rateLimiter)=>{
+exports.run = (socket, rooms, AFKTime, PlayFabServer, server_utils, rateLimiter)=>{
     var freeItems = ["eye_patch","pirate_hat"];
 
     socket.on('getFreeItem', (itemInfo) => {
@@ -12,13 +12,7 @@ exports.run = (socket, rooms, AFKTime, PlayFabServer, profanity, server_utils, r
 
             for(let i = 0; i < freeItems.length; i++){
                 if(itemInfo.name == freeItems[i]){
-                    PlayFabServer.GrantItemsToUser({CatalogVersion: "Birdpals Catalog", ItemIds:[itemInfo.name],PlayFabId:socket.playerId}, (error, result) =>{
-                            if(error != null){
-                                console.log(error);
-                            }
-                            i = freeItems.length;
-                        }
-                    );
+					server_utils.grantItemsToUser("Birdpals Catalog", [itemInfo.name], socket.playerId).then(i = freeItems.length).catch(console.log);
                 }
             }
 			

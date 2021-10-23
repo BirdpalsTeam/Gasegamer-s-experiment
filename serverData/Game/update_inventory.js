@@ -11,6 +11,7 @@ exports.run = (socket, rooms, AFKTime, PlayFabAdmin, PlayFabServer, server_utils
 					let items = new Array();
 					let equippedItems = 0;
 					let updatedPlayfab = 0;
+					
 					playerInventory.forEach((item) =>{
 						if(server_utils.getElementFromArray(item, "ItemId", result.data.Inventory) !== false){
 							if(item.CustomData.isEquipped == "true"){

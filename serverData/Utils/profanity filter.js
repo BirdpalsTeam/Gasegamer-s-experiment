@@ -77,5 +77,4 @@ exports.whitelistRemove = function whitelistRemove(w){
 	var w = w.toLowerCase();
 	console.log(whitelisted.indexOf(w) + ': '+ w +' was removed from whitelist')
 	whitelisted.splice(whitelisted.indexOf(w))
-	
 }

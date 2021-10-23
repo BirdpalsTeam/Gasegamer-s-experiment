@@ -106,9 +106,20 @@ functions = {
 		let separated = string.split(" ");
 		return separated;
 	},
-	grantItemsToUser: async function grantItemsToUser(ItemIds, PlayFabId){
+	grantItemsToUser: async function grantItemsToUser(CatalogVersion, ItemIds, PlayFabId){
 		return await new Promise((resolve, reject) =>{
-			PlayFabServer.GrantItemsToUser({ItemIds: ItemIds,PlayFabId: PlayFabId}, (error, result) =>{
+			PlayFabServer.GrantItemsToUser({CatalogVersion: CatalogVersion, ItemIds: ItemIds,PlayFabId: PlayFabId}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
+	},
+	changeUserDisplayName: async function changeUserDisplayName(DisplayName, PlayfabId){
+		return await new Promise((resolve, reject) =>{
+			PlayFabAdmin.UpdateUserTitleDisplayName({DisplayName: DisplayName, PlayFabId: PlayfabId}, (error, result) =>{
 				if(result !== null){
 					resolve(result);
 				}else if(error !== null){

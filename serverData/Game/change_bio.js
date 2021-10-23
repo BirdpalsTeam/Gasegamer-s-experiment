@@ -26,7 +26,7 @@ exports.run = (socket, rooms, AFKTime, PlayFabAdmin, profanity, server_utils, ra
 			}
 			
 		}).catch((reason) =>{
-			console.log(`This jerk is trying to DoS our game ${socket.playerId} ${reason}`);
+			console.log(`This jerk is trying to DoS ${socket.playerId} ${reason} bio`);
 		})
 	})
 }

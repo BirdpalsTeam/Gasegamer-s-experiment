@@ -4,12 +4,13 @@ var express = require('express');
 var helmet = require('helmet');
 var app = express();
 const http = require('http').Server(app);
-const path = require('path');
 const io = require('socket.io')(http,{
 	cors: {
 		origin: "https://localhost:*",
 		methods: ["GET", "POST"]
-	  }
+	  },
+	  pingInteval: 25000,
+	  pingTimeout: 60000
   });
 const server_socket = require('./serverData/Game/server_socket');
 //Playfab
