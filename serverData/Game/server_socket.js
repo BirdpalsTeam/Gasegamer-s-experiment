@@ -17,7 +17,7 @@ const { RateLimiterMemory } = require('rate-limiter-flexible');
 const rateLimiter = new RateLimiterMemory({points: 3, duration: 1});
 const movementLimiter = new RateLimiterMemory({points: 5, duration: 1});
 
-exports.connect = (io, PlayFab, PlayFabServer, PlayFabAdmin, PlayFabClient, client) => {
+exports.connect = (io, PlayFabServer, PlayFabAdmin, client) => {
 	var roomsJson = fs.readFileSync('./serverData/Utils/roomsJSON.json');
 	var rooms = JSON.parse(roomsJson);
 	var players = new Array();
@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
 		
 	})
 	
-	login.run(io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, profanity, server_utils, rateLimiter);
+	login.run(io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayFabAdmin, profanity, server_utils, rateLimiter);
 
 	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter, movementLimiter); //Rooms command is here
 

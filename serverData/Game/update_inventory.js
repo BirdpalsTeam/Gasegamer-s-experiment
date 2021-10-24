@@ -13,20 +13,14 @@ exports.run = (socket, rooms, AFKTime, PlayFabAdmin, PlayFabServer, server_utils
 					let updatedPlayfab = 0;
 					
 					playerInventory.forEach((item) =>{
-						if(server_utils.getElementFromArray(item, "ItemId", result.data.Inventory) !== false){
+						if(server_utils.getElementFromArray(item, "ItemId", result.data.Inventory) !== false){ //Checks if player has the item they say they have
 							if(item.CustomData.isEquipped == "true"){
-								playerInventory.forEach((fItem) =>{
-									if(fItem.ItemClass == item.ItemClass && fItem.ItemId != item.ItemId && fItem.CustomData.isEquipped == "true"){
-										fItem.CustomData.isEquipped = "false";
-										fItem.button.isSelected = false;
-									}
-								})
 								equippedItems += 1;
 								PlayFabServer.UpdateUserInventoryItemCustomData({PlayfabId: socket.playerId, ItemInstanceId: item.ItemInstanceId, Data: {"isEquipped": "true"}}, (error, result) =>{
 									if(result !== null){
 										updatedPlayfab += 1;
 										items.push({ItemClass: item.ItemClass, ItemId: item.ItemId, isEquipped: item.CustomData});
-										if(updatedPlayfab == equippedItems){
+										if(updatedPlayfab == equippedItems){ //Checks if all items had been updated
 											player.items = items;
 											socket.broadcast.to(socket.gameRoom).emit('playerUpdatedGear', {player: thisPlayerId, gear: items});
 											socket.emit('changingInventory', false);
@@ -41,7 +35,7 @@ exports.run = (socket, rooms, AFKTime, PlayFabAdmin, PlayFabServer, server_utils
 								PlayFabServer.UpdateUserInventoryItemCustomData({PlayfabId: socket.playerId, ItemInstanceId: item.ItemInstanceId, Data: {"isEquipped": "false"}}, (error, result) =>{
 									if(result !== null){
 										updatedPlayfab += 1;
-										if(updatedPlayfab == equippedItems){
+										if(updatedPlayfab == equippedItems){//Checks if all items had been updated
 											player.items = items;
 											socket.broadcast.to(socket.gameRoom).emit('playerUpdatedGear', {player: thisPlayerId, gear: items});
 											socket.emit('changingInventory', false);

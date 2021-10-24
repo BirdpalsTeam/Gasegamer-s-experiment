@@ -1,4 +1,4 @@
-exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServer, PlayFabClient, PlayFabAdmin, profanity, server_utils, rateLimiter) =>{
+exports.run = (io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayFabAdmin, profanity, server_utils, rateLimiter) =>{
 
 	socket.on('login',(ticket)=>{
 		rateLimiter.consume(socket.id).then(()=>{
@@ -101,7 +101,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 																}
 																if(players.length > 0){	//Check if there is at least one player online
 																	let logged, preventRecursion;
-																	preventRecursion = io.sockets.sockets;
+																	preventRecursion = Object.keys(io.sockets.sockets);
 																	let playerAlreadyLogged = server_utils.getElementFromArrayByValue(PlayFabId, 'playerId', preventRecursion);
 																	//Check if the player is already logged in
 																	if(playerAlreadyLogged != false){
@@ -129,7 +129,7 @@ exports.run = (io, socket, players, Player, rooms, devTeam, PlayFab, PlayFabServ
 															}
 														})
 													}else if(error !== null){
-														console.log("Inventory error: " + error);
+														console.log("Inventory error: " + error.data);
 													}
 													
 												})

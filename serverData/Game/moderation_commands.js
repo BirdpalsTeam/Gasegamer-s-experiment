@@ -53,7 +53,7 @@ exports.run = (io, socket, server_utils, AFKTime , rooms, devTeam, PlayFabServer
 						if(IPban == 'true'){
 							server_utils.getPlayerInternalData(banPlayerId).then((response)=>{
 								banRequest = {
-									Bans: [{PlayFabId: banPlayerId, Reason: reason, IPAddress: response.data.Data.ipaddress.Value}]
+									Bans: [{PlayFabId: banPlayerId, Reason: reason, IPAddress: response.data.Data.IPAddress.Value}]
 								}
 								ban();
 							}).catch((error)=>{
@@ -71,7 +71,7 @@ exports.run = (io, socket, server_utils, AFKTime , rooms, devTeam, PlayFabServer
 						if(IPban == 'true'){
 							server_utils.getPlayerInternalData(banPlayerId).then((response)=>{
 								banRequest = {
-									Bans: [{DurationInHours: timeOfBan, PlayFabId: banPlayerId, Reason: reason, IPAddress: response.data.Data.ipaddress.Value}]
+									Bans: [{DurationInHours: timeOfBan, PlayFabId: banPlayerId, Reason: reason, IPAddress: response.data.Data.IPAddress.Value}]
 								}
 								ban();
 							}).catch((error)=>{
@@ -90,7 +90,7 @@ exports.run = (io, socket, server_utils, AFKTime , rooms, devTeam, PlayFabServer
 						if(result !== null){
 							console.log(result);
 							server_utils.addPlayerTag(banPlayerId, 'isBanned').then(()=>{
-								let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(banPlayerId, 'playerId', io.sockets.sockets);
+								let removeBannedPlayerSocket = server_utils.getElementFromArrayByValue(banPlayerId, 'playerId', Object.keys(io.sockets.sockets));
 								socket.emit('playerBanned!');
 								let channel = client.channels.cache.get('845331071322423318');
 								let dateUTC = new Date(Date.now()).toUTCString();
@@ -157,7 +157,7 @@ exports.run = (io, socket, server_utils, AFKTime , rooms, devTeam, PlayFabServer
 			message = server_utils.separateString(message);
 			let removePlayerObject = server_utils.getElementFromArrayByValue(message[1], 'username', thisPlayerRoom.players);
 			if(removePlayerObject == false) return;
-			let removePlayerSocket = server_utils.getElementFromArrayByValue(removePlayerObject.id, 'playerId', io.sockets.sockets);
+			let removePlayerSocket = server_utils.getElementFromArrayByValue(removePlayerObject.id, 'playerId', Object.keys(io.sockets.sockets));
 			if(removePlayerSocket == false) return;
 			removePlayerSocket.disconnect(true);
 		}
