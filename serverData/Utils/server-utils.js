@@ -127,6 +127,17 @@ functions = {
 				}
 			})
 		})
+	},
+	getPlayerInventory: async function getPlayerInventory(playerId){
+		return await new Promise((resolve, reject) =>{
+			PlayFabAdmin.GetUserInventory({PlayFabId:playerId}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
 	}
 }
 
