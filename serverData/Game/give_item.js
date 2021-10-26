@@ -6,13 +6,13 @@ exports.run = (socket, rooms, AFKTime, PlayFabServer, server_utils, rateLimiter)
             console.log("Giving item...");
 			server_utils.resetTimer(socket, AFKTime);
 
-            playerInventory.forEach((item) =>{
-                console.log(item);
-            })
-
             for(let i = 0; i < freeItems.length; i++){
                 if(itemInfo.name == freeItems[i]){
-					server_utils.grantItemsToUser("Birdpals Catalog", [itemInfo.name], socket.playerId).then(i = freeItems.length).catch(console.log);
+					server_utils.grantItemsToUser("Birdpals Catalog", [itemInfo.name], socket.playerId).then(result =>{
+                        i = freeItems.length;
+                        console.log(result.data.ItemGrantResults[0].ItemInstanceId);
+                        
+                    }).catch(console.log);
                 }
             }
 			

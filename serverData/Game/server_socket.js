@@ -79,7 +79,7 @@ io.on('connection', (socket) => {
 
 	change_bio.run(socket, rooms, AFKTime, PlayFabAdmin, profanity, server_utils, rateLimiter);
 
-	give_item.run(socket, rooms, AFKTime, PlayFabServer, profanity, server_utils, rateLimiter);
+	give_item.run(socket, rooms, AFKTime, PlayFabServer, server_utils, rateLimiter);
 
 	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, PlayFabServer, client, server_discord);
 
