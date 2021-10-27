@@ -1,3 +1,20 @@
+class Shape{
+    constructor(x,y,width,height,colour){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.colour = colour;
+    }
+
+    draw(){
+        ctx.beginPath();
+        ctx.fillStyle = this.colour;
+        ctx.rect(this.x, this.y, this.width, this.height);
+        ctx.fill();
+    }
+}
+
 class Sprite{
 	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY){
 		this.img = img;
@@ -59,16 +76,6 @@ class Player extends Sprite{
 		this.itemsImgs.forEach((item) => {
 				item.draw();
 		});
-
-		if(this.card != undefined && this.card.playerButton.isInsideButton(mousePos) == true && this.card.isOpen == false){
-			if(localPlayer.isMoving == true){
-				localPlayer.isMoving = false;
-				clearInterval(localPlayer.movePlayerInterval);
-			}
-			this.card.open();
-		}else if(this.card != undefined && this.card.closeButton.isInsideButton(mousePos) == true && this.card.isOpen == true){
-			this.card.close();
-		}
 	}
 	
 	drawUsername(){

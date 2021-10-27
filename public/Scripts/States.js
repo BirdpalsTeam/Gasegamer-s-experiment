@@ -102,6 +102,18 @@ class WorldState extends State{
 			inventory.selectItem();
 			inventory.writeBio();
 		}
+
+        playersObject.forEach((tempplayer) =>{
+            if(tempplayer.card != undefined && tempplayer.card.playerButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == false){
+                if(localPlayer.isMoving == true){
+                    localPlayer.isMoving = false;
+                    clearInterval(localPlayer.movePlayerInterval);
+                }
+                tempplayer.card.open();
+            }else if(tempplayer.card != undefined && tempplayer.card.closeButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == true){
+                tempplayer.card.close();
+            }
+        });
 	}
 
 	onmousemove(evt){
