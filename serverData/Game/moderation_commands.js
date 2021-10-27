@@ -164,7 +164,7 @@ exports.run = (io, socket, server_utils, AFKTime , rooms, devTeam, IPBanned, Pla
 			let removePlayerObject = server_utils.getElementFromArrayByValue(message[1], 'username', thisPlayerRoom.players);
 			if(removePlayerObject == false) return;
 			Object.keys(io.sockets.sockets).forEach((socket) =>{
-				if(io.sockets.sockets[socket].playerId == banPlayerId){
+				if(io.sockets.sockets[socket].playerId == message[1]){
 					removePlayerSocket = io.sockets.sockets[socket];
 				}
 			})

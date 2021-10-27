@@ -37,7 +37,7 @@ exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, pro
 			if(message != undefined && server_utils.separateString(message)[0].includes("/") == false){
 				if(profanity.filter(message) == true){
 					let messageObject = {
-						socket: socket.id,
+						id: player.id,
 						message: "🤬"
 					}
 					let embed = server_discord.embedText(dateUTC + '\n' + player.username + ' said:', message);

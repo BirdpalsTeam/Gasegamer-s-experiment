@@ -1,5 +1,5 @@
 exports.Player = class Player{
-	constructor(id, username, items=[], biography){
+	constructor(id, username, items=[], biography, friends=[]){
 		this.id = id;
 		this.username = username;
 		this.x = 500;
@@ -14,6 +14,7 @@ exports.Player = class Player{
 		this.isDev = false;
 		this.items = items;
 		this.bio = biography;
+		this.friends = friends;
 	}
 	move(room){
 		this.isMoving = true;

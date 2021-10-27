@@ -129,34 +129,40 @@ exports.run = (io, socket, players, Player, rooms, devTeam, IPBanned, PlayFabSer
 										}
 
 										function createPlayer(thisPlayer, inventory, biography){
-											playerGear = new Array();
-											inventory.forEach((equippedItem) =>{
-												try{ //This try catch stops the server from crashing until the player opens their inventory.
-													if(equippedItem.CustomData.isEquipped == 'true'){ //Get the items the player is wearing
-														let item, ItemClass, ItemId, isEquipped;
-														ItemClass = equippedItem.ItemClass;
-														ItemId = equippedItem.ItemId;
-														isEquipped = equippedItem.CustomData;
-														item = {ItemClass, ItemId, isEquipped}; //Removes informations that may affect the security
-														playerGear.push(item);
-													}
-												}
-												catch(error){
-													console.log("There's an error here: " + error);
+											PlayFabServer.GetFriendsList({PlayFabId: PlayFabId}, (error, result)=>{
+												if(error !== null){
+													console.log(error);
+												}else if(result !== null){
+													playerGear = new Array();
+													inventory.forEach((equippedItem) =>{
+														try{ //This try catch stops the server from crashing until the player opens their inventory.
+															if(equippedItem.CustomData.isEquipped == 'true'){ //Get the items the player is wearing
+																let item, ItemClass, ItemId, isEquipped;
+																ItemClass = equippedItem.ItemClass;
+																ItemId = equippedItem.ItemId;
+																isEquipped = equippedItem.CustomData;
+																item = {ItemClass, ItemId, isEquipped}; //Removes informations that may affect the security
+																playerGear.push(item);
+															}
+														}
+														catch(error){
+															console.log("There's an error here: " + error);
+														}
+													})
+													thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, playerGear, biography, result.data.Friends);
+													if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
+														thisPlayer.isDev = true;
+													};
+													if(socket.disconnected == true) return;
+													players.push(thisPlayer);
+													socket.playerId = resultFromAuthentication.data.UserInfo.PlayFabId;
+													socket.join(rooms.town.name);
+													socket.gameRoom = rooms.town.name;
+													rooms.town.players.push(thisPlayer);
+													socket.emit('readyToPlay?');	//Say to the client they can already start playing
+													socket.broadcast.to(socket.gameRoom).emit('newPlayer', thisPlayer); //Emit this player to all clients logged in
 												}
 											})
-											thisPlayer = new Player(PlayFabId, resultFromAuthentication.data.UserInfo.TitleInfo.DisplayName, playerGear, biography);
-											if(server_utils.getElementFromArrayByValue(PlayFabId, 'id', devTeam.devs) != false){
-												thisPlayer.isDev = true;
-											};
-											if(socket.disconnected == true) return;
-											players.push(thisPlayer);
-											socket.playerId = resultFromAuthentication.data.UserInfo.PlayFabId;
-											socket.join(rooms.town.name);
-											socket.gameRoom = rooms.town.name;
-											rooms.town.players.push(thisPlayer);
-											socket.emit('readyToPlay?');	//Say to the client they can already start playing
-											socket.broadcast.to(socket.gameRoom).emit('newPlayer', thisPlayer); //Emit this player to all clients logged in
 										}
 			
 								}else if (result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Unverified" || result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Pending"){

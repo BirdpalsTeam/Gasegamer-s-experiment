@@ -138,6 +138,17 @@ functions = {
 				}
 			})
 		})
+	},
+	getFriendsList: async function getFriendsList(playerId){
+		return await new Promise((resolve, reject) =>{
+			PlayFabServer.GetFriendsList({PlayFabId:playerId}, (error, result) =>{
+				if(result !== null){
+					resolve(result);
+				}else if(error !== null){
+					reject(error);
+				}
+			})
+		})
 	}
 }
 
