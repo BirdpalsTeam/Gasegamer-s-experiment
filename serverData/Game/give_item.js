@@ -1,10 +1,10 @@
-exports.run = (socket, rooms, AFKTime, PlayFabServer, server_utils, rateLimiter)=>{
+exports.run = (socket, AFKTime, PlayFabServer, server_utils, rateLimiter)=>{
     var freeItems = ["eye_patch","pirate_hat"];
 
-    socket.on('getFreeItem', (itemInfo) => {
+    socket.on('/getFreeItem', (itemInfo) => {
         rateLimiter.consume(socket.id).then(()=>{
 			server_utils.resetTimer(socket, AFKTime);
-
+			itemInfo = {name: server_utils.separateString(itemInfo)[1]};
             server_utils.getPlayerInventory(socket.playerId).then(result =>{
                 let alreadyHasItem = false;
                 result.data.Inventory.forEach(item=>{

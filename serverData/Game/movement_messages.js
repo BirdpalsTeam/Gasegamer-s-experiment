@@ -35,7 +35,6 @@ exports.run = (socket, rooms, AFKTime, client, server_discord, server_utils, pro
 			let channel = client.channels.cache.get('845340183984341075');
 			let dateUTC = new Date(Date.now()).toUTCString();
 			if(message != undefined && server_utils.separateString(message)[0].includes("/") == false){
-				console.log(profanity.filter(message))
 				if(profanity.filter(message) == true){
 					let messageObject = {
 						socket: socket.id,

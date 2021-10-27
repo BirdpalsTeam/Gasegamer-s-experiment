@@ -23,6 +23,25 @@ exports.connect = (io, PlayFabServer, PlayFabAdmin, client) => {
 	var players = new Array();
 	var devTeamJson = fs.readFileSync('./serverData/Utils/devTeam.json');
 	var devTeam = JSON.parse(devTeamJson);
+	var IPBanned = new Array();
+	server_utils.getPlayersInSegment('1B7192766262CE36').then((response)=>{ //push the ip of the banned players to the IPBanned array, please don't log them.
+		let bannedList = response.data.PlayerProfiles;
+		if(bannedList.length > 0){
+			bannedList.forEach((player) =>{
+				PlayFabServer.GetUserBans({PlayFabId: player.PlayerId}, (error, result) =>{
+					if(result !== null){
+						result.data.BanData.forEach((ban) =>{
+							if(ban.Active == true && ban.IPAddress != undefined){
+								IPBanned.push(ban.IPAddress);
+							}
+						})
+					}else if(error !== null){
+						console.log(error);
+					}
+				})
+			})
+		}
+	}).catch(console.log);
 
 io.on('connection', (socket) => {
 	console.log('A user connected: ' + socket.id);
@@ -71,7 +90,7 @@ io.on('connection', (socket) => {
 		
 	})
 	
-	login.run(io, socket, players, Player, rooms, devTeam, PlayFabServer, PlayFabAdmin, profanity, server_utils, rateLimiter);
+	login.run(io, socket, players, Player, rooms, devTeam, IPBanned, PlayFabServer, PlayFabAdmin, profanity, server_utils, rateLimiter);
 
 	movement_messages.run(socket, rooms, AFKTime, client, server_discord, server_utils, profanity, rateLimiter, movementLimiter); //Rooms command is here
 
@@ -79,8 +98,8 @@ io.on('connection', (socket) => {
 
 	change_bio.run(socket, rooms, AFKTime, PlayFabAdmin, profanity, server_utils, rateLimiter);
 
-	give_item.run(socket, rooms, AFKTime, PlayFabServer, server_utils, rateLimiter);
+	give_item.run(socket, AFKTime, PlayFabServer, server_utils, rateLimiter);
 
-	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, PlayFabServer, client, server_discord);
+	moderation_commands.run(io, socket, server_utils, AFKTime, rooms, devTeam, IPBanned, PlayFabServer, client, server_discord);
 
 })} // io connection end

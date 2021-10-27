@@ -10,8 +10,11 @@ function checker(text, language){
 
 function booyerCheck(sentence, language){ //Algorythm to find patterns at text
 	let found = false;
-	Object.keys(profanityJson[language]).forEach(word =>{
-		if(booyer(sentence, word) == true){
+	let languageWords = Object.keys(profanityJson[language]); //array with the words of an language
+	let languageWordsValues = Object.values(profanityJson[language]); //array with the values of the words of an language
+
+	languageWords.forEach(word =>{
+		if(booyer(sentence, word) == true && languageWordsValues[languageWords.indexOf(word)] == 2){
 			found = true;
 		}
 	})
