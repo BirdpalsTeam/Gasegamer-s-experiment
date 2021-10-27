@@ -683,29 +683,34 @@ class Inventory extends Sprite{
         };
 	}
 	customDraw(){
-		if(this.isOpen == true){
-			if(this.closeButton.isOver == true){
-				this.grayCloseButton();
+		try {
+			if(this.isOpen == true){
+				if(this.closeButton.isOver == true){
+					this.grayCloseButton();
+				}
+				if(this.canDrawItems == true){
+					this.drawSquares(511, 130, 87, this.items, this.drawItems);
+					this.canDrawBigBird = true;
+				}
+				if(this.canDrawBigBird == true){
+					this.drawBigBird();
+				}
+				this.drawUsername();
+				if(this.canDrawGrid == true){
+					this.drawGrid();
+				}
+				if(this.canDrawBio == true){
+					ctx.beginPath();
+					ctx.rect(507, 130, 380, 350);
+					ctx.strokeStyle = "black";
+					ctx.stroke();
+				}
+				this.drawWhiteRectangle();
 			}
-			if(this.canDrawItems == true){
-				this.drawSquares(511, 130, 87, this.items, this.drawItems);
-				this.canDrawBigBird = true;
-			}
-			if(this.canDrawBigBird == true){
-				this.drawBigBird();
-			}
-			this.drawUsername();
-			if(this.canDrawGrid == true){
-				this.drawGrid();
-			}
-			if(this.canDrawBio == true){
-				ctx.beginPath();
-				ctx.rect(507, 130, 380, 350);
-				ctx.strokeStyle = "black";
-				ctx.stroke();
-			}
-			this.drawWhiteRectangle();
+		} catch (error) {
+			console.error(error)
 		}
+		
 	}
 }
 
@@ -833,15 +838,20 @@ class PlayerCard extends Sprite{
 	}
 
 	customDraw(){
-		if(this.isOpen == true){
-			if(this.closeButton.isOver == true){
-				this.grayCloseButton();
+		try {
+			if(this.isOpen == true){
+				if(this.closeButton.isOver == true){
+					this.grayCloseButton();
+				}
+				this.drawUsername();
+				this.drawBigBird();
+				this.drawBiographyArea();
+				this.closeButton.isOverButton(mouseOver) == true ? this.closeButton.isOver = true : this.closeButton.isOver = false;
 			}
-			this.drawUsername();
-			this.drawBigBird();
-			this.drawBiographyArea();
-			this.closeButton.isOverButton(mouseOver) == true ? this.closeButton.isOver = true : this.closeButton.isOver = false;
+		} catch (error) {
+			console.error(error);
 		}
+		
 	}
 	
 }
