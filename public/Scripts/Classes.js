@@ -1,20 +1,3 @@
-class Shape{
-    constructor(x,y,width,height,colour){
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.colour = colour;
-    }
-
-    draw(){
-        ctx.beginPath();
-        ctx.fillStyle = this.colour;
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.fill();
-    }
-}
-
 class Sprite{
 	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY){
 		this.img = img;
@@ -69,6 +52,7 @@ class Player extends Sprite{
 		this.width = birdSize.width;
 		this.height = birdSize.height;
 		this.recalculateOrigin();
+		this.friends = player.friends;
 	}
 
 	customDraw(){
@@ -76,6 +60,7 @@ class Player extends Sprite{
 		this.itemsImgs.forEach((item) => {
 				item.draw();
 		});
+
 	}
 	
 	drawUsername(){
@@ -96,7 +81,12 @@ class Player extends Sprite{
 		if(this.local == true){
 			outline("bolder ", 6, "white");
 		}else{
-			outline("", 4.5, "white");
+			let isFriend = getElementFromArrayByValue(this.id, 'FriendPlayFabId', localPlayer.friends);
+			if(isFriend != false && isFriend.Tags[0] == "confirmed"){
+				outline("", 5, "#66F800");
+			}else{
+				outline("", 4.5, "white");
+			}
 		}
 	}
 
@@ -248,8 +238,8 @@ class Player extends Sprite{
 				item.y = this.y;
 			});
 			if(this.card != undefined){
-				this.card.playerButton.x = this.x;
-				this.card.playerButton.y = this.y;
+				this.card.playerButton.x = this.x - this.originX;
+				this.card.playerButton.y = this.y - this.originY;
 			}
 
 			if(timeToPlayerReachDestination <= 0){

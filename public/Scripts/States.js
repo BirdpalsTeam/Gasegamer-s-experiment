@@ -17,10 +17,6 @@ class State{
     render(){
 
     }
-
-    end(){
-
-    }
 }
 
 var allObjects;
@@ -102,8 +98,7 @@ class WorldState extends State{
 			inventory.selectItem();
 			inventory.writeBio();
 		}
-
-        playersObject.forEach((tempplayer) =>{
+		playersObject.forEach((tempplayer) =>{
             if(tempplayer.card != undefined && tempplayer.card.playerButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == false){
                 if(localPlayer.isMoving == true){
                     localPlayer.isMoving = false;
@@ -190,47 +185,45 @@ class JukeboxState extends State{
 class TableTennisState extends State{
     constructor(){
         super();
-
-        this.ballVelX = 5;
-        this.ballVelY = 5;
+        this.ballX = canvas.width/2;
+        this.ballY = 0;
+        this.ballVelX = 0;
+        this.ballVelY = 10;
         this.ballGoingDown = true;
-        this.ball = new Shape(canvas.width/2,0,50,50,"blue");
 
-        this.paddleWidth = 200;
-        this.paddleHeight = 200;
-        this.player1Paddle = new Shape(canvas.width / 2 - this.paddleWidth / 2,canvas.height - this.paddleHeight,this.paddleWidth,this.paddleHeight,"red");
+        let paddleSprite = loadSprite("Sprites/minigames/tabletennis/Paddle.png");
+        let tableSprite = loadSprite("Sprites/minigames/tabletennis/table.png");
+        this.player1Paddle = new Sprite(paddleSprite, 0, 0, 224, 245, 0, 400, 224, 245, 110, 0);
+        this.table = new Sprite(tableSprite, 0, 0, 1000, 600, 0, 0, 1000, 600, 0, 0);
     }
 
     main(){
         if(this.ballGoingDown){
-            if(this.ball.y >= canvas.height - this.paddleHeight/2){
-                if(this.ball.x >= this.player1Paddle.x && this.ball.x <= this.player1Paddle + this.paddleWidth){
-                    this.ballGoingDown = false;
-                    this.ballVelY *= -1;
-                }
+            if(this.ballY >= 500){
+                this.ballGoingDown = false;
+                this.ballVelY *= -1
             }
         }
         else{
-            if(this.ball.y <= this.paddleHeight/2){
-                this.ballGoingDown = true;
-                this.ballVelY *= -1;
-            }
-        }
-        if(this.ball.x <= 0 || this.ball.x >= canvas.width){
-            this.ballVelX *= -1;
+
         }
 
-        this.ball.x += this.ballVelX * timeScale;
-        this.ball.y += this.ballVelY * timeScale;
+        this.ballX += this.ballVelX;
+        this.ballY += this.ballVelY;
     }
 
     render(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.table.draw();
+        var c = document.getElementById("myCanvas");
+        ctx.beginPath();
+        ctx.arc(this.ballX, this.ballY, 10, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
         this.player1Paddle.draw();
-        this.ball.draw();
     }
 
-    onclick(evt){
+    onmousemove(evt){
         let tempMousePos = getMousePos(canvas, evt);
         this.player1Paddle.x = tempMousePos.x;
     }
@@ -387,93 +380,6 @@ class DebugSkinEditorState extends State{
         super();
         
         this.itemimg = skinimg;
-        this.click1 = [0,0];
-        this.click2 = [0,0];
-        this.currentclick = 0;
-
-        this.spritesArray = [];
-
-        this.drawSpritesheetthingy();
-    }
-
-    drawSpritesheetthingy() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(this.itemimg, 0, 0);
-    }
-
-    onclick(evt){
-        let tempmousepos = getMousePos(canvas, evt);
-        if(this.currentclick == 0){
-            this.click1 = [this.tempmousepos.x, this.tempmousepos.y];
-            this.currentclick = 1;
-            this.drawSpritesheetthingy();
-        }
-        else if(this.currentclick == 1){
-            this.click2 = [this.tempmousepos.x - this.click1[0], this.tempmousepos.y - this.click1[1]];
-            this.currentclick = 2;
-            //ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.rect(this.click1[0], this.click1[1], this.click2[0], this.click2[1]);
-            ctx.stroke();
-        }
-        else if(this.currentclick == 2){
-            ctx.rect(0,0,canvas.width,canvas.height);
-            ctx.fill();
-            ctx.stroke();
-            ctx.drawImage(this.itemimg,this.click1[0],this.click1[1],this.click2[0], this.click2[1],10,10, this.click2[0], this.click2[1]);
-
-            debugParagraph.innerHTML = this.click1[0].toString() + "," + this.click1[1].toString() + "," + (this.click2[0]).toString() + "," + (this.click2[1]).toString();
-            this.currentclick = 3;
-        }
-        else{
-			this.spritesArray.push([this.click1[0],this.click1[1],this.click2[0], this.click2[1], canvas.width / 2 - this.tempmousepos.x, canvas.height/2 - this.tempmousepos.y]);
-            this.currentclick = 0;
-            this.drawSpritesheetthingy();
-        }
-    }
-    onmousemove(evt){
-        this.tempmousepos = getMousePos(canvas, evt);
-        ctx.lineWidth = "1";
-        if(this.currentclick == 0){
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            this.drawSpritesheetthingy();
-            ctx.beginPath();
-            ctx.rect(this.tempmousepos.x, this.tempmousepos.y, 10, 10);
-            ctx.stroke();
-        }
-        else if(this.currentclick == 1){
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            this.drawSpritesheetthingy();
-            ctx.beginPath();
-            ctx.rect(this.click1[0], this.click1[1], this.tempmousepos.x - this.click1[0], this.tempmousepos.y - this.click1[1]);
-            ctx.stroke();
-        }
-        else if(this.currentclick > 2){
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(this.itemimg,this.click1[0],this.click1[1],this.click2[0], this.click2[1],this.tempmousepos.x,this.tempmousepos.y, this.click2[0], this.click2[1]);
-
-            ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, 5, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
-        }
-    }
-
-    finishUp(){
-        let spriteArrayString = "";
-        this.spritesArray.forEach(sprite =>{
-            spriteArrayString += '['+ sprite +'],';
-        });
-        debugParagraph.innerHTML = '"SkinName": [' + spriteArrayString + ']';
-    }
-}
-
-class DebugItemEditorState extends State{
-    constructor(itemimg, skininfo){
-        super();
-        
-        this.itemimg = itemimg;
-        this.skininfo = skininfo;
         this.click1 = [0,0];
         this.click2 = [0,0];
         this.currentclick = 0;
