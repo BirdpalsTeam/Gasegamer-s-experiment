@@ -42,8 +42,34 @@ form.addEventListener('submit', function(e) {
 		}
 });
 
+var achievementAnimPlaying = false;
+var achievementBox = new Shape(0,0,300,0,"yellow");
+var achievementTimeout = null;
+var achievementHeightIncrease = 1;
+var achievementInfo = {name:"", image:""};
+function getAchievement(tempinfo){
+	achievementInfo = tempinfo;
+	achievementBox.height = 0;
+	achievementHeightIncrease = 1;
+	achievementAnimPlaying = true;
+	renderAchievement();
+	achievementTimeout = setTimeout(function(){achievementHeightIncrease = -1;},5000);
+	achievementTimeout = setTimeout(function(){achievementAnimPlaying = false;},10000);
+}
+function renderAchievement(){
+	if(achievementHeightIncrease == 1){
+		if(achievementBox.height <= 100)
+			achievementBox.height += achievementHeightIncrease * timeScale;
+	}
+	else{
+		achievementBox.height += achievementHeightIncrease * timeScale;
+	}
+	achievementBox.draw();
+}
+
 function render(){
 	currentState.render();
+	if(achievementAnimPlaying){renderAchievement()}
 	requestAnimationFrame(render);
 }
 
