@@ -43,7 +43,7 @@ form.addEventListener('submit', function(e) {
 });
 
 var achievementAnimPlaying = false;
-var achievementBox = new Shape(0,0,300,0,"yellow");
+var achievementBox = new Shape(0, 0, 300, 0, "yellow");
 var achievementTimeout = null;
 var achievementHeightIncrease = 1;
 var achievementInfo = {name:"", image:""};
