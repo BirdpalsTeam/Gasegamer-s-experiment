@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="./Css/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet"/>
+ <link rel="shortcut icon" type="image/png" href="Website Assets\Logo.png" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Birdpals</title>
+</head>
+<body>
+<audio id ="background_music" src="Audio/Songbirds.mp3" type="audio/mpeg" autoplay loop>
+</audio>
+<center>
+	<div class="container">
+		<img id='loading' src="./Website Assets/morph_2.gif" class="loading">
+		<canvas id="myCanvas" width="1000" height="600"></canvas>
+		<textarea id="bioInput" maxlength="144" placeholder="Write your description here." hidden></textarea>
+		
+	</div>
+</center>
+<center>
+<div id="inputElements" hidden="true">
+	<form id="form" action="">
+		<input id="input" type="text" maxlength="50" autocomplete="off" placeholder="Type a Message..."/>
+		<button>Send</button>
+	</form> 
+	<button id="inventory">Inventory</button>
+	<div id="debugDiv">
+		<p id="debugParagraph"></p>
+	</div>
+</div>
+</center>
+<script src="/socket.io/socket.io.js"></script>
+<script src='./Modules/PlayFabClientApi.js'></script>
+<script src="./Modules/jquery.min.js"></script>
+<script src="./Modules/canvas-txt.js"></script>
+<script src="Modules/utils.js"></script>
+<script src="Scripts/States.js"></script>
+<script src='Scripts/Classes_O.js'></script>
+<script src="Scripts/Classes_G.js"></script>
+<script src="Scripts/Classes_P.js"></script>
+<script src="Scripts/Classes_I.js"></script>
+<script src="Scripts/game.js" id="Game"></script>
+</body>
+</html>
