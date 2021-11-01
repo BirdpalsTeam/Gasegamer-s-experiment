@@ -1,5 +1,14 @@
-var canvas = document.getElementById('myCanvas');
+var canvas = document.getElementById('objects');
 var ctx = canvas.getContext('2d');
+var bg_canvas = document.getElementById('background');
+var bg_ctx = bg_canvas.getContext('2d');
+var fg_canvas = document.getElementById('foreground');
+var fg_ctx = fg_canvas.getContext('2d');
+var txt_canvas = document.getElementById('txt_canvas');
+var txt_ctx = txt_canvas.getContext('2d');
+txt_ctx.imageSmoothingEnabled = false;
+
+var loading_screen = document.getElementById('loading');
 
 var debugParagraph = document.getElementById('debugParagraph');
 var bioInput = document.getElementById('bioInput');
@@ -119,6 +128,7 @@ function changeBirdSize(roomname){
 }
 
 var currentMusicSrc = "";
+
 function changeMusicByRoom(roomName){
 	if(currentMusicSrc != audioSrc + rooms[roomName].music){
 		background_music.src = audioSrc + rooms[roomName].music;
@@ -144,6 +154,37 @@ function activateTrigger(triggerArray){
 		case "getFreeItem":
 			socket.emit("getFreeItem", triggerArray[5]);
 			break;
+	}
+}
+
+function changeRoomWidthAndHeight(room, roomname){
+	room.width = rooms[roomname].size.width;
+	room.height = rooms[roomname].size.height;
+	room.sourceWidth = rooms[roomname].size.width;
+	room.sourceHeight = rooms[roomname].size.height;
+	room.draw();
+}
+
+function loadRoom(joinRoom){
+	if(spritesStillLoading > 0){
+		loading_screen.hidden = false;
+		window.setTimeout(loadRoom, 1000 / 60, joinRoom);
+	}else{
+		changeRoomWidthAndHeight(roomSprite, joinRoom.name);
+		changeRoomWidthAndHeight(foreground, joinRoom.name);
+		currentRoom = joinRoom.name;
+		changeMusicByRoom(joinRoom.name);
+		localPlayer.x = joinRoom.posX;
+		localPlayer.y = joinRoom.posY;
+		localPlayer.itemsImgs.forEach(item => {
+			item.x = joinRoom.posX;
+			item.y = joinRoom.posY;
+		});
+		getRoomObjects(joinRoom.name);
+		getNPCs(joinRoom.name);
+		roomCollision();
+		changeBirdSize(joinRoom.name);
+		loading_screen.hidden = true;
 	}
 }
 // Create a script tag
@@ -182,7 +223,7 @@ socket.on('loggedOut', () =>{
 	window.location.href = "index.html";
 })
 
-socket.emit('login',ticket);
+socket.emit('login', ticket);
 
 socket.on('readyToPlay?', () =>{	//Server is asking if the player can be added on the client
 	ready = true;
@@ -217,7 +258,7 @@ socket.on('loggedIn', (players) =>{	//Server response to "Im Ready";
 		}
 	});
 	let ref = document.getElementById('Game');
-	ref.appendChild(script);		//Add index.js
+	ref.appendChild(script);		//Add localG.js
 })
 
 socket.on('newPlayer', (player) => {
@@ -267,30 +308,12 @@ socket.on('badWord', (message) =>{
 })
 
 socket.on('joinRoom', (joinRoom) =>{
-	clearInterval(localPlayer.movePlayerInterval)
+	clearInterval(localPlayer.movePlayerInterval);
 	roomSprite.img = loadSprite(roomsSrc + rooms[joinRoom.name].images.background);
 	foreground.img = loadSprite(roomsSrc + rooms[joinRoom.name].images.foreground);
-	changeRoomWidthAndHeight(roomSprite, joinRoom.name);
-	changeRoomWidthAndHeight(foreground, joinRoom.name);
-	currentRoom = joinRoom.name;
-	changeMusicByRoom(joinRoom.name);
-	localPlayer.x = joinRoom.posX;
-	localPlayer.y = joinRoom.posY;
-	localPlayer.itemsImgs.forEach(item => {
-		item.x = joinRoom.posX;
-		item.y = joinRoom.posY;
-	});
-	getRoomObjects(joinRoom.name);
-	getNPCs(joinRoom.name);
-	roomCollision();
-	changeBirdSize(joinRoom.name);
+	loadRoom(joinRoom);
 })
-function changeRoomWidthAndHeight(room, roomname){
-	room.width = rooms[roomname].size.width;
-	room.height = rooms[roomname].size.height;
-	room.sourceWidth = rooms[roomname].size.width;
-	room.sourceHeight = rooms[roomname].size.height;
-}
+
 socket.on('leaveRoom', () => {
 	playersInGame = [];
 	playersObject = [];

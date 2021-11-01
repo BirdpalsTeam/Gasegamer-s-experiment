@@ -11,6 +11,7 @@ var foreground = new Room_Details(foregroundImage, 3, 0, 1000, 600);
 var inventory = new Inventory(inventoryImage, 4, 0);
 changeRoomWidthAndHeight(roomSprite, "town");
 changeRoomWidthAndHeight(foreground, "town");
+
 function drawCollisionMap(){	//Just a debug function
 	let x, y;
 	for(y = 0; y < roomCollMapY; y++){
@@ -27,10 +28,10 @@ function getMousePos(cv, evt) {
 			y: evt.clientY - rect.top
 }};
 
-canvas.addEventListener('click', function(evt) {
+txt_canvas.addEventListener('click', function(evt) {
 	currentState.onclick(evt);
 }, false);
-canvas.addEventListener('mousemove', function(evt){
+txt_canvas.addEventListener('mousemove', function(evt){
 	currentState.onmousemove(evt);
 })
 
@@ -95,7 +96,7 @@ if(localPlayer.items.length > 0){
 		localPlayer.addItem(item.ItemClass, item.ItemId);
 	});
 }
-document.getElementById('loading').remove();
+loading_screen.hidden = true;
 document.getElementById('inventory').onclick = function(){inventory.open()};
 
 render();

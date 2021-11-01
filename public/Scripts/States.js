@@ -27,7 +27,7 @@ class WorldState extends State{
 	
     render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        roomSprite.draw();
+		txt_ctx.clearRect(0, 0, txt_canvas.width, txt_canvas.height);
         allObjects = [];
         allObjects = playersObject.concat(roomObjects, localPlayer, roomNPCs);
 
@@ -38,8 +38,6 @@ class WorldState extends State{
                 object.draw();
             }
         });
-
-		foreground.draw();
 
         if(playersObject.length > 0){
             playersObject.forEach((player) => {

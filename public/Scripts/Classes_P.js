@@ -44,15 +44,15 @@ class Player extends Sprite{
 		let y = this.y;
 		let height = this.height;
 		function outline(bolder, outlineWidth, baseColor){
-			ctx.font = bolder + "15px sans-serif";
-			ctx.strokeStyle = "black";
-			ctx.lineWidth = outlineWidth;
-			ctx.lineJoin = "round";
-			ctx.strokeText(username, x, y + height / 3.5);
-			ctx.fillStyle = baseColor;
-			ctx.fillText(username, x, y + height / 3.5);
+			txt_ctx.font = bolder + "15px sans-serif";
+			txt_ctx.strokeStyle = "black";
+			txt_ctx.lineWidth = outlineWidth;
+			txt_ctx.lineJoin = "round";
+			txt_ctx.strokeText(username, x, y + height / 3.5);
+			txt_ctx.fillStyle = baseColor;
+			txt_ctx.fillText(username, x, y + height / 3.5);
 		}
-		ctx.textAlign = 'center';
+		txt_ctx.textAlign = 'center';
 		if(this.local == true){
 			outline("bolder ", 6, "white");
 		}else{
@@ -87,10 +87,10 @@ class Player extends Sprite{
 			ctx.drawImage(this.speechBubbleImage, 0, 0, 262, 94, this.x - 45, drawHeight, 131, imageHeight); //draws the bubble
 			canvasTxt.fontSize = 14;
 			canvasTxt.font = "sans-serif";
-			ctx.fillStyle = "black";
+			txt_ctx.fillStyle = "black";
 			canvasTxt.align = 'center';
 			//canvasTxt.debug = true; //good way to test the text size
-			canvasTxt.drawText(ctx, this.message, this.x - this.originX, drawHeight + 2 , 100, imageHeight - textHeight); //draws the message
+			canvasTxt.drawText(txt_ctx, this.message, this.x - this.originX, drawHeight + 2 , 100, imageHeight - textHeight); //draws the message
 		}
 	}
 
@@ -337,17 +337,17 @@ class PlayerCard extends Sprite{
 		ctx.stroke();
 		canvasTxt.fontSize = 30;
 		canvasTxt.font = "Caslon";
-		canvasTxt.drawText(ctx, this.bio, 510, 135 , 370, 335); //draws the message
+		canvasTxt.drawText(txt_ctx, this.bio, 510, 135 , 370, 335); //draws the message
 	}
 
 	drawUsername(){
 		if(this.username.length > 16){
-			ctx.font = '46px Caslon';
+			txt_ctx.font = '46px Caslon';
 		}else{
-			ctx.font = '55px Caslon';
+			txt_ctx.font = '55px Caslon';
 		}
-		ctx.fillStyle = '#615f5b';
-		ctx.fillText(this.username, this.x + 260, this.y + 80);
+		txt_ctx.fillStyle = '#615f5b';
+		txt_ctx.fillText(this.username, this.x + 260, this.y + 80);
 	}
 
 	drawBigBird(){

@@ -26,6 +26,15 @@ class Room extends Sprite{
 		this.layer = layer;
 		this.type = type;
 	}
+	draw(){
+		bg_ctx.clearRect(0, 0, bg_canvas.width, bg_canvas.height);
+		bg_ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x - this.originX, this.y - this.originY, this.width, this.height);
+		this.customDraw();
+	}
+
+	customDraw(){
+
+	}
 }
 
 class Room_Details extends Sprite{
@@ -33,5 +42,10 @@ class Room_Details extends Sprite{
 		super(img, 0, 0, 892, 512, 0, 0, width, height, layer, type);
 		this.layer = layer;
 		this.type = type;
+	}
+	draw(){
+		fg_ctx.clearRect(0, 0, fg_canvas.width, fg_canvas.height);
+		fg_ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x - this.originX, this.y - this.originY, this.width, this.height);
+		this.customDraw();
 	}
 }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="./Css/style.css" />
+<link rel="stylesheet" href="./Css/play.css" />
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet"/>
  <link rel="shortcut icon" type="image/png" href="Website Assets\Logo.png" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,15 +11,15 @@
 <audio id ="background_music" src="Audio/Songbirds.mp3" type="audio/mpeg" autoplay loop>
 </audio>
 <center>
-	<div class="container">
+	<div id="stage">
 		<img id='loading' src="./Website Assets/morph_2.gif" class="loading">
-		<canvas id="myCanvas" width="1000" height="600"></canvas>
+		<canvas id="background" width="1000" height="600"></canvas>
+		<canvas id="objects" width="1000" height="600"></canvas>
+		<canvas id="foreground" width="1000" height="600"></canvas>
+		<canvas id="txt_canvas" width="1000" height="600"></canvas>
 		<textarea id="bioInput" maxlength="144" placeholder="Write your description here." hidden></textarea>
-		
 	</div>
-</center>
-<center>
-<div id="inputElements" hidden="true">
+<div id="inputElements" hidden="true" class="inputElements">
 	<form id="form" action="">
 		<input id="input" type="text" maxlength="50" autocomplete="off" placeholder="Type a Message..."/>
 		<button>Send</button>
