@@ -163,6 +163,11 @@ exports.run = (io, socket, server_utils, AFKTime , rooms, devTeam, IPBanned, Pla
 			message = server_utils.separateString(message);
 			let removePlayerObject = server_utils.getElementFromArrayByValue(message[1], 'username', thisPlayerRoom.players);
 			if(removePlayerObject == false) return;
+			for(let socket in io.socket.sockets){
+				if(io.socket.sockets[socket].playerId == message[1]){
+					removePlayerSocket = io.socket.sockets[socket];
+				}
+			}
 			Object.keys(io.sockets.sockets).forEach((socket) =>{
 				if(io.sockets.sockets[socket].playerId == message[1]){
 					removePlayerSocket = io.sockets.sockets[socket];

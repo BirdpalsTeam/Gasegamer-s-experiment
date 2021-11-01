@@ -19,7 +19,7 @@ var PlayFab = require("./node_modules/playfab-sdk/Scripts/PlayFab/PlayFab");
 const { PlayFabServer, PlayFabAdmin } = require('playfab-sdk');
 const GAME_ID = '238E6';
 PlayFab.settings.titleId = GAME_ID;
-PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
+PlayFab.settings.developerSecretKey = '1YP575JK5RZOJFRMMSAT5DWWOG9FI6967KNH3YCCIKFQT7SNK7';
 //Discord
 const discordBot = require('./serverData/Discord/server_discord');
 app.enable('trust proxy');

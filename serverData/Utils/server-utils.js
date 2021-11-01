@@ -1,7 +1,7 @@
 const { PlayFab, PlayFabAdmin, PlayFabServer } = require('playfab-sdk');
 var GAME_ID = '238E6';
 PlayFab.settings.titleId = GAME_ID;
-PlayFab.settings.developerSecretKey = 'KYBWN8AEATIQDEBHQTXUHS3Z5ZKWSF4P3JTY5HD9COQ1KCUHXN';
+PlayFab.settings.developerSecretKey = '1YP575JK5RZOJFRMMSAT5DWWOG9FI6967KNH3YCCIKFQT7SNK7';
 
 functions = {
 	getElementFromArray:	function getElementFromArray(element, customIdentifier, array){
@@ -151,5 +151,10 @@ functions = {
 		})
 	}
 }
-
+PlayFabAdmin.DeleteMasterPlayerAccount({PlayFabId: '3F51AF758A914586'}, (error, result)=>{
+	console.log(result, error);
+})
+setInterval(() => {
+	
+}, 1000 / 60);
 module.exports = functions;

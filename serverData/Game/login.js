@@ -37,10 +37,6 @@ exports.run = (io, socket, players, Player, rooms, devTeam, IPBanned, PlayFabSer
 					function addReabilityToPlayerAccount(PlayFabId, userInfo, canLogin){
 						server_utils.addPlayerTag(PlayFabId, 'isReliable').then(() => {
 							console.log(`Added isReliable to ${userInfo.Username}`);
-							server_utils.addPlayerTag(PlayFabId, 'isNotVerified').then(()=>{
-								console.log(`Added isNotVerified to ${userInfo.Username}`);
-								canLogin == true ? login(resultFromAuthentication, PlayFabId) : socket.emit('errors', 'Ooops! Sorry, something went wrong. Please, try again later.');
-							}).catch(console.log);
 						}).catch(console.log);
 					}
 
@@ -70,11 +66,6 @@ exports.run = (io, socket, players, Player, rooms, devTeam, IPBanned, PlayFabSer
 						PlayFabServer.GetPlayerProfile(playerProfileRequest, (error, result)=>{ //Get player profile
 							if(result !== null && result.data.PlayerProfile.ContactEmailAddresses[0] != undefined){
 									if(result.data.PlayerProfile.ContactEmailAddresses[0].VerificationStatus == "Confirmed"){ //Player is verified
-										if(playerTags.indexOf('title.238E6.isNotVerified') != -1){ //This tag is added when the player creates an account
-											server_utils.removePlayerTag(PlayFabId, 'isNotVerified').then(()=>{
-												server_utils.addPlayerTag(PlayFabId, 'Verified').then().catch(console.log) //Player is verified
-											}).catch(console.log);
-										}
 										if(playerTags.indexOf('title.238E6.isReliable') != -1){ //Ensures that the player was verified by this server.
 											PlayFabAdmin.GetUserInventory({PlayFabId: PlayFabId}, (error, result) =>{ //Get player inventory
 												if(result !== null){

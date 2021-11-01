@@ -7,7 +7,7 @@ const readline1 = require('readline').createInterface({
 });
 var devName, devId;
 readline1.question('Dev name: ', (answer) =>{
-	console.log(answer)
+	console.log(answer);
 	devName = answer;
 	readline1.close();
 	const readline2 = require('readline').createInterface({
