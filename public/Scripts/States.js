@@ -28,6 +28,7 @@ class WorldState extends State{
     render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
 		txt_ctx.clearRect(0, 0, txt_canvas.width, txt_canvas.height);
+		
         allObjects = [];
         allObjects = playersObject.concat(roomObjects, localPlayer, roomNPCs);
 
@@ -72,12 +73,15 @@ class WorldState extends State{
 		}else{
 			bioInput.hidden = true;
 		}
-
         this.customrender();
     }
 
     customrender(){
-
+		let c_rect = canvas.getBoundingClientRect();
+		$('#bioInput').css({
+			top: c_rect.top + 140,
+			left: c_rect.left + 512
+		});
     }
 
     onclick(evt){

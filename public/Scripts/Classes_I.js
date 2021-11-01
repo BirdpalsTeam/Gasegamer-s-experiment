@@ -34,6 +34,7 @@ class Inventory extends Sprite{
 			command('/updateInventory', this.items);
 			this.updateGear();
 			this.isOpen = false;
+			this.bioButton.isSelected = false;
 			localPlayer.canMove = true;
 		}
 	}
@@ -305,7 +306,7 @@ class Inventory extends Sprite{
 				if(this.closeButton.isOver == true){
 					this.grayCloseButton();
 				}
-				if(this.canDrawItems == true){
+				if(this.canDrawItems == true && this.canDrawBio == false){
 					this.drawSquares(511, 130, 87, this.items, this.drawItems);
 					this.canDrawBigBird = true;
 				}
