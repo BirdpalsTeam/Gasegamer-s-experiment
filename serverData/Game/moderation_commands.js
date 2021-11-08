@@ -13,12 +13,13 @@ exports.run = (io, socket, server_utils, AFKTime , rooms, devTeam, IPBanned, Pla
 			let reportMessage = message.slice(2, message.length);
 			reportMessage = reportMessage.toString().split(',').join(' ');
 			let channel = client.channels.cache.get('845340393461645352'); //Connect to report channel on discord
+			let dateUTC = new Date(Date.now()).toUTCString();
+			console.log("Bababooie");
+			let embed = server_discord.embedText(dateUTC + '\n' + reporter.username + ' reported ' + playerName, reportMessage);
+			channel.send(embed.setColor('FFFB00'));
 			PlayFabServer.ReportPlayer({ReporterId: reporter.id, ReporteeId: response.data.UserInfo.PlayFabId, Comment: reportMessage}, (error, result) =>{
 				if(result !== null){
-					let dateUTC = new Date(Date.now()).toUTCString();
 					console.log(result); //result.data.Updated
-					let embed = server_discord.embedText(dateUTC + '\n' + reporter.username + ' reported ' + playerName, reportMessage);
-					channel.send(embed.setColor('FFFB00'));
 				}else if(error !== null){
 					console.log(error);	//error.errorMessage
 				}
