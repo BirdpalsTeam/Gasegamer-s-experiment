@@ -109,6 +109,9 @@ class WorldState extends State{
                 tempplayer.card.open();
             }else if(tempplayer.card != undefined && tempplayer.card.closeButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == true){
                 tempplayer.card.close();
+            }else if(tempplayer.card != undefined && tempplayer.card.reportButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == true){
+                socket.emit('/report', "/report "+tempplayer.username+" testing button");
+                console.log("/report "+tempplayer.username+" testing button")
             }
         });
 	}

@@ -298,6 +298,9 @@ class PlayerCard extends Sprite{
 		this.bigBird.shadowImg.src = hudSrc + 'big_bird_shadow.png';
 		this.bio = player.bio;
 		this.p = player;
+
+		this.reportButton = new Button(300,500,50,50);
+		this.reportSprite = new Shape(300,500,50,50,"blue");
 	}
 
 	open(){
@@ -310,11 +313,9 @@ class PlayerCard extends Sprite{
 	} 
 
 	close(){
-		if(this.closeButton.isInsideButton(mousePos) == true){
-			this.isOpen = false;
-			localPlayer.canMove = true;
-			localPlayer.canDrawUsername = true;
-		}
+		this.isOpen = false;
+		localPlayer.canMove = true;
+		localPlayer.canDrawUsername = true;
 	}
 
 	grayCloseButton(){
@@ -415,6 +416,7 @@ class PlayerCard extends Sprite{
 				this.drawBigBird();
 				this.drawBiographyArea();
 				this.closeButton.isOverButton(mouseOver) == true ? this.closeButton.isOver = true : this.closeButton.isOver = false;
+				this.reportSprite.draw();
 			}
 		} catch (error) {
 			console.error(error);

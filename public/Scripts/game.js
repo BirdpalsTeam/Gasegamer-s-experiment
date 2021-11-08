@@ -12,6 +12,7 @@ var loading_screen = document.getElementById('loading');
 
 var debugParagraph = document.getElementById('debugParagraph');
 var bioInput = document.getElementById('bioInput');
+var reportInput = document.getElementById('reportInput');
 
 var background_music = document.getElementById('background_music');
 
