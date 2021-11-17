@@ -12,9 +12,10 @@ var loading_screen = document.getElementById('loading');
 
 var debugParagraph = document.getElementById('debugParagraph');
 var bioInput = document.getElementById('bioInput');
-var reportInput = document.getElementById('reportInput');
 
 var background_music = document.getElementById('background_music');
+
+var chatbox = document.getElementById("chatbox");
 
 var currentState = new WorldState();
 
@@ -164,6 +165,8 @@ function changeRoomWidthAndHeight(room, roomname){
 	room.sourceWidth = rooms[roomname].size.width;
 	room.sourceHeight = rooms[roomname].size.height;
 	room.draw();
+	console.log(rooms[roomname].size.width);
+	console.log(rooms[roomname].size.height);
 }
 
 function loadRoom(joinRoom){
@@ -186,6 +189,21 @@ function loadRoom(joinRoom){
 		roomCollision();
 		changeBirdSize(joinRoom.name);
 		loading_screen.hidden = true;
+	}
+}
+
+function addToChatbox(chatboxtext){
+	console.log(chatbox.innerHTML);
+	chatbox.innerHTML = chatbox.innerHTML + "<p>"+chatboxtext+"</p>";
+	chatbox.scrollTop = chatbox.scrollHeight;
+	console.log(chatbox.innerHTML);
+}
+function toggleChatbox(){
+	if(chatbox.hidden == true){
+		chatbox.hidden = false;
+	}
+	else{
+		chatbox.hidden = true;
 	}
 }
 // Create a script tag
@@ -302,6 +320,8 @@ socket.on('playerSaid', (player) => {
 	}else{
 		playerO.hideBubble();
 	}
+
+	addToChatbox(playerO.username+": "+playerO.message);
 });
 
 socket.on('badWord', (message) =>{

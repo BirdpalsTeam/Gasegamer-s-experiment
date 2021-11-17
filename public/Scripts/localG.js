@@ -39,6 +39,7 @@ form.addEventListener('submit', function(e) {
 	e.preventDefault();
 		if (input.value) {	
 			setLocalMessage(input.value);
+			addToChatbox(localPlayer.username + ": " + input.value);
 			input.value = '';
 		}
 });
@@ -98,6 +99,7 @@ if(localPlayer.items.length > 0){
 }
 loading_screen.hidden = true;
 document.getElementById('inventory').onclick = function(){inventory.open()};
+document.getElementById('toggleChatbox').onclick = function(){toggleChatbox();};
 
 render();
 main();
