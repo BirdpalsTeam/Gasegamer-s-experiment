@@ -100,20 +100,20 @@ class Inventory extends Sprite{
 	drawItems(items, i, pastX, pastY){
 		items[i].img = new Image();
 		items[i].img.src = itemsSrc + items[i].ItemClass + "/" + items[i].ItemId + "_icon.png";
-		ctx.fillStyle = "#bab6aa";
-		ctx.fillRect(pastX - 4, pastY, 95, 85); //draws the grey rectangle
-		ctx.drawImage(items[i].img, pastX, pastY + 2);
+		ui_ctx.fillStyle = "#bab6aa";
+		ui_ctx.fillRect(pastX - 4, pastY, 95, 85); //draws the grey rectangle
+		ui_ctx.drawImage(items[i].img, pastX, pastY + 2);
 		
 		if(items[i].button.isSelected == true){
-			ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-			ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey rectangle
+			ui_ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+			ui_ctx.fillRect(pastX - 4, pastY - 3, 95, 85); //draws the grey rectangle
 		}
 
 		items[i].button.isOverButton(mouseOver) == true ? items[i].button.isOver = true : items[i].button.isOver = false;
 
 		if(items[i].button.isOver == true){
-			ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-			ctx.fillRect(pastX - 4, pastY, 95, 85); //draws the grey select rectangle
+			ui_ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+			ui_ctx.fillRect(pastX - 4, pastY, 95, 85); //draws the grey select rectangle
 		}
 	}
 
@@ -144,10 +144,10 @@ class Inventory extends Sprite{
 				pastX = 507;
 				pastY += squareHeight;
 			}
-			ctx.beginPath();
-			ctx.rect(pastX, pastY, squareWidth, squareHeight);
-			ctx.strokeStyle = "black";
-			ctx.stroke();
+			ui_ctx.beginPath();
+			ui_ctx.rect(pastX, pastY, squareWidth, squareHeight);
+			ui_ctx.strokeStyle = "black";
+			ui_ctx.stroke();
 			pastX += 95;
 		}
 	}
@@ -162,11 +162,11 @@ class Inventory extends Sprite{
 					pastY += 87.5;
 				}
 				if(this.items[i].button.isSelected == true){
-					ctx.beginPath();
-					ctx.strokeStyle = "white";
-					ctx.lineWidth = 6;
-					ctx.rect(pastX - 4, pastY - 3.2, 95, 87.5); //draws the white rectangle
-					ctx.stroke();
+					ui_ctx.beginPath();
+					ui_ctx.strokeStyle = "white";
+					ui_ctx.lineWidth = 6;
+					ui_ctx.rect(pastX - 4, pastY - 3.2, 95, 87.5); //draws the white rectangle
+					ui_ctx.stroke();
 				}
 				pastX += 95;
 			}
@@ -174,21 +174,21 @@ class Inventory extends Sprite{
 	}
 	
 	grayCloseButton(){
-		ctx.fillStyle = "rgba(0, 0, 0, 0.4)"
-		ctx.beginPath();
-		ctx.moveTo(this.closeButton.x, this.closeButton.y);
-		ctx.lineTo(this.closeButton.x + 66,this.closeButton.y);
-		ctx.lineTo(this.closeButton.x + 70, 100);
-		ctx.fill();
-		ctx.beginPath();
-		ctx.moveTo(this.closeButton.x, this.closeButton.y);
-		ctx.bezierCurveTo(this.closeButton.x, this.closeButton.y + 15,this.closeButton.x + 35, this.closeButton.y + 60, this.closeButton.x + 70, 100);
-		ctx.fill();
+		ui_ctx.fillStyle = "rgba(0, 0, 0, 0.4)"
+		ui_ctx.beginPath();
+		ui_ctx.moveTo(this.closeButton.x, this.closeButton.y);
+		ui_ctx.lineTo(this.closeButton.x + 66,this.closeButton.y);
+		ui_ctx.lineTo(this.closeButton.x + 70, 100);
+		ui_ctx.fill();
+		ui_ctx.beginPath();
+		ui_ctx.moveTo(this.closeButton.x, this.closeButton.y);
+		ui_ctx.bezierCurveTo(this.closeButton.x, this.closeButton.y + 15,this.closeButton.x + 35, this.closeButton.y + 60, this.closeButton.x + 70, 100);
+		ui_ctx.fill();
 	}
 
 	drawBigBird(){
-		ctx.drawImage(this.bigBird.shadowImg, this.bigBird.x, this.bigBird.y + 230);
-		ctx.drawImage(this.bigBird.img, this.bigBird.x, this.bigBird.y);
+		ui_ctx.drawImage(this.bigBird.shadowImg, this.bigBird.x, this.bigBird.y + 230);
+		ui_ctx.drawImage(this.bigBird.img, this.bigBird.x, this.bigBird.y);
 		this.bigBird.items = this.items;
 		this.bigBird.gear = new Array();
 		this.bigBird.colors = new Array();
@@ -247,7 +247,7 @@ class Inventory extends Sprite{
 		})
 		this.bigBird.gear.sort((b, a) => {return b.layer - a.layer});
 		this.bigBird.gear.forEach((item) =>{
-			ctx.drawImage(item.i, item.x, item.y);
+			ui_ctx.drawImage(item.i, item.x, item.y);
 		})
 		if(this.bigBird.colors.length > 0){
 			this.bigBird.colors.forEach((item)=>{
@@ -262,12 +262,12 @@ class Inventory extends Sprite{
 
 	drawUsername(){
 		if(localPlayer.username.length > 16){
-			ctx.font = '46px Caslon';
+			ui_ctx.font = '46px Caslon';
 		}else{
-			ctx.font = '55px Caslon';
+			ui_ctx.font = '55px Caslon';
 		}
-		ctx.fillStyle = '#615f5b';
-		ctx.fillText(localPlayer.username, this.x + 260, this.y + 80);
+		ui_ctx.fillStyle = '#615f5b';
+		ui_ctx.fillText(localPlayer.username, this.x + 260, this.y + 80);
 	}
 
 	writeBio(){
@@ -318,10 +318,10 @@ class Inventory extends Sprite{
 					this.drawGrid();
 				}
 				if(this.canDrawBio == true){
-					ctx.beginPath();
-					ctx.rect(507, 130, 380, 350);
-					ctx.strokeStyle = "black";
-					ctx.stroke();
+					ui_ctx.beginPath();
+					ui_ctx.rect(507, 130, 380, 350);
+					ui_ctx.strokeStyle = "black";
+					ui_ctx.stroke();
 				}
 				this.drawWhiteRectangle();
 			}
@@ -329,5 +329,9 @@ class Inventory extends Sprite{
 			console.error(error)
 		}
 		
+	}
+	draw(){
+		ui_ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x - this.originX, this.y - this.originY, this.width, this.height);
+		this.customDraw();
 	}
 }

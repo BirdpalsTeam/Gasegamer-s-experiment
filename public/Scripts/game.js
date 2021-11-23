@@ -7,6 +7,8 @@ var fg_ctx = fg_canvas.getContext('2d');
 var txt_canvas = document.getElementById('txt_canvas');
 var txt_ctx = txt_canvas.getContext('2d');
 txt_ctx.imageSmoothingEnabled = false;
+var ui_canvas = document.getElementById('ui_canvas');
+var ui_ctx = ui_canvas.getContext('2d');
 
 var loading_screen = document.getElementById('loading');
 
@@ -17,9 +19,14 @@ var background_music = document.getElementById('background_music');
 
 var chatbox = document.getElementById("chatbox");
 
+var reportDiv = document.getElementById("reportDiv");
+var reportInput = document.getElementById("reportInput");
+var reportingDiv = document.getElementById("reportingDiv");
+var submittedDiv = document.getElementById("submittedDiv");
+
 var currentState = new WorldState();
 
-var caslonFont = new FontFace('Caslon', 'url(./CaslonAntique-BoldItalic.ttf)');
+var caslonFont = new FontFace('Caslon', 'url(Fonts/CaslonAntique-BoldItalic.ttf)');
 caslonFont.load().then(function(font){
 	document.fonts.add(font);
   }).catch((error) =>{
@@ -193,10 +200,8 @@ function loadRoom(joinRoom){
 }
 
 function addToChatbox(chatboxtext){
-	console.log(chatbox.innerHTML);
-	chatbox.innerHTML = chatbox.innerHTML + "<p>"+chatboxtext+"</p>";
+	chatbox.innerHTML = chatbox.innerHTML + "<p class='chatboxText'>"+chatboxtext+"</p>";
 	chatbox.scrollTop = chatbox.scrollHeight;
-	console.log(chatbox.innerHTML);
 }
 function toggleChatbox(){
 	if(chatbox.hidden == true){
@@ -205,6 +210,27 @@ function toggleChatbox(){
 	else{
 		chatbox.hidden = true;
 	}
+}
+var chatboxOpenBeforeInventory = true;
+function inventoryChatboxCheck(){
+	
+}
+
+var playerToReport = "";
+function openReport(playername){
+	playerToReport = playername;
+	reportInput.value = "";
+	reportDiv.hidden = false;
+	reportingDiv.hidden = false;
+	submittedDiv.hidden = true;
+}
+function closeReport(){
+	reportDiv.hidden = true;
+}
+function submitReport(playername, reason){
+	socket.emit('/report', "/report "+playername+" "+reason);
+	reportingDiv.hidden = true;
+	submittedDiv.hidden = false;
 }
 // Create a script tag
 var script = document.createElement('script');

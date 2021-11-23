@@ -299,8 +299,10 @@ class PlayerCard extends Sprite{
 		this.bio = player.bio;
 		this.p = player;
 
-		this.reportButton = new Button(300,500,50,50);
-		this.reportSprite = new Shape(300,500,50,50,"blue");
+		this.reportButton = new Button(75,25,50,100);
+		let reportImg = new Image();
+		reportImg.src = hudSrc+"reportBookmark.png"
+		this.reportSprite = new UISprite(reportImg,0,0,200,400,75,25,50,100,0,0);
 	}
 
 	open(){
@@ -319,23 +321,23 @@ class PlayerCard extends Sprite{
 	}
 
 	grayCloseButton(){
-		ctx.fillStyle = "rgba(0, 0, 0, 0.4)"
-		ctx.beginPath();
-		ctx.moveTo(this.closeButton.x, this.closeButton.y);
-		ctx.lineTo(this.closeButton.x + 66,this.closeButton.y);
-		ctx.lineTo(this.closeButton.x + 70, 100);
-		ctx.fill();
-		ctx.beginPath();
-		ctx.moveTo(this.closeButton.x, this.closeButton.y);
-		ctx.bezierCurveTo(this.closeButton.x, this.closeButton.y + 15,this.closeButton.x + 35, this.closeButton.y + 60, this.closeButton.x + 70, 100);
-		ctx.fill();
+		ui_ctx.fillStyle = "rgba(0, 0, 0, 0.4)"
+		ui_ctx.beginPath();
+		ui_ctx.moveTo(this.closeButton.x, this.closeButton.y);
+		ui_ctx.lineTo(this.closeButton.x + 66,this.closeButton.y);
+		ui_ctx.lineTo(this.closeButton.x + 70, 100);
+		ui_ctx.fill();
+		ui_ctx.beginPath();
+		ui_ctx.moveTo(this.closeButton.x, this.closeButton.y);
+		ui_ctx.bezierCurveTo(this.closeButton.x, this.closeButton.y + 15,this.closeButton.x + 35, this.closeButton.y + 60, this.closeButton.x + 70, 100);
+		ui_ctx.fill();
 	}
 
 	drawBiographyArea(){
-		ctx.beginPath();
-		ctx.rect(507, 130, 380, 350);
-		ctx.strokeStyle = "black";
-		ctx.stroke();
+		ui_ctx.beginPath();
+		ui_ctx.rect(507, 130, 380, 350);
+		ui_ctx.strokeStyle = "black";
+		ui_ctx.stroke();
 		canvasTxt.fontSize = 30;
 		canvasTxt.font = "Caslon";
 		canvasTxt.drawText(txt_ctx, this.bio, 510, 135 , 370, 335); //draws the message
@@ -352,8 +354,8 @@ class PlayerCard extends Sprite{
 	}
 
 	drawBigBird(){
-		ctx.drawImage(this.bigBird.shadowImg, this.bigBird.x, this.bigBird.y + 230);
-		ctx.drawImage(this.bigBird.img, this.bigBird.x, this.bigBird.y);
+		ui_ctx.drawImage(this.bigBird.shadowImg, this.bigBird.x, this.bigBird.y + 230);
+		ui_ctx.drawImage(this.bigBird.img, this.bigBird.x, this.bigBird.y);
 		this.bigBird.items = this.items;
 		this.bigBird.gear = new Array();
 		this.bigBird.colors = new Array();
@@ -398,12 +400,17 @@ class PlayerCard extends Sprite{
 		})
 		this.bigBird.gear.sort((b, a) => {return a.y - b.y});
 		this.bigBird.gear.forEach((item) =>{
-			ctx.drawImage(item.i, item.x, item.y);
+			ui_ctx.drawImage(item.i, item.x, item.y);
 		})
 		if(this.bigBird.colors.length == 0){
 			this.bigBird.img.src = hudSrc + "big_bird.png";
 		}
 
+	}
+
+	draw(){
+		ui_ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x - this.originX, this.y - this.originY, this.width, this.height);
+		this.customDraw();
 	}
 
 	customDraw(){

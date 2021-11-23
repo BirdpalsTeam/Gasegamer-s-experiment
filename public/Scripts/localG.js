@@ -100,6 +100,8 @@ if(localPlayer.items.length > 0){
 loading_screen.hidden = true;
 document.getElementById('inventory').onclick = function(){inventory.open()};
 document.getElementById('toggleChatbox').onclick = function(){toggleChatbox();};
+document.getElementById('closeReport').onclick = function(){closeReport();};
+document.getElementById('reportSubmit').onclick = function(){submitReport(playerToReport, reportInput.value);};
 
 render();
 main();

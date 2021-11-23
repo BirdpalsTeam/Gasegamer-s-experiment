@@ -99,6 +99,7 @@ class WorldState extends State{
 			inventory.close();
 			inventory.selectItem();
 			inventory.writeBio();
+            ui_ctx.clearRect(0,0,ui_canvas.width,ui_canvas.height);
 		}
 		playersObject.forEach((tempplayer) =>{
             if(tempplayer.card != undefined && tempplayer.card.playerButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == false){
@@ -109,8 +110,9 @@ class WorldState extends State{
                 tempplayer.card.open();
             }else if(tempplayer.card != undefined && tempplayer.card.closeButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == true){
                 tempplayer.card.close();
+                ui_ctx.clearRect(0,0,ui_canvas.width,ui_canvas.height);
             }else if(tempplayer.card != undefined && tempplayer.card.reportButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == true){
-                socket.emit('/report', "/report "+tempplayer.username+" testing button");
+                openReport(tempplayer.username);
             }
         });
 	}

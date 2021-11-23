@@ -11,13 +11,27 @@
 <audio id ="background_music" src="Audio/Songbirds.mp3" type="audio/mpeg" autoplay loop>
 </audio>
 <center>
-	<div id="stage">
+	<div id="stage" height="650px">
 		<img id='loading' src="./Website Assets/morph_2.gif" class="loading">
-		<canvas id="background" width="1000" height="600"></canvas>
-		<canvas id="objects" width="1000" height="600"></canvas>
-		<canvas id="foreground" width="1000" height="600"></canvas>
-		<canvas id="txt_canvas" width="1000" height="600"></canvas>
+		<canvas id="background" width="1000px" height="600px"></canvas>
+		<canvas id="objects" width="1000px" height="600px"></canvas>
+		<canvas id="foreground" width="1000px" height="600px"></canvas>
+		<canvas id="txt_canvas" width="1000px" height="600px"></canvas>
 		<textarea id="bioInput" maxlength="144" placeholder="Write your description here." hidden></textarea>
+		<div class="reportDiv" id="reportDiv" hidden>
+			<div id="reportingDiv">
+				<br>
+				<h1>REPORT!!!!</h1>
+				<textarea id="reportInput" class="reportInput"></textarea>
+				<button id="reportSubmit">Submit</button>
+			</div>
+			<div id="submittedDiv" hidden>
+				<h2 id="reportThanks">Thanks for Reporting!</h2>
+			</div>
+			<button id="closeReport">X</button>
+		</div>
+		<div id="chatbox" class="chatbox"></div>
+		<canvas id="ui_canvas" width="1000px" height="600px"></canvas>
 	</div>
 <div id="inputElements" hidden="true" class="inputElements">
 	<form id="form" action="">
@@ -25,6 +39,7 @@
 		<button>Send</button>
 	</form> 
 	<button id="inventory">Inventory</button>
+	<button id="toggleChatbox">Toggle Chatbox</button>
 	<div id="debugDiv">
 		<p id="debugParagraph"></p>
 	</div>

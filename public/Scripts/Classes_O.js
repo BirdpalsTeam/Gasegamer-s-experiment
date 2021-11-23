@@ -40,6 +40,17 @@ class Sprite{
 	}
 }
 
+class UISprite extends Sprite{
+	constructor(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY){
+		super(img,sourceX,sourceY,sourceWidth,sourceHeight,x,y,width,height,originX,originY);
+	}
+
+	draw(){
+		ui_ctx.drawImage(this.img,this.sourceX,this.sourceY,this.sourceWidth,this.sourceHeight,this.x - this.originX, this.y - this.originY, this.width, this.height);
+		this.customDraw();
+	}
+}
+
 class Item extends Sprite{
 	constructor(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY, layer, type, name){
 		super(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height, originX, originY);

@@ -1,3 +1,8 @@
+@font-face {
+	font-family: "VarelaRound";
+	src: url("/Fonts/VarelaRound-Regular.ttf");
+}
+
 body {
 	background-image: url("../Website Assets/backdrop.png");
 	background-size: cover;
@@ -11,9 +16,10 @@ body {
 	right: 0;
 	margin-left: auto;
 	margin-right: auto;
+	border-radius: 4px;
+	border: 5px solid #ffffff;
 	z-index: 0;
 }
-
 #objects {
 	position: absolute;
 	left: 0;
@@ -24,23 +30,35 @@ body {
 	border: 5px solid #ffffff;
 	z-index: 2;
 }
-
 #foreground {
 	position: absolute;
 	left: 0;
 	right: 0;
 	margin-left: auto;
 	margin-right: auto;
+	border-radius: 4px;
+	border: 5px solid #ffffff;
 	z-index: 3;
 }
-
 #txt_canvas {
 	position: absolute;
 	left: 0;
 	right: 0;
 	margin-left: auto;
 	margin-right: auto;
-	z-index: 4;
+	border-radius: 4px;
+	border: 5px solid #ffffff;
+	z-index: 22;
+}
+#ui_canvas{
+	position: absolute;
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	border-radius: 4px;
+	border: 5px solid #ffffff;
+	z-index: 21;
 }
 
 .loading{
@@ -112,4 +130,98 @@ button:hover {
   background-color: #e06818;
   border: 2px solid#e06818;
   transition-duration: 0.2s;
+}
+
+.chatbox {
+	background-color: rgba(0,0,0,0.5);
+	width: 400px;
+	height: 150px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	word-wrap: break-word;
+	text-align: left;
+	padding-left: 15px;
+	position:absolute;
+	z-index: 20;
+	left: 0;
+	right: 585px;
+	top:13px;
+	margin-left: auto;
+	margin-right: auto;
+	scrollbar-color: rgba(0,0,0);
+	line-height: 20px;
+	font-family: "VarelaRound";
+}
+.chatboxText{
+	line-height: 5px;
+}
+
+.reportDiv{
+	background-color: rgb(192, 147, 95);
+	width: 400px;
+	height: 500px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	word-wrap: break-word;
+	text-align: center;
+	position:absolute;
+	z-index: 31;
+	left: 0;
+	right: 0px;
+	top:50px;
+	margin-left: auto;
+	margin-right: auto;
+	scrollbar-color: rgb(199, 116, 38);
+	line-height: 20px;
+	font-family: "VarelaRound";
+}
+.reportInput{
+	position: absolute;
+	top: 100px;
+	right: 0px;
+	left: 50px;
+	width: 300px;
+	height: 300px;
+	z-index: 31;
+	text-align: left;
+	border: none;
+	outline: none;
+	resize: none;
+	font-family:"VarelaRound";  
+	font-size: 30px; 
+	color: #615f5b;
+	background-color: #daba8a;
+	overflow-x: hidden;
+	word-wrap: break-word;
+}
+#reportSubmit{
+	position:absolute;
+	bottom: 25px;
+	right: 95px;
+	width: 200px;
+	z-index: 72;
+}
+#closeReport{
+	position:absolute;
+	top: 10px;
+	right: 10px;
+	width: 50px;
+	z-index: 72;
+}
+#reportThanks{
+	font-family:"VarelaRound";
+	position: absolute;
+	top: 45%;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+  	transform: translate(-50%, -50%);
+}
+
+/* Scrollbar Stuff */
+::-webkit-scrollbar {
+	width: 5px;
+}
+::-webkit-scrollbar-thumb {
+	background: grey;
+	border-radius: 5px;
 }
