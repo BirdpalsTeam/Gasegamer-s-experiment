@@ -151,13 +151,11 @@ button:hover {
 	scrollbar-color: rgba(0,0,0);
 	line-height: 20px;
 	font-family: "VarelaRound";
-}
-.chatboxText{
-	line-height: 5px;
+	padding-bottom: 5px;
 }
 
 .reportDiv{
-	background-color: rgb(192, 147, 95);
+	margin: 0px;
 	width: 400px;
 	height: 500px;
 	overflow-x: hidden;
@@ -171,7 +169,6 @@ button:hover {
 	top:50px;
 	margin-left: auto;
 	margin-right: auto;
-	scrollbar-color: rgb(199, 116, 38);
 	line-height: 20px;
 	font-family: "VarelaRound";
 }
@@ -180,8 +177,8 @@ button:hover {
 	top: 100px;
 	right: 0px;
 	left: 50px;
-	width: 300px;
-	height: 300px;
+	width: 290px;
+	height: 290px;
 	z-index: 31;
 	text-align: left;
 	border: none;
@@ -189,8 +186,8 @@ button:hover {
 	resize: none;
 	font-family:"VarelaRound";  
 	font-size: 30px; 
-	color: #615f5b;
-	background-color: #daba8a;
+	color: #000000;
+	background-color: #ffffff94;
 	overflow-x: hidden;
 	word-wrap: break-word;
 }
@@ -215,6 +212,32 @@ button:hover {
 	left: 50%;
 	-ms-transform: translate(-50%, -50%);
   	transform: translate(-50%, -50%);
+	color: #000000;
+}
+#reportingDiv{
+	margin: 0%;
+}
+#submittedDiv{
+	margin: 0%;
+}
+#reportEnvelopeBackground{
+	position: absolute;
+	width: 99%;
+	height: 99%;
+	left:0;
+	right:0;
+	top:0;
+}
+#reportEnvelopeClosedBackground{
+	position: absolute;
+	width: 99%;
+	height: 99%;
+	left:0;
+	right:0;
+	top:0;
+}
+#REPORTtext{
+	color: red;
 }
 
 /* Scrollbar Stuff */

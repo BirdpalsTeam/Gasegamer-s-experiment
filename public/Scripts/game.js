@@ -200,7 +200,7 @@ function loadRoom(joinRoom){
 }
 
 function addToChatbox(chatboxtext){
-	chatbox.innerHTML = chatbox.innerHTML + "<p class='chatboxText'>"+chatboxtext+"</p>";
+	chatbox.innerHTML = chatbox.innerHTML + "<p>"+chatboxtext+"</p>";
 	chatbox.scrollTop = chatbox.scrollHeight;
 }
 function toggleChatbox(){

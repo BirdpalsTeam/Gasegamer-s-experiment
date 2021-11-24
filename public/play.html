@@ -20,15 +20,17 @@
 		<textarea id="bioInput" maxlength="144" placeholder="Write your description here." hidden></textarea>
 		<div class="reportDiv" id="reportDiv" hidden>
 			<div id="reportingDiv">
+				<img id="reportEnvelopeBackground" src="Sprites/hud/reportEnvelope.png">
 				<br>
-				<h1>REPORT!!!!</h1>
-				<textarea id="reportInput" class="reportInput"></textarea>
-				<button id="reportSubmit">Submit</button>
+				<h1 id="REPORTtext">REPORT</h1>
+				<textarea id="reportInput" class="reportInput" maxlength="200"></textarea>
+				<img id="reportSubmit" src="Sprites/hud/submitreport.png">
 			</div>
 			<div id="submittedDiv" hidden>
+				<img id="reportEnvelopeClosedBackground" src="Sprites/hud/reportEnvelopeClosed.png">
 				<h2 id="reportThanks">Thanks for Reporting!</h2>
 			</div>
-			<button id="closeReport">X</button>
+			<img id="closeReport" src="Sprites/hud/closereport.png">
 		</div>
 		<div id="chatbox" class="chatbox"></div>
 		<canvas id="ui_canvas" width="1000px" height="600px"></canvas>

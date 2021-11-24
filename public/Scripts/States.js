@@ -66,6 +66,7 @@ class WorldState extends State{
             localPlayer.drawBubble();
         }
 
+        ui_ctx.clearRect(0,0,ui_canvas.width,ui_canvas.height);
 		if(inventory != undefined && inventory.isOpen == true){
 			ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
 			ctx.fillRect(0,0,canvas.width, canvas.height);
@@ -99,7 +100,6 @@ class WorldState extends State{
 			inventory.close();
 			inventory.selectItem();
 			inventory.writeBio();
-            ui_ctx.clearRect(0,0,ui_canvas.width,ui_canvas.height);
 		}
 		playersObject.forEach((tempplayer) =>{
             if(tempplayer.card != undefined && tempplayer.card.playerButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == false){
@@ -110,7 +110,6 @@ class WorldState extends State{
                 tempplayer.card.open();
             }else if(tempplayer.card != undefined && tempplayer.card.closeButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == true){
                 tempplayer.card.close();
-                ui_ctx.clearRect(0,0,ui_canvas.width,ui_canvas.height);
             }else if(tempplayer.card != undefined && tempplayer.card.reportButton.isInsideButton(mousePos) == true && tempplayer.card.isOpen == true){
                 openReport(tempplayer.username);
             }
